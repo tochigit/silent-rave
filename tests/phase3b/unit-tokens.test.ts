@@ -28,7 +28,7 @@ describe("QR token module (Ed25519, 05)", () => {
     expect(token.split(".")).toHaveLength(4);
     const [version, kid] = token.split(".");
     expect(version).toBe("1");
-    expect(kid).toBe(process.env.TICKET_SIGNING_KID);
+    expect(process.env.TICKET_SIGNING_KID).toBe(kid);
     const result = verifyTicketToken(token);
     expect(result.ok).toBe(true);
     if (result.ok) {
