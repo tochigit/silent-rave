@@ -30,7 +30,7 @@ The following migration(s) have been applied:
 migrations/
   └─ 20260930000000_v2_1_baseline/
     └─ migration.sql
-      
+
 All migrations have been successfully applied.
 ✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 03ac9a6b-8105-4ed8-989c-b951b87db866
   Log in at /admin (or admin.localhost).
