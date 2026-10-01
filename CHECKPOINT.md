@@ -12,12 +12,14 @@ About and Contact must be owner editable. No fixed delivery date was supplied.
 ## Current milestone: imported baseline verification — in progress
 
 - Branch: `chore/import-and-verify-baseline`; base: `main`.
+- Draft PR: https://github.com/tochigit/silent-rave/pull/1.
+- Import and verification checkpoint pushed: `ffdf940`, `cb96b84`.
 - Remote currently contains only the original specification (initial commit
   `f1e732f`). Preserve the imported application and v2.1.2 docs here.
 - Existing Phase 3b tests have not been run in this workspace. The prior
   prompt's 109-test claim is unverified; report the actual runner count.
-- Existing fixture scripts assume Linux, overwrite root `.env`, and stop
-  listeners on shared ports. Replace them with isolated portable tooling.
+- Replaced imported Linux-only fixture scripts, which overwrote root `.env`
+  and stopped shared-port listeners, with isolated portable tooling.
 - Supabase Storage is a documented stub. Public/owner/staff pages are mostly
   placeholders. These belong to later milestones, not this baseline.
 - Audit locking and revival inventory; enable type checking in production
@@ -27,7 +29,7 @@ About and Contact must be owner editable. No fixed delivery date was supplied.
 
 - Initial scan found no credential-pattern matches in the imported text files.
 - Remote `main` was verified read-only; no other remote branches were listed.
-- Import preserved in local commit `ffdf940` (verification explicitly pending).
+- Import preserved in pushed commit `ffdf940` (verification explicitly pending).
 - Bun installs left missing package files on Windows, including a clean-copy
   retry. npm recovery stalled and its owned process was stopped after checking
   its command line. Treat `node_modules` as incomplete. Do not run another
@@ -45,7 +47,7 @@ About and Contact must be owner editable. No fixed delivery date was supplied.
   Bun process; those exact owned processes were stopped after verification.
   Runner now tracks its test child and uses synchronous PostgreSQL I/O.
 - Lint, type checks, build and full Phase 3b results remain unverified.
-- Next: inspect draft PR/CI status if publication succeeded; reconcile dependency
+- Next: inspect draft PR #1/CI status; reconcile dependency
   installation, then run all Phase 3b files, lint, type checks and production
   build. Save complete output. See `.docs/BASELINE_REPORT.md` for exact status.
 - No Supabase project, real email, or production data is involved.

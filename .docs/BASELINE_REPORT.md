@@ -1,6 +1,7 @@
 # Imported baseline verification
 
 Current milestone: in progress. Branch: `chore/import-and-verify-baseline`.
+Draft [PR #1](https://github.com/tochigit/silent-rave/pull/1) targets `main`.
 The import is preserved in `ffdf940`; it was committed with verification pending.
 
 ## Changes under verification
