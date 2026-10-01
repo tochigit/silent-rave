@@ -11,7 +11,7 @@ Use Bun 1.3.14 and install the versions in `bun.lock`:
 
 ```sh
 bun install --frozen-lockfile
-bun run test:phase3b
+bun --no-env-file run test:phase3b
 bun run lint
 bun run typecheck
 bun run build
@@ -32,7 +32,7 @@ are intentionally rejected; use the runner.
 For an interactive app with fake fixture data:
 
 ```sh
-bun run db:fixture
+bun --no-env-file run db:fixture
 ```
 
 This starts a fresh temporary database and a dev app on port 3000; keep the

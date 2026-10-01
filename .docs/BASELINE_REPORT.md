@@ -1,6 +1,7 @@
 # Imported baseline verification
 
-Current milestone: in progress. Branch: `chore/import-and-verify-baseline`.
+The baseline passes Linux CI; local Windows verification remains incomplete.
+Branch: `chore/import-and-verify-baseline`. Keep the PR draft until resolved.
 Draft [PR #1](https://github.com/tochigit/silent-rave/pull/1) targets `main`.
 The import is preserved in `ffdf940`; it was committed with verification pending.
 
@@ -30,16 +31,25 @@ The import is preserved in `ffdf940`; it was committed with verification pending
   The runner now tracks its test subprocess, uses synchronous PostgreSQL I/O,
   and explicitly exits after cleanup and output flushing. These changes still
   need verification.
-- Full Phase 3b suite, lint, type checks, build, and hosted CI: pending.
+- Linux [CI at 443bf0c](https://github.com/tochigit/silent-rave/actions/runs/36935985053):
+  frozen install, Prisma generation, lint, application/tooling type checks,
+  all **112 tests across 8 files (zero failures)** and production build passed.
+  The runner completed and reported cleanup. Windows cleanup remains unverified.
+  Complete output: [phase3b-test-output.txt](../reports/phase3b-test-output.txt).
+  Full build/CI logs are available in that run. The prior count is reconciled:
+  109 imported cases plus three regressions. No pre-fix execution of those new
+  cases was captured. Earlier CI typing failures were fixed before this pass.
+- Final local process check found no Node, Bun or PostgreSQL processes running.
 
 ## Boundaries and next action
 
 No hosted Supabase project, real email, or production data was used. Supabase
 Storage, email delivery, public/owner/staff UI, offline scanning, shared rate
 limits and deployed behavior remain later milestones. The historical 109-test
-claim remains unverified.
+claim is reconciled by the passing Linux run; hosted behavior is unverified.
 
-Reconcile dependency installation, run all baseline checks, save their
-complete outputs and reconcile CI before marking this milestone complete.
+Reconcile the Windows dependency installation and run local checks before
+marking this milestone complete. Preserve Linux evidence separately; follow
+the exact continuation in `CHECKPOINT.md`.
 Review and merge require approval of this specific PR. Retain its branch after
 merging. Do not start Phase 4 without explicit continuation.
