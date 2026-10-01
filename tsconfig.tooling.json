@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
-    "incremental": false
+    "incremental": false,
+    "types": ["bun-types", "node"],
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "esnext"]
   },
   "include": ["scripts/**/*.ts", "tests/**/*.ts", "prisma/**/*.ts"],
   "exclude": ["node_modules"]

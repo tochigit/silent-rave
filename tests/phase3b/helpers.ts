@@ -336,7 +336,7 @@ export async function runSweep(): Promise<{ status: number; body: any }> {
   return { status: response.status, body: await response.json() };
 }
 
-export function check(condition: unknown, message: string): void {
+export function check(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(`EXPECT FAILED: ${message}`);
 }
 
