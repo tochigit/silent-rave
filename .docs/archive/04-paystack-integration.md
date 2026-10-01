@@ -1,3 +1,5 @@
+> **ARCHIVED — NOT IN v1.** Superseded by `../04-manual-payment.md`. Kept only as the reference shape for a future Paystack adapter behind the payment-adapter interface. Do not implement from this file.
+
 # 04. Paystack Integration Contract
 
 ## Principle
