@@ -42,25 +42,24 @@ export async function expireHolds(): Promise<SweepResult> {
       FOR UPDATE SKIP LOCKED
     `);
 
-    for (const { id } of candidates) {
-      // Per line item: reserved -= quantity. Aggregated per tier (an order can
-      // reference the same tier twice) and applied in canonical tier-id order
-      // to match every other tier-locking path (deadlock avoidance).
-      const tierAgg = await tx.$queryRaw<{ tier_id: string; total_qty: bigint }[]>(Prisma.sql`
-        SELECT tier_id, SUM(quantity) AS total_qty
-        FROM order_line_items
-        WHERE order_id = ${id}::uuid
-        GROUP BY tier_id
-        ORDER BY tier_id
+    if (candidates.length === 0) return { expired: 0 };
+    // Lock tiers in one global order across the entire locked batch. Sorting
+    // each order separately still permits a high-tier -> low-tier lock cycle.
+    const tierAgg = await tx.$queryRaw<{ tier_id: string; total_qty: bigint }[]>(Prisma.sql`
+      SELECT tier_id, SUM(quantity) AS total_qty
+      FROM order_line_items
+      WHERE order_id IN (${Prisma.join(candidates.map(({ id }) => Prisma.sql`${id}::uuid`))})
+      GROUP BY tier_id
+      ORDER BY tier_id
+    `);
+    for (const line of tierAgg) {
+      await tx.$executeRaw(Prisma.sql`
+        UPDATE ticket_tiers
+        SET reserved = reserved - ${Number(line.total_qty)}
+        WHERE id = ${line.tier_id}::uuid
       `);
-      for (const line of tierAgg) {
-        await tx.$executeRaw(Prisma.sql`
-          UPDATE ticket_tiers
-          SET reserved = reserved - ${Number(line.total_qty)}
-          WHERE id = ${line.tier_id}::uuid
-        `);
-      }
-
+    }
+    for (const { id } of candidates) {
       await tx.order.update({
         where: { id },
         data: { status: "EXPIRED", inventoryReleased: true },

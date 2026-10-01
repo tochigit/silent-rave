@@ -1,15 +1,13 @@
-// Explicit .env loader for tests that don't import helpers.ts (bun normally
-// auto-loads .env; this makes it robust regardless of runner flags).
-import { readFileSync } from "node:fs";
-
-try {
-  const text = readFileSync(".env", "utf8");
-  for (const line of text.split("\n")) {
-    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (match && process.env[match[1]] === undefined) {
-      process.env[match[1]] = match[2];
-    }
-  }
-} catch {
-  /* ambient environment */
+// Fail closed for direct invocation; the runner supplies an isolated environment.
+// Never load the real project's .env into a test process.
+const databaseUrl = process.env.TEST_DATABASE_URL;
+const baseUrl = process.env.TEST_BASE_URL;
+if (!databaseUrl || !baseUrl || process.env.NODE_ENV === "production") {
+  throw new Error("Use bun run test:phase3b: an isolated local test environment is required.");
+}
+const database = new URL(databaseUrl);
+const app = new URL(baseUrl);
+if (database.hostname !== "127.0.0.1" || database.pathname !== "/silentrave_test" ||
+    app.hostname !== "127.0.0.1" || process.env.DATABASE_URL !== databaseUrl) {
+  throw new Error("Refusing tests outside the isolated loopback fixture.");
 }

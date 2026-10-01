@@ -108,6 +108,10 @@ async function validatePurchasability(input: InitializeInput) {
   });
   const byId = new Map(tiers.map((tier) => [tier.id, tier]));
   const now = new Date();
+  const totalQuantity = input.lineItems.reduce((total, line) => total + line.quantity, 0);
+  if (!Number.isInteger(totalQuantity) || totalQuantity < 1 || totalQuantity > MAX_QTY_PER_ORDER) {
+    throw new OrderServiceError("VALIDATION", `An order must contain between 1 and ${MAX_QTY_PER_ORDER} tickets.`);
+  }
   for (const line of input.lineItems) {
     if (!Number.isInteger(line.quantity) || line.quantity < 1 || line.quantity > MAX_QTY_PER_ORDER) {
       throw new OrderServiceError("VALIDATION", `Quantity must be between 1 and ${MAX_QTY_PER_ORDER}.`, {
@@ -184,18 +188,19 @@ export async function initializeCheckout(input: InitializeInput): Promise<Initia
           //    Concurrent same-email (or same-phone) checkouts now serialize:
           //    the second transaction's COUNT sees the first's committed rows,
           // so the 2-unresolved cap can no longer be exceeded by a race.
-          //    Lock ORDER is fixed everywhere (advisory email → advisory phone
-          //    → tier rows → order row), which keeps this deadlock-free; the
-          //    locks are released automatically at COMMIT/ROLLBACK.
-          //    (hashtext collisions between emails/phones merely over-serialize,
-          //    never under-serialize — safe direction.)
+          //    New checkouts acquire email, phone, then sorted tier rows.
+          //    Separate advisory namespaces prevent cross-category hash
+          //    collisions from reversing the email/phone lock order. Within
+          //    one namespace, collisions only serialize unrelated buyers.
+          //    Existing-order writers lock their order before sorted tiers;
+          //    this transaction inserts a new order and waits on no old order.
           //    NOTE: $executeRaw, not $queryRaw — pg_advisory_xact_lock returns
           //    void and $queryRaw cannot deserialize a void column (P2010).
           await tx.$executeRaw(Prisma.sql`
-            SELECT pg_advisory_xact_lock(hashtext(lower(${input.customerEmail})))
+            SELECT pg_advisory_xact_lock(1, hashtext(lower(${input.customerEmail})))
           `);
           await tx.$executeRaw(Prisma.sql`
-            SELECT pg_advisory_xact_lock(hashtext(lower(${input.customerPhone})))
+            SELECT pg_advisory_xact_lock(2, hashtext(lower(${input.customerPhone})))
           `);
 
           // 1. Atomic conditional reservation per tier + fresh server-side

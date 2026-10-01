@@ -1,38 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers for the Phase 3b (manual payment) test suite.
 //
-// Tests run against a REAL dev server on 127.0.0.1:3000 (started by run.sh
-// after `bun run db:fixture`) and verify DB state through independent Prisma
+// Tests run against the runner's REAL dev server on a dedicated loopback port
+// and verify DB state through independent Prisma
 // clients (separate connections from the server's pool).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type EmailJobKind } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import sharp from "sharp";
-import { readFileSync } from "node:fs";
+import "./load-env";
 
-// ── env (explicit .env load — robust even if the runner skipped auto-load) ───
+// Fixture configuration is supplied explicitly and checked by load-env.
 
-function loadDotEnv(path = ".env"): void {
-  try {
-    const text = readFileSync(path, "utf8");
-    for (const line of text.split("\n")) {
-      const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
-      if (match && process.env[match[1]] === undefined) {
-        process.env[match[1]] = match[2];
-      }
-    }
-  } catch {
-    /* no .env — rely on the ambient environment */
-  }
-}
-loadDotEnv();
-
-export const BASE = "http://127.0.0.1:3000";
-// The platform tool shell exports a STALE sqlite DATABASE_URL that overrides
-// .env loading — pin the fixture DB explicitly (override with TEST_DATABASE_URL).
-export const DB_URL =
-  process.env.TEST_DATABASE_URL ?? "postgresql://postgres@127.0.0.1:54329/silentrave";
+export const BASE = process.env.TEST_BASE_URL!;
+export const DB_URL = process.env.TEST_DATABASE_URL!;
 
 // ── DB clients (independent connections from the server's pool) ──────────────
 
@@ -336,7 +318,7 @@ export async function getTierState(db: PrismaClient, tierId: string) {
 export async function countEmailJobs(
   db: PrismaClient,
   orderId: string,
-  kind: string,
+  kind: EmailJobKind,
   dedupeKey?: string
 ): Promise<number> {
   return db.emailJob.count({

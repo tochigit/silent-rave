@@ -2,10 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   reactStrictMode: false,
   // Keep Prisma (and its native query engine) external in server bundles —
   // required for src/proxy.ts (Next 16 proxy runs on the Node.js runtime and

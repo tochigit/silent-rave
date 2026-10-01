@@ -24,7 +24,7 @@ import { OrderServiceError } from "./errors";
 //        event CANCELLED          → EVENT_CANCELLED — checked AFTER the lock,
 //                                   BEFORE any inventory change
 //   2. per line item: sold += n, reserved -= n   (revive: reserved untouched,
-//        sold += n guarded by capacity - sold >= n instead)
+//        sold += n guarded by capacity - sold - reserved >= n instead)
 //   3. mint ticket_units — one per ticket, signed qr_token (pure computation,
 //        no I/O — safe inside the txn), copy holder_names; sync_seq comes from
 //        the BEFORE INSERT trigger (never written by code)
@@ -216,7 +216,7 @@ export async function approveOrder(orderId: string, actorId: string): Promise<Ap
           const updated = await tx.$executeRaw(Prisma.sql`
             UPDATE ticket_tiers
             SET sold = sold + ${item.quantity}
-            WHERE id = ${item.tierId}::uuid AND (capacity - sold) >= ${item.quantity}
+            WHERE id = ${item.tierId}::uuid AND (capacity - sold - reserved) >= ${item.quantity}
           `);
           if (updated === 0) {
             throw new OrderServiceError(

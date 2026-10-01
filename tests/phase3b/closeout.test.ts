@@ -242,7 +242,7 @@ describe("A4 — lookup rate limiting counts nonexistent codes; limited response
 // ── A5 ───────────────────────────────────────────────────────────────────────
 
 describe("A5 — db:fixture refuses unsafe environments (guards run before ANY destructive step)", () => {
-  const FIXTURE_SCRIPT = fileURLToPath(new URL("../../scripts/rebuild-fixture.sh", import.meta.url));
+  const FIXTURE_SCRIPT = fileURLToPath(new URL("../../scripts/dev-fixture.ts", import.meta.url));
 
   /** Runs the fixture script in a subprocess under the given env overrides. */
   async function runFixture(
@@ -252,7 +252,7 @@ describe("A5 — db:fixture refuses unsafe environments (guards run before ANY d
     for (const [key, value] of Object.entries({ ...process.env, ...env })) {
       if (value !== undefined) merged[key] = value;
     }
-    const proc = Bun.spawn(["bash", FIXTURE_SCRIPT], {
+    const proc = Bun.spawn([process.execPath, "--no-env-file", FIXTURE_SCRIPT], {
       cwd: process.cwd(),
       env: merged,
       stdout: "pipe",
@@ -297,10 +297,8 @@ describe("A5 — db:fixture refuses unsafe environments (guards run before ANY d
     check(!result.output.includes("wiping"), "NO destructive step executed");
   });
 
-  // Positive control: `bun run test:phase3b` step 1 itself runs db:fixture
-  // successfully in dev mode against the embedded server — executing it here
-  // would wipe the suite's own fixture mid-run, so the happy path is proven
-  // by the suite runner instead.
+  // Positive control: the suite runner uses the same startFixture function
+  // successfully. A second dev fixture would start another app unnecessarily.
 });
 
 // ── B — proof submission vs sweep race at the hold boundary ─────────────────

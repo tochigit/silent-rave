@@ -27,9 +27,27 @@ About and Contact must be owner editable. No fixed delivery date was supplied.
 
 - Initial scan found no credential-pattern matches in the imported text files.
 - Remote `main` was verified read-only; no other remote branches were listed.
-- Dependencies are being installed from the imported lockfile.
-- Next: preserve the import, implement portable fixture/test commands, run all
-  Phase 3b files, lint, type checks, and production build; save complete output.
+- Import preserved in local commit `ffdf940` (verification explicitly pending).
+- Bun installs left missing package files on Windows, including a clean-copy
+  retry. npm recovery stalled and its owned process was stopped after checking
+  its command line. Treat `node_modules` as incomplete. Do not run another
+  install over this tree without inspecting it. An earlier tree is preserved
+  in ignored `.test-runtime/dependency-backup`.
+- Removed 14 unused sandbox dependencies after checking source imports; pinned
+  retained direct dependencies to their imported `bun.lock` versions.
+- Portable fixture/runner implementation and CI workflow are written but
+  unverified. New regression tests cover order-wide quantity limits, revival
+  versus active reservations, and global sweep tier lock ordering.
+- Application fixes are written for all three regressions, plus separate
+  email/phone advisory-lock namespaces. They have NOT been tested yet.
+- First isolated runner attempt failed at Prisma generation: missing `effect`
+  package. No test cases ran. Its cleanup left a PostgreSQL I/O worker and a
+  Bun process; those exact owned processes were stopped after verification.
+  Runner now tracks its test child and uses synchronous PostgreSQL I/O.
+- Lint, type checks, build and full Phase 3b results remain unverified.
+- Next: inspect draft PR/CI status if publication succeeded; reconcile dependency
+  installation, then run all Phase 3b files, lint, type checks and production
+  build. Save complete output. See `.docs/BASELINE_REPORT.md` for exact status.
 - No Supabase project, real email, or production data is involved.
 
 ## Planning corrections to retain
