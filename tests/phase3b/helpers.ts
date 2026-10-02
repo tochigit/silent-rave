@@ -187,15 +187,19 @@ export async function initializeOrder(args: {
   /** Defaults to the fixture event; tests with custom events pass it explicitly. */
   eventId?: string;
 }): Promise<{ response: Response; body: InitializeResponse | null; status: number }> {
-  const db = makeDb();
-  const event = args.eventId
-    ? { id: args.eventId }
-    : await getFixtureEvent(db);
-  await db.$disconnect();
+  let eventId = args.eventId;
+  if (!eventId) {
+    const db = makeDb();
+    try {
+      eventId = (await getFixtureEvent(db)).id;
+    } finally {
+      await db.$disconnect();
+    }
+  }
   const response = await api("/api/checkout/initialize", {
     ip: args.ip ?? "10.0.0.1",
     body: {
-      event_id: event.id,
+      event_id: eventId,
       customer_name: "Test Buyer",
       customer_email: args.email ?? `buyer-${crypto.randomUUID().slice(0, 8)}@test.ng`,
       customer_phone: args.phone ?? `080${Math.floor(10000000 + Math.random() * 89999999)}`,

@@ -139,6 +139,8 @@ describe("A6 — same-email CONCURRENT checkout cannot exceed the 2-unresolved c
       tiers.map((tier, i) =>
         initializeOrder({
           tierId: tier.id,
+          // Keep setup connections out of the concurrent checkout requests.
+          eventId: tier.eventId,
           quantity: 1,
           email,
           phone: `098${String(10000000 + i)}`,
