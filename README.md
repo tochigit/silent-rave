@@ -1,8 +1,9 @@
 # Silent Rave
 
 Next.js and Prisma/PostgreSQL campus event ticketing with manual bank-transfer
-review. The imported Phase 3b backend is being verified; the customer site,
-full dashboards, offline scanner, email worker and production integrations are
+review. The imported Phase 3b backend passes local Windows and Windows/Linux
+CI verification; the customer site, full dashboards, offline scanner, email
+worker and production integrations are
 later milestones. See [CHECKPOINT.md](CHECKPOINT.md) for current status.
 
 ## Local verification
