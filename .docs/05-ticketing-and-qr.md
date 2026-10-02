@@ -1,114 +1,90 @@
-# 05. Ticketing, PDF Generation, and QR Scanning
+# 05. Ticketing, PDF Generation, QR Signing, and the Offline Scanner
 
 ## Orders vs. Ticket Units
 
-An **order** is one checkout transaction, one email address, one Paystack reference. A **ticket unit** is one admittable ticket — one QR code, one scan, one person at the door. An order can (and often will) contain multiple ticket units.
+An **order** is one checkout, one buyer email, one `order_code`, one payment approval. A **ticket unit** is one admittable ticket: one QR code, one scan, one person at the door. Example: 3 First Phase tickets in one checkout produce 1 `order`, 1 `order_line_item` (qty 3), and — **only after the owner approves** — 3 `ticket_units`, each with its own signed `qr_token`, and 1 ticket email carrying 3 PDFs (one per ticket, so each can be forwarded on its own).
 
-Example: a customer buys 3 First Phase tickets for themselves and two friends in a single checkout. This produces:
-- 1 `order` row
-- 1 `order_line_item` row (tier: First Phase, quantity: 3)
-- 3 `ticket_unit` rows, each with its own unique `qr_token`
-- 1 email, sent to the checkout email, containing 3 PDF attachments (or one multi-page PDF)
+## Named tickets (optional)
 
-The purchaser can forward individual ticket PDFs to their friends. Each is independently scannable and independently trackable at the door.
+At checkout the buyer may label each ticket ("Me", "Chidi", "Amara"). Stored in `order_line_items.holder_names`, copied to `ticket_units.holder_name` at approval. The scanner shows the name so staff can eyeball-match it to ID: a deterrent, not cryptographic security.
 
-## Named tickets (optional, checkout-time feature)
+## Ticket generation trigger
 
-At checkout, after selecting quantity, the purchaser is optionally shown one input per ticket unit: *"Who is this ticket for?"* (defaulting to blank or "Ticket 1 / Ticket 2 / Ticket 3" placeholders). This is stored as `holder_name` on the `ticket_units` row.
+Tickets, QR tokens and PDFs exist only after `approveOrder` commits (`04-manual-payment.md`). Token minting happens **inside** the approval transaction (it is pure computation, no I/O). PDF generation and email sending happen afterwards in the email worker, never inside a DB transaction, and are regenerable from `ticket_units` + `events` + `ticket_tiers`.
 
-This serves two purposes:
-1. **UX** — the purchaser can tell their tickets apart when forwarding them.
-2. **Door-side fraud deterrent** — when a ticket is scanned, the scanner UI displays the holder name (if set) so staff can eyeball-match it against ID. This doesn't make check-in cryptographically secure (see Abuse Mitigation below) but raises the effort required to misuse a forwarded/shared ticket.
+## PDF ticket contents
 
-This field is optional at checkout — if left blank, the ticket is still valid, it just displays no name at scan time.
+Event name, date/time in Africa/Lagos (sales require a confirmed date, so this is always known), venue name and address, a **Get Directions** link (same `directions_url` as the event page: the ticket is what the buyer has open on the night), tier name, holder name if set, order code, the QR, Silent Rave branding. **One PDF per ticket unit.** Attach the PDFs to the email and also make them downloadable from the buyer's status page (`GET /api/orders/:code/status`), so tickets never depend on email delivery alone. PDFs are generated **on demand** by the download route and cached, so the buyer's page works before the email worker has run and a lost cache is harmless. The cache key includes a hash of everything rendered (event name, start time, venue name, address and place id, tier name, holder name, order code, QR token): storage key `tickets/<ticket_id>/<hash>.pdf`, with `ticket_units.pdf_url` pointing at the current key. If the stored key differs from the expected one the PDF is regenerated, so a changed venue or time is never served from a stale cache. If the event's date is unconfirmed at render time the PDF prints "Date to be announced" rather than failing. Use an embedded font with the glyphs needed (names with diacritics, the naira sign if a price is shown); standard PDF fonts are not enough. The QR is at least 40 mm square with a quiet zone, error correction level Q, black on white. The QR must render clearly at phone-screen size and survive a screenshot, since attendees may be offline at the gate.
 
-## PDF ticket generation
+## QR token — Ed25519 signature (replaces HMAC)
 
-**Trigger:** only after `verifyAndFulfillOrder` confirms payment (see `04-paystack-integration.md`). Never generated at checkout submission time.
+**Why not HMAC:** offline verification with HMAC would put the shared secret on every staff phone; one lost or compromised phone could forge valid tickets. With asymmetric signatures, phones hold only a **public** key: they can verify but never mint.
 
-**Contents of each ticket PDF:**
-- Event name, date, time, venue name and address
-- A "Get Directions" link/button, built from the same `directions_url` used on the event detail page (see the Google Maps integration in `02-database-schema.md`/`03-api-routes.md`) — opens the device's native maps app for turn-by-turn navigation. This is worth including on the ticket itself, not just the event page: the ticket is the artifact a customer actually has open on the night of the event, often already heading out the door, so the directions link is more useful here than almost anywhere else in the flow. No new data or integration required — it's the same field already returned by the venue object, just also rendered into the PDF template.
-- Ticket tier name (e.g. "First Phase")
-- Holder name, if set
-- The QR code (see below)
-- Order reference (for support lookups)
-- Silent Rave branding
-
-**Format decision:** one PDF per ticket unit is the cleaner default (a customer forwarding "Chidi's ticket" sends exactly one self-contained file). A single multi-page PDF (one ticket per page) is the alternative if the client prefers one attachment per email regardless of quantity. **Recommendation: one PDF per ticket unit**, since the whole point of per-ticket QR codes is independent forwarding — bundling them into one PDF undercuts that. Confirm with client if this matters to them; default to one-PDF-per-ticket if not otherwise specified.
-
-**Storage:** generated PDFs are stored in object storage (Supabase Storage / S3) and the URL recorded on `ticket_units.pdf_url`. Attach directly to the outgoing email (don't just link — customers expect PDF tickets in hand, and a link introduces an extra dependency on storage uptime for something that should be self-contained once delivered) or attach both, at implementer's discretion. Regeneration should be possible from `ticket_units` + `events` + `ticket_tiers` data alone, so the PDF itself is a derived artifact, not a source of truth — never stored data that can't be reconstructed.
-
-## QR code payload — signing, not raw IDs
-
-**Do not encode the raw `ticket_id` alone.** A raw sequential-feeling ID is enumerable/guessable, and even a random UUID alone can be screenshotted, shared, and re-verified without cryptographic proof it came from us.
-
-**Payload structure:**
+**Token format:**
 ```
-qr_token = base64url(ticket_id) + "." + HMAC-SHA256(ticket_id, TICKET_SIGNING_SECRET)
+qr_token = "1." + kid + "." + base64url(ticket_id_16B || event_id_16B) + "." + base64url(Ed25519_sign(private_key, "SR1" || ticket_id_16B || event_id_16B))
 ```
-This value is generated once, at ticket-unit creation time (i.e., at payment confirmation), and stored verbatim in `ticket_units.qr_token`. The QR code image simply encodes this string.
+- `1` = format version; `kid` = short key identifier (supports rotation: several public keys may be valid at once).
+- `event_id` is inside the signed payload so a device can reject a ticket for another event **even when it is not in the manifest**.
+- ~135 characters, comfortable for a QR at medium error correction. Do not add more fields.
+- Domain-separation prefix `SR1` is part of the signed message.
 
-**Verification on scan** (before touching the database):
-```
-1. Split the scanned string on "."
-2. Recompute HMAC-SHA256(decoded_ticket_id, TICKET_SIGNING_SECRET)
-3. Compare to the signature portion (constant-time comparison, not ==)
-4. Mismatch → reject immediately as "❌ Invalid ticket" — no DB query needed
-5. Match → proceed to look up ticket_id in the database
-```
-This ordering matters: rejecting invalid signatures **before** hitting the database means a flood of garbage/tampered QR attempts (e.g. someone trying to brute-force or fuzz ticket IDs) never touches the DB at all.
+**Keys:** `TICKET_SIGNING_PRIVATE_KEY` (server-only) and `TICKET_SIGNING_KID` in env; a keygen script is provided; public keys are served in the manifest and embedded in the scanner. Rotation = add a new kid, keep old public keys valid until old tickets are irrelevant. Server code uses Node's built-in Ed25519. **The scanner uses a small audited pure-JS library** (e.g. `@noble/ed25519`) instead of relying on WebCrypto Ed25519, which is not uniformly supported on older phones.
 
-**Environment:** `TICKET_SIGNING_SECRET` — server-side only, never exposed to any client, rotatable only with a plan to re-issue all outstanding tickets (so in practice, treat it as effectively permanent for the life of the deployment, same operational caution as any long-lived signing key).
+**Verification order (server and device identical):** parse → check version and `kid` known → verify signature (constant-time inside the library) → check `event_id` → only then any lookup. Invalid signatures never touch the database.
 
-## Scanner flow (staff-facing)
-
-**Implementation:** a web page on the staff subdomain, no native app. Uses `getUserMedia` for camera access and a JS QR-decoding library (`jsQR` or a `zxing` wrapper) running client-side to decode the QR into the raw token string, which is then sent to the backend for verification — the camera/decode step is purely client-side convenience, all trust decisions happen server-side.
+## Scanner: online path
 
 ```
-Staff opens scanner page → camera permission → live camera feed
-        ↓
-QR decoded client-side → token string extracted
-        ↓
-POST /api/staff/check-in { token }
-        ↓
-Backend: verify HMAC signature (see above)
-        ↓
-   Invalid signature → 200 { result: "invalid" } → UI shows ❌ "Invalid ticket"
-        ↓
-   Valid signature → look up ticket_unit by ticket_id
-        ↓
-   Not found / wrong event for tonight's context → ❌ "Invalid ticket"
-        ↓
-   Found, check_in_status = NOT_CHECKED_IN
-        → UPDATE: check_in_status = CHECKED_IN, checked_in_at = now(), checked_in_by = :staff_user_id
-        → write audit_log_entries row (action: TICKET_CHECKED_IN)
-        → 200 { result: "valid", tier_name, holder_name, event_name }
-        → UI shows ✅ green, ticket type, holder name (for ID matching)
-        ↓
-   Found, check_in_status = CHECKED_IN already
-        → do NOT change state (no-op on the second scan)
-        → write audit_log_entries row (action: DUPLICATE_SCAN_ATTEMPT) — this is a signal for abuse pattern review
-        → 200 { result: "duplicate", checked_in_at, checked_in_by_name }
-        → UI shows ⚠️ amber, "Already scanned at [time] by [staff name]"
+Scanner PWA (staff.silentrave.ng) selects tonight's event once at startup
+   ↓ camera (getUserMedia) + client-side QR decode (jsQR/zxing) → token
+POST /api/staff/check-in { token, event_id, device_id, client_scan_id }
+   ↓ verify signature → wrong event? → { result: "wrong_event" }
+   ↓ lookup ticket_unit by id; voided or order REFUNDED or event CANCELLED → { result: "void" }
+   ↓ atomic: UPDATE ticket_units SET check_in_status='CHECKED_IN', checked_in_at=now(), checked_in_by=:staff
+             WHERE id=:id AND check_in_status='NOT_CHECKED_IN' AND voided_at IS NULL
+        1 row  → valid   ✅ show tier + holder name
+        0 rows → duplicate ⚠️ "already scanned at [time] by [staff]"
+   every attempt → check_in_scans row
 ```
+All results return HTTP 200 with a `result` field. The transition is a single conditional UPDATE so two phones scanning the same ticket simultaneously cannot both get "valid".
 
-**Every branch returns HTTP 200** — the scan attempt itself always succeeded as a request; `result` in the body distinguishes valid/duplicate/invalid so the UI can render the right state without treating any of these as a server error.
+## Scanner: offline mode (required for v1)
 
-## Check-in abuse: what this design does and does not solve
+Campus network is unreliable. The scanner must keep working with no signal and stay accurate.
 
-This is fundamentally a **physical verification problem** — software can reduce and detect misuse, not eliminate it, because the actual security boundary is "does the person standing at the door match the ticket." No amount of backend logic replaces a human glancing at a face and a screen.
+**Prepare (online, before the event):** staff open the scanner while connected and tap **Prepare for event**. The PWA (service worker) caches itself so it loads offline, and downloads the manifest (`GET /api/staff/events/:id/manifest`) into IndexedDB: ticket id, tier, holder name, status, void flag, plus the public keys and `server_time`. The UI always shows manifest age, last successful sync, and pending-unsynced-scan count, and warns loudly if the device was never prepared. The device records `clock_offset_ms = server_time - device_time` at each sync.
 
-**What this design solves:**
-- **Ticket forgery/tampering** — the HMAC signature makes it computationally infeasible to fabricate a valid-looking QR code without the signing secret. Screenshots of *real* tickets are still cryptographically valid (that's unavoidable — they're photos of a real, signed credential), but fabricated ones are rejected instantly.
-- **Duplicate/reuse of one ticket** — one-time-use enforcement (state transition is one-directional) means the second attempt to use a screenshotted or forwarded-then-also-kept ticket is flagged, not silently accepted.
-- **Unauthorized scanner access** — invite-only staff accounts, role-gated at the API level (a customer or the public cannot reach the check-in endpoint's authenticated context at all without valid staff credentials).
-- **Accountability for scan decisions** — `checked_in_by` on every ticket and a full audit log of every scan (valid, duplicate, and invalid attempts) means the admin can review patterns after the fact: a staff account with an unusual volume of duplicate-overrides, scans happening outside event hours, etc.
+**Offline scan:**
+```
+decode token → verify Ed25519 signature locally → event matches?
+   invalid            → ❌ invalid
+   wrong event        → ❌ wrong event
+   in manifest, void  → ❌ void
+   in manifest, not checked in locally → mark CHECKED_IN in IndexedDB, append to outbox → ✅ valid (shown with an "offline" badge)
+   in manifest, already checked in (manifest or local) → ⚠️ duplicate, with time and who
+   signature valid but NOT in manifest (approved after the last sync) → 🟠 "Valid signature, not on your list" — staff may admit; scan is flagged for review at sync
+```
+Each outbox entry has a device-generated `client_scan_id`, the token, and `scanned_at` (device time). Camera and QR decoding run entirely on the device.
 
-**What this design does not solve, and should not be oversold to the client as solving:**
-- A staff member scanning their own screenshotted ticket, or letting a friend in on someone else's already-used-but-not-yet-scanned ticket before the real holder arrives, is a **process/trust problem**, not a software one. The audit log makes this *detectable after the fact* (attributed to a specific staff account, timestamped), not *prevented in the moment*.
-- Mitigation beyond software: physical spot-checks (holder name ↔ ID matching, which the scanner UI supports by surfacing the name), management review of the audit log after events, and treating repeated duplicate-scan-attempt patterns tied to one staff account as a real signal worth investigating.
+**Sync:** whenever any connectivity appears (and on a manual **Sync now**), the outbox is POSTed to `/api/staff/check-in/batch`, idempotent per `client_scan_id`. The server applies scans in `scanned_at` order (adjusted by `clock_offset_ms`): the earliest scan for a ticket becomes the effective check-in; later scans of the same ticket by other devices are recorded as `CONFLICT`. The response returns a manifest delta (`since=<sync_seq>`) so the device learns about other gates' check-ins and new approvals. Sync failures retry with backoff and never drop outbox entries. The manifest delta uses an overlap window (`SYNC_OVERLAP`, see `03`) because `sync_seq` values are not commit-ordered; the device merges by ticket id and never lets a stale row un-check-in a ticket. An admitted-but-unlisted scan carries `flags.not_in_manifest` into `check_in_scans` and is resolved by the server normally (`VALID` or `CONFLICT`), with the flag kept for review.
 
-## Offline mode (stretch goal, not v1)
+**What "accurate" means, honestly:**
+- **One device offline:** fully accurate.
+- **Multiple gates offline at the same moment:** two phones can each admit the same ticket before either syncs. This is **detected after the fact and flagged, not prevented**. Mitigations: sync whenever a signal appears, one primary scanner per gate, a shared phone hotspot when possible, and admin review of `CONFLICT` scans. Do not present this to the client as prevented.
+- A ticket refunded or voided after the last sync will still scan valid on an unsynced device; the sync flags it.
 
-Venue wifi at Nigerian event spaces can be unreliable. If prioritized post-v1: the scanner page could cache a signed snapshot of that night's valid ticket tokens locally (service worker + IndexedDB), validate signatures offline, queue check-in state changes locally, and sync to the server on reconnect — with last-write-wins conflict resolution favoring "checked in" over "not checked in" to keep the one-time-use guarantee even across a sync gap. Not required for v1; flagging the shape of the solution so it isn't a surprise redesign later if requested.
+**Device data hygiene:** the manifest holds holder names and ticket ids only (no email, phone, or payment data). It is cleared on logout and when the event ends. **Offline session grace:** a scanner logged in and prepared while online keeps working offline for the event day even if the sliding session cannot refresh; it re-authenticates at the next sync, and a deactivated staff account is cut off at that point (and by the server on every online request).
+
+## Abuse mitigation: what this does and does not solve
+
+Fundamentally a **physical verification problem**: software reduces and detects misuse, it cannot replace a person matching the ticket to the bearer.
+
+**Solved or reduced:**
+- **Forgery:** without the private key, valid-looking tickets cannot be fabricated; phones hold only public keys, so a stolen scanner cannot mint tickets.
+- **Reuse of one ticket:** one-way check-in state; the online path is atomic; offline conflicts are detected at sync.
+- **Unauthorised scanning:** invite-only accounts, role checks on every request (`06`).
+- **Accountability:** every scan (valid, duplicate, invalid, wrong-event, void, conflict) is in `check_in_scans` with staff, device, and time.
+- **Fake payments** (not scanning, but the upstream weak point): see `04-manual-payment.md`; approval is the control.
+
+**Not solved:** a staff member admitting friends, or scanning a screenshotted ticket before the real holder arrives, is a process/trust problem. The ledger makes it detectable afterwards and attributable, not preventable in the moment. Repeated duplicate/conflict patterns on one account are worth investigating; holder-name-to-ID checks and post-event review remain the real controls.

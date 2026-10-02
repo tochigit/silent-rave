@@ -1,0 +1,7 @@
+Phase 3b: all test files; real HTTP, PostgreSQL, and sharp; no email provider.
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+error: Cannot find package 'effect' from 'C:\Users\Tochi\Desktop\Silent Rave\node_modules\@prisma\config\dist\index.js'
+
+Bun v1.3.14 (Windows x64)
+Phase 3b runner failed: Command failed (1): --no-env-file node_modules/prisma/build/index.js generate
+Cleanup complete: owned app and database stopped; temporary fixture removed.

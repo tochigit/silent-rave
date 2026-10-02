@@ -16,7 +16,7 @@ Response:
 {
   "events": [
     {
-      "id": "uuid", "slug": "owerri-all-white-affair", "title": "Owerri – All White Affair",
+      "id": "uuid", "slug": "example-silent-rave", "title": "Example Event – Silent Rave",
       "banner_image_url": "...", "starts_at": "...", "ends_at": "...",
       "venue": { "name": "...", "city": "..." },
       "price_range": { "min_kobo": 420000, "max_kobo": 520000 },
@@ -28,24 +28,24 @@ Response:
 ```
 
 ### `GET /api/events/:slug`
-Full event detail: description, venue (with map embed data — see Google Maps Integration below), organizer, ticket tiers with live availability, calendar export links.
+Full event detail: description, `is_date_confirmed`, venue (with map embed data — see Google Maps Integration below), organizer, ticket tiers with live availability, calendar export links.
 
 Venue object shape returned:
 ```json
 {
-  "name": "Euro Life Arena",
-  "address": "No.9 Spibat Road, close to Belmont Kas Hospital, Owerri, Imo State",
-  "city": "Owerri",
-  "latitude": 5.4840,
-  "longitude": 7.0351,
-  "map_embed_url": "https://www.google.com/maps/embed/v1/place?key=SERVER_SIDE_KEY&q=place_id:ChIJ...",
-  "directions_url": "https://www.google.com/maps/search/?api=1&query=5.4840,7.0351"
+  "name": "Example Venue",
+  "address": "1 Example Road, Example Town, Example State",
+  "city": "Example Town",
+  "latitude": 0.0,
+  "longitude": 0.0,
+  "map_embed_url": "https://www.google.com/maps/embed/v1/place?key=RESTRICTED_EMBED_KEY&q=place_id:ChIJ...",
+  "directions_url": "https://www.google.com/maps/search/?api=1&query=Example%20Venue&query_place_id=ChIJ..."
 }
 ```
-`map_embed_url` is constructed server-side (see below) so the Maps API key is never exposed in a client-fetched payload as a raw queryable credential the way the reference site's markup does.
+`map_embed_url` is constructed server-side so the key is assembled in one place, but be honest about what that buys: an iframe `src` is visible to the browser, so the key **is** visible to a determined user. The real protection is the key itself: it must be restricted to the **Maps Embed API only** and to **HTTP referrers** for the site's hostnames (`02`). `directions_url` prefers `query_place_id` (with `query` as the human-readable label) and falls back to latitude/longitude, then to `google_maps_url`. If no Maps key exists yet, `map_embed_url` is `null` and the UI shows only the directions link.
 
 ### `GET /api/events/next-upcoming`
-Backs the dynamic "Buy Tickets" CTA (`01-context.md`). Returns the single soonest published upcoming event, or a flag indicating a tie (multiple events on the same soonest date) or none exists.
+Backs the dynamic "Buy Tickets" CTA (`01-context.md`). Ordering: (1) published, **date-confirmed** events that have not ended, soonest `starts_at` first; a tie means several events on the same Africa/Lagos calendar date. (2) If there are none, published events with an **unconfirmed** date: exactly one → `single` (its page shows "Date to be announced" and the tiers as "Coming soon"), several → `multiple`. (3) Otherwise `none`. Returns the single soonest such event, a tie flag, or none. This matters at launch: the first event has no confirmed date.
 ```json
 { "result": "single", "event": { "slug": "..." } }
 { "result": "multiple", "events": [{ "slug": "..." }, { "slug": "..." }] }
@@ -53,46 +53,46 @@ Backs the dynamic "Buy Tickets" CTA (`01-context.md`). Returns the single soones
 ```
 
 ### `GET /api/events/:slug/calendar/:format`
-`:format` ∈ `google | ical | outlook365 | outlooklive | ics`. Returns a redirect (for the hosted-provider formats) or a downloadable `.ics` file, generated from the same underlying ICS-generation function per event.
+`:format` ∈ `google | ical | outlook365 | outlooklive | ics`. Returns a redirect (for the hosted-provider formats) or a downloadable `.ics` file, generated from the same underlying ICS-generation function per event. Times are emitted with the correct Africa/Lagos offset (UTC+1), never as local time labelled `Z`. Returns `404`-free empty state ("date to be announced") when `is_date_confirmed = false`; the UI hides calendar options in that case.
 
 ---
 
-## Public — Checkout
+## Public — Checkout (manual bank transfer; see `04-manual-payment.md`)
 
 ### `POST /api/checkout/initialize`
-Begins a checkout. Creates the `orders` row (status `PENDING`) and `order_line_items`, soft-reserves inventory (`02-database-schema.md`), calls Paystack's initialize endpoint (`04-paystack-integration.md`), and returns the Paystack redirect/authorization URL.
+Creates the order (`AWAITING_PAYMENT`) and `order_line_items`, soft-reserves inventory atomically (`02`), and returns what the buyer needs to pay. Prices are never accepted from the client.
 
 Request:
 ```json
 {
   "event_id": "uuid",
-  "customer_name": "...",
-  "customer_email": "...",
-  "customer_phone": "...",
-  "line_items": [
-    { "tier_id": "uuid", "quantity": 3, "holder_names": ["Me", "Chidi", "Amara"] }
-  ]
+  "customer_name": "...", "customer_email": "...", "customer_phone": "...",
+  "line_items": [ { "tier_id": "uuid", "quantity": 3, "holder_names": ["Me", "Chidi", "Amara"] } ]
 }
 ```
-`holder_names` array length must equal `quantity` if provided, or be omitted entirely (all tickets unnamed).
+`holder_names` length must equal `quantity` or be omitted. Validation: event `PUBLISHED`, `is_date_confirmed` and **not ended** (`ends_at > now()`), tier belongs to event, sales window open, `quantity <= MAX_QTY_PER_ORDER`, email/phone format, per-email and per-phone unresolved-order limits (2 each) and rate limits. IP is a rate limit only, not an unresolved-order cap (shared campus NAT), see `04`.
 
 Response:
 ```json
-{ "order_id": "uuid", "paystack_reference": "...", "authorization_url": "https://checkout.paystack.com/..." }
+{
+  "order_code": "SR-4F9K2X", "status_token": "<derived token, see 02 orders.status_token_version>",
+  "amount_kobo": 600000, "hold_expires_at": "...",
+  "payment_account": { "bank_name": "...", "account_number": "...", "account_name": "..." }
+}
 ```
-Errors: insufficient inventory on any line item → `409`, do not partially reserve.
+Errors: `409` insufficient inventory on any line (nothing partially reserved), `429` limits.
 
-### `POST /api/checkout/verify`
-Frontend-triggered verification after Paystack redirects back. See `04-paystack-integration.md` for the full trust model — this endpoint independently re-verifies with Paystack rather than trusting the client.
+### `POST /api/orders/:code/proof` — "I have paid"
+Multipart. Fields: `proof` (image), `transfer_reference`, `sender_name`, `client_submission_id`; requires the order's `status_token` (header or query). Idempotent on `client_submission_id`. Full validation, storage and transition contract in `04-manual-payment.md`. Returns `{ status, attempt_no, late?: true }`. A proof on an `EXPIRED` order with no proof yet is accepted within `LATE_PROOF_GRACE` (`late: true`, order stays `EXPIRED`; see `04` "Late proofs"). Errors: `409` duplicate `transfer_reference` among pending/approved proofs, `410` hold expired and outside the late-proof grace, `422` bad file, `403` resubmissions exhausted. An unknown order code, a wrong token and a missing token are indistinguishable: all return the same `404` body, exactly as on the status route.
 
-Request: `{ "reference": "..." }`
-Response: `{ "status": "PAID" | "PENDING" | "FAILED", "order": { ... } }`
+### `GET /api/orders/:code/status`
+Requires `status_token`. Returns `status`, `proof_attempts`, `max_resubmissions`, latest reject reason/message if `NEEDS_RESUBMIT`/`REJECTED`, `hold_expires_at`, `late_proof_received` when an `EXPIRED` order has a late proof, and — only when `APPROVED` — the ticket list with download links to `GET /api/orders/:code/tickets/:ticketId/pdf` (requires `status_token`; the PDF is generated on demand and cached, so the page works before the email worker has run; Phase 4). An unknown code, wrong token or missing token returns one uniform `404`. No other PII beyond what the buyer entered.
 
-### `POST /api/webhooks/paystack`
-Paystack webhook receiver. HMAC-signature-verified (`04-paystack-integration.md`). Not called by the frontend — registered directly in the Paystack dashboard.
+### `GET /api/orders/:code/tickets/:ticketId/pdf`
+Requires `status_token` (header or query, since it is used as a link). Unknown order, unknown ticket, a ticket belonging to a different order, a wrong token and a missing token all return the same `404`. With a valid token: order not `APPROVED` → `409`; ticket voided or order `REFUNDED` → `410`; otherwise the PDF (`Content-Type: application/pdf`, `Content-Disposition: attachment`, `Cache-Control: private, no-store`). Generation and caching rules: `05`.
 
-### `GET /api/orders/:id/confirmation`
-Public confirmation-page data lookup (order reference + email match, or a signed link) — shows order summary post-payment without requiring login. Exact access-control shape (reference-only vs. reference+email) is an implementation detail to settle during build; either is acceptable since this endpoint exposes no more than what's already emailed to the customer.
+### `POST /api/orders/lookup`
+`{ order_code, email }` → always `202` with the same generic message ("If those details match an order, we have emailed its status link"). When code and email match, enqueue a `STATUS_LINK` email job (fresh dedupe key; the link is derived, so nothing is stored or rotated). **It never returns order data directly.** Strictly rate-limited per IP and per order code; response and timing must not reveal whether the code or the email was wrong.
 
 ---
 
@@ -130,43 +130,64 @@ Standard CRUD, no special notes beyond: deleting a venue/organizer referenced by
 - `PATCH /api/admin/tiers/:id` — update price/capacity/sales window. **Writes `audit_log_entries` (`TIER_PRICE_CHANGED` or `TIER_CAPACITY_CHANGED`)** if price or capacity actually changed.
 - `DELETE /api/admin/tiers/:id` — reject if `sold > 0`
 
-### Orders
-- `GET /api/admin/orders` — filterable by event, status, date range
-- `GET /api/admin/orders/:id` — full detail including all ticket units and their check-in status
-- `POST /api/admin/orders/:id/refund` — marks order `REFUNDED` (manual, v1). **Writes `audit_log_entries` (`ORDER_REFUNDED`)**. Does not automatically call Paystack's refund API in v1 (see `01-context.md` open decisions) — this is a status-only action; actual money movement is handled by the owner directly in the Paystack dashboard for now.
+### Payments and orders (`OWNER` only)
+- `GET /api/admin/payments?status=PROOF_SUBMITTED|NEEDS_RESUBMIT|EXPIRED_HAD_PROOF` (`EXPIRED_HAD_PROOF` = `EXPIRED` with a `PENDING` proof) — review queue, oldest first, with age and urgency near the 48 h cap. Supports pagination and search by code, email, phone, transfer reference.
+- `GET /api/admin/orders/:id` — full detail: buyer info, line items, all proof attempts, flags, ticket units and check-in state. Proof images come as **signed URLs valid 60–120 s**, minted per request for `OWNER` only.
+- `POST /api/admin/orders/:id/approve` — body `{ "confirmed_in_bank": true, "note"?: string }`. Runs `approveOrder` (`04`). Idempotent; returns `CAPACITY_GONE` on a failed revive and `EVENT_CANCELLED` if the event was cancelled.
+- `POST /api/admin/orders/:id/reject` — body `{ reason_code, message, final }`. Runs `rejectOrder`; allowed from `PROOF_SUBMITTED`, `NEEDS_RESUBMIT` (close) and `EXPIRED` with a `PENDING` proof (dismiss, always final).
+- `POST /api/admin/orders/:id/refund` — status-only `REFUNDED`, voids tickets, optional `{ restock: boolean, note?: string, acknowledge_checked_in?: boolean }`. Only from `APPROVED`; idempotent (a second call on a `REFUNDED` order is a no-op and never restocks twice). If any ticket in the order is already checked in, it fails `409 CHECKED_IN_TICKETS` unless `acknowledge_checked_in: true`. Writes `ORDER_REFUNDED` with the `restock` and acknowledgement choices.
+- `POST /api/admin/orders/:id/resend-tickets` — new `TICKETS` email job with a fresh dedupe key; only for `APPROVED` orders (`409` otherwise); rate-limited per order (default 5 per hour); audit-logged as `TICKET_RESENT`. It never accepts a different recipient: the job goes to `orders.customer_email`.
+- `GET /api/admin/email-jobs?status=&order_id=` -- read-only list of email jobs (kind, status, attempts, `last_error`, timestamps; never the status link or any token). `GET /api/admin/orders/:id` also includes that order's email jobs, so the owner can see a bounced or failed ticket email.
+- `POST /api/admin/orders/issue` — admin-issued `CASH` or `COMP` order (door sales, VIP, guest list): creates an `APPROVED` order, mints tickets, no proof required, source and reason audit-logged. (Spec'd now; may be built after the core flow.)
+- `GET /api/admin/orders` — filter by event, status, date, source.
+- `GET /api/admin/reconciliation?event_id=&format=csv` — approved orders with buyer, tier, quantity, amount, transfer reference, approved time and approver, for checking against the bank statement, plus totals.
+
+### Payment accounts (`OWNER` only)
+- `GET /api/admin/payment-accounts`
+- `POST /api/admin/payment-accounts`, `PATCH /api/admin/payment-accounts/:id` (including activate). **Requires password re-entry in the body.** Writes `BANK_ACCOUNT_CHANGED` with before/after.
+
+### Push and realtime (`OWNER` only)
+- `POST /api/admin/push/subscribe`, `DELETE /api/admin/push/subscribe` — register/remove a Web Push subscription (VAPID).
+- `GET /api/admin/push/status` — whether the caller has an active subscription (drives the admin banner).
+- Realtime events are emitted server-side after commit; clients must also poll (`04`).
 
 ### Staff accounts
-- `GET /api/admin/staff` — list, including `is_active` status
-- `POST /api/admin/staff` — create invite-only staff account. **Writes `audit_log_entries` (`STAFF_ACCOUNT_CREATED`)**
-- `PATCH /api/admin/staff/:id` — e.g. deactivate (`is_active: false`). **Writes `audit_log_entries` (`STAFF_ACCOUNT_DEACTIVATED`)** on deactivation
+- `GET /api/admin/staff` — list, including `is_active`
+- `POST /api/admin/staff` — create invite-only account. Writes `STAFF_ACCOUNT_CREATED`
+- `PATCH /api/admin/staff/:id` — e.g. deactivate. Writes `STAFF_ACCOUNT_DEACTIVATED`
 
-### Audit log
-- `GET /api/admin/audit-log` — read-only, filterable by actor/action/date/entity. No write/delete endpoints exist for this resource by design.
+### Audit log and scans
+- `GET /api/admin/audit-log` — read-only, filterable by actor/action/date/entity; unions `audit_log_entries` and `check_in_scans`. No write/delete endpoints exist.
+- `GET /api/admin/events/:id/checkins` — scan ledger and live counts, including `CONFLICT` scans for review.
 
 ---
 
-## Staff (`role: STAFF` or `OWNER`, `staff.silentrave.ng`)
+## Staff (`STAFF` or `OWNER`, `staff.silentrave.ng`)
 
-### `POST /api/staff/check-in`
-The scanner endpoint. Full contract and state-branching logic in `05-ticketing-and-qr.md`.
+The scanner is an offline-capable PWA (see `05-ticketing-and-qr.md`). Every request also enforces the Origin check in `06`.
 
-Request: `{ "token": "<scanned QR payload>" }`
-Response (always `200`, `result` field distinguishes outcome):
-```json
-{ "result": "valid", "tier_name": "First Phase", "holder_name": "Chidi", "event_name": "..." }
-{ "result": "duplicate", "checked_in_at": "...", "checked_in_by_name": "..." }
-{ "result": "invalid" }
-```
+### `GET /api/staff/events`
+Events the scanner can be prepared for (today/upcoming, published, date confirmed).
+
+### `GET /api/staff/events/:id/manifest?since=<sync_seq>`
+Prepares/updates the offline list. Returns `{ event_id, server_time, next_since, public_keys: [{kid, key}], tickets: [{ id, tier_name, holder_name, check_in_status, checked_in_at, voided }] }`. Without `since`: full list. With `since`: rows with `sync_seq > since - SYNC_OVERLAP` (`SYNC_OVERLAP` = 1000) — new approvals, other devices' check-ins, voids. The overlap is deliberate: sequence values are not commit-ordered, so a strict `> since` can skip a late-committing row forever. `next_since` is the highest `sync_seq` returned; the device merges by ticket id, idempotently (a checked-in state is never reverted by a stale row). **Contains no email, phone, or payment data.**
+
+### `POST /api/staff/check-in`  (online, single scan)
+Request: `{ "token": "...", "event_id": "uuid", "device_id": "...", "client_scan_id": "...", "scanned_at"?: "..." }`. Always `200`; `result` ∈ `valid | duplicate | invalid | wrong_event | void`. Signature is verified before any DB access; the check-in transition is one atomic conditional UPDATE. Response fields on `valid`/`duplicate`: tier name, holder name, event name, `checked_in_at`, `checked_in_by_name`.
+
+### `POST /api/staff/check-in/batch`  (offline sync)
+Request: `{ device_id, clock_offset_ms, scans: [{ client_scan_id, token, event_id, scanned_at }] }`. Idempotent per `client_scan_id`. Each scan may carry `not_in_manifest: true` (stored in `check_in_scans.flags`). Server verifies each token, applies scans in `scanned_at` order (earliest wins), records every scan in `check_in_scans`, marks losers `CONFLICT`. Response: per-scan result plus the manifest delta since the device's last `sync_seq`.
 
 ### `GET /api/staff/attendee-list`
-Optional read-only "tonight's attendee list" — event-scoped, shows holder names and check-in status, no pricing/financial fields. (**OPEN**: confirm whether this is wanted for v1 or deferred — it's cheap to build alongside `check-in` since it queries the same `ticket_units` table, but wasn't explicitly requested, only mentioned as a "prolly" maybe.)
+Read-only, event-scoped: holder names and check-in status only. No pricing, no buyer contact data.
 
 ---
 
-## Internal / background jobs (not HTTP-exposed, but part of the system contract)
+## Internal / background jobs
 
-| Job | Frequency | Behavior |
+| Job | Trigger | Behavior |
 |---|---|---|
-| Reservation expiry sweep | Every 1 minute | Marks `PENDING` orders past `reserved_until` as `EXPIRED`, releases reserved inventory. See `02-database-schema.md`. |
-| Email job worker | Continuous/polling | Processes `email_jobs` where `status = QUEUED` and `next_attempt_at <= now()`, sends via Resend, updates status, applies exponential backoff on failure. |
-| Resend webhook receiver | N/A (event-driven) | `POST /api/webhooks/resend` — updates `email_jobs.status` based on delivery events (`delivered`, `bounced`, etc.) from Resend. Not previously listed — needed to fulfill the "admin can see whether the receipt was delivered/bounced" requirement from `01-context.md`. |
+| Hold expiry sweep | Cron-triggered `POST /api/internal/expire-holds` (guarded by `CRON_SECRET`) **and** lazily at the start of `checkout/initialize` | One transaction, `FOR UPDATE SKIP LOCKED`, sets `EXPIRED` + `inventory_released`, decrements `reserved`. Idempotent. See `02`. |
+| Email job worker | Polling/cron | Processes `email_jobs` (`QUEUED`, `next_attempt_at <= now()`), generates PDFs for `TICKETS` jobs, sends via Resend, backoff and status updates as in `04` "Email worker". Invoked by `POST /api/internal/process-email-jobs` (guarded by `CRON_SECRET`, like the sweep) and, best effort, right after the commit that queued a job. Never inside a DB transaction. |
+| Resend webhook receiver | Event-driven | `POST /api/webhooks/resend` — signature verified over the raw body with a replay window (Resend signs with the Svix scheme; verify against Resend's current docs); updates `email_jobs.status` on `delivered`/`bounced` monotonically (`04` "Email worker"). |
+| Push dispatcher | After commit of proof submit/resubmit | Sends Web Push to active `OWNER` subscriptions; deactivates dead endpoints. |

@@ -1,0 +1,553 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Silent Rave — Prisma schema
+//
+// Source of truth: 02-database-schema.md (spec v2.1 — manual bank transfer).
+// Do not deviate from that document without updating it first.
+//
+// Conventions (per spec):
+//   • id columns: UUID, DB-generated via gen_random_uuid()
+//   • timestamps: timestamptz
+//   • money: kobo (integer, smallest NGN unit) — NEVER decimal/float.
+//     All monetary integer columns are suffixed _kobo.
+//   • table/column names: snake_case at the DB level (mapped from Prisma's
+//     camelCase via @map/@@map) so hand-written SQL from the spec — the
+//     reservation/expiry sweep queries — runs against these exact names.
+//
+// DB-level objects Prisma's DSL cannot express — applied as appended SQL in
+// prisma/migrations/20260930000000_v2_1_baseline/migration.sql:
+//   • ticket_tiers:  CHECK (price_kobo >= 0), CHECK (capacity >= 0),
+//                    CHECK (sold + reserved <= capacity),
+//                    CHECK (reserved >= 0 AND sold >= 0)
+//   • orders:        CHECK (source <> 'ONLINE' OR customer_phone IS NOT NULL),
+//                    CHECK (source <> 'ONLINE' OR payment_account_id IS NOT NULL),
+//                    CHECK (source <> 'ONLINE' OR hold_expires_at IS NOT NULL)
+//   • payment_accounts: partial unique index → at most one active row
+//   • payment_proofs:  partial unique index on transfer_reference
+//                      WHERE status IN ('PENDING','APPROVED')
+//   • ticket_units:  global sequence + BEFORE INSERT OR UPDATE trigger that
+//                    assigns sync_seq (minting, check-in and voiding all bump
+//                    it — no code path can forget it; see 02/05)
+//
+// NOT in spec 02 but required by our auth infrastructure (Task 2, 06):
+//   • sessions — DB-backed opaque-token sessions (only the SHA-256 hash of the
+//     cookie token is stored). Spec'd as an implementation detail of 06.
+//
+// Migration history note: the Paystack-era migrations (v1/v2 baseline +
+// amendments) were REBASED away in the v2.1 pivot — nothing was ever deployed,
+// and the OrderStatus enum cannot drop values in-place. This baseline is the
+// single fresh starting point; existing dev data was dropped (permitted).
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Pooler-readiness split (Prisma ≥5.2 convention, Task 0b):
+  //   url       → what the RUNTIME client connects through. On Supabase this is
+  //               the TRANSACTION pooler URL with ?pgbouncer=true (and a small
+  //               connection_limit) so serverless/many short-lived clients
+  //               don't exhaust direct-connection slots.
+  //   directUrl → what the MIGRATION CLI (prisma migrate) connects through —
+  //               the DIRECT (or session-pooler) connection. migrate deploy
+  //               must NOT go through transaction-mode pgbouncer: DDL and
+  //               advisory locks (prisma's shadow/migration bookkeeping) are
+  //               not safe there.
+  // Local dev keeps working with a single Postgres instance: both vars point
+  // at the same embedded server (DIRECT_URL is only required by the CLI, the
+  // app runtime never reads it).
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+/// events.status
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+/// orders.status — state machine (04-manual-payment.md is authoritative):
+///   AWAITING_PAYMENT → PROOF_SUBMITTED | EXPIRED
+///   PROOF_SUBMITTED  → APPROVED | NEEDS_RESUBMIT | REJECTED | EXPIRED (48h cap)
+///   NEEDS_RESUBMIT   → PROOF_SUBMITTED | REJECTED | EXPIRED (48h cap)
+///   EXPIRED          → APPROVED (revive & approve, needs PENDING proof + capacity)
+///                     | REJECTED (dismiss, always final) | EXPIRED (late proof)
+///   APPROVED         → REFUNDED (manual, voids tickets)
+///   REJECTED / REFUNDED are terminal.
+enum OrderStatus {
+  AWAITING_PAYMENT
+  PROOF_SUBMITTED
+  NEEDS_RESUBMIT
+  APPROVED
+  REJECTED
+  EXPIRED
+  REFUNDED
+}
+
+/// orders.source — ONLINE (buyer checkout) vs admin-issued door/comp orders.
+/// The orders CHECKs keep customer_phone / payment_account_id /
+/// hold_expires_at REQUIRED for ONLINE orders and optional otherwise.
+enum OrderSource {
+  ONLINE
+  CASH
+  COMP
+}
+
+/// payment_proofs.status
+enum ProofStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// ticket_units.check_in_status — NOT_CHECKED_IN → CHECKED_IN is one-way.
+enum TicketCheckInStatus {
+  NOT_CHECKED_IN
+  CHECKED_IN
+}
+
+/// staff_users.role — one table, two roles (owner + door staff).
+enum StaffRole {
+  OWNER
+  STAFF
+}
+
+/// email_jobs.status — DB-backed email queue lifecycle.
+enum EmailJobStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  BOUNCED
+  FAILED
+}
+
+/// email_jobs.kind (02 v2.1). Dedupe contract lives on
+/// UNIQUE (order_id, kind, dedupe_key):
+///   PROOF_RECEIVED / first TICKETS → 'initial'
+///   REJECTED                       → 'attempt-<n>' (fresh key for close/dismiss)
+///   STATUS_LINK + admin resends    → fresh key each time
+enum EmailJobKind {
+  PROOF_RECEIVED
+  TICKETS
+  REJECTED
+  STATUS_LINK
+}
+
+/// check_in_scans.result — every scan attempt, valid or not (append-only ledger).
+enum ScanResult {
+  VALID
+  DUPLICATE
+  INVALID
+  WRONG_EVENT
+  VOID
+  CONFLICT
+}
+
+// ── Models ───────────────────────────────────────────────────────────────────
+
+model Organizer {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  description  String?
+  contactEmail String?   @map("contact_email")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  events       Event[]
+
+  @@map("organizers")
+}
+
+model Venue {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  address       String
+  city          String
+  state         String?
+  country       String    @default("Nigeria")
+  latitude      Decimal?  @db.Decimal(10, 7)
+  longitude     Decimal?  @db.Decimal(10, 7)
+  googlePlaceId String?   @map("google_place_id") // preferred over raw lat/lng (Maps Embed API)
+  googleMapsUrl String?   @map("google_maps_url") // fallback plain link
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  events        Event[]
+
+  @@map("venues")
+}
+
+model Event {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug            String      @unique // used in /event/{slug}
+  title           String
+  description     String // rich text/markdown body
+  bannerImageUrl  String?     @map("banner_image_url") // nullable at DB level (draft save); admin UI requires it before publish
+  organizerId     String      @map("organizer_id") @db.Uuid
+  venueId         String      @map("venue_id") @db.Uuid
+  startsAt        DateTime    @map("starts_at") @db.Timestamptz(3)
+  endsAt          DateTime    @map("ends_at") @db.Timestamptz(3)
+  // v2.1: when false the site shows "Date to be announced", hides calendar
+  // options, and ticket sales stay closed until the owner confirms.
+  isDateConfirmed Boolean     @default(false) @map("is_date_confirmed")
+  status          EventStatus @default(DRAFT)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  organizer    Organizer       @relation(fields: [organizerId], references: [id])
+  venue        Venue           @relation(fields: [venueId], references: [id])
+  ticketTiers  TicketTier[]
+  orders       Order[]
+  ticketUnits  TicketUnit[]
+  checkInScans CheckInScan[]
+
+  // Hot query path: "next upcoming published event" + events list views.
+  @@index([status, startsAt])
+  @@map("events")
+}
+
+model TicketTier {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId      String    @map("event_id") @db.Uuid
+  name         String // e.g. "Early Bird", "First Phase"
+  priceKobo    Int       @map("price_kobo") // CHECK (price_kobo >= 0) — applied in SQL
+  capacity     Int // CHECK (capacity >= 0) — applied in SQL
+  sold         Int       @default(0)
+  reserved     Int       @default(0) // soft-held by in-progress checkouts
+  sortOrder    Int       @default(0) @map("sort_order")
+  salesStartAt DateTime? @map("sales_start_at") @db.Timestamptz(3)
+  salesEndAt   DateTime? @map("sales_end_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  event          Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticketUnits    TicketUnit[]
+  orderLineItems OrderLineItem[]
+
+  // CHECK (sold + reserved <= capacity) and CHECK (reserved >= 0 AND sold >= 0)
+  // — DB-level backstops, applied in SQL (Prisma DSL cannot express CHECKs).
+  //
+  // Availability formula: available = capacity - sold - reserved.
+  // "Sold Out" in the UI = available <= 0.
+  @@map("ticket_tiers")
+}
+
+model Order {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // Human-facing reference (e.g. SR-4F9K2X) — random from an unambiguous
+  // alphabet (no 0/O/1/I), non-sequential; the buyer writes it in the
+  // transfer narration.
+  orderCode         String       @unique @map("order_code")
+  // The buyer's status-link token is DERIVED, never stored:
+  //   base64url(HMAC-SHA256(STATUS_TOKEN_SECRET, order_id ":" status_token_version))
+  // Bumping the version invalidates old links (02 v2.1).
+  statusTokenVersion Int         @default(1) @map("status_token_version")
+  eventId           String       @map("event_id") @db.Uuid
+  customerName      String       @map("customer_name")
+  customerEmail     String       @map("customer_email")
+  // nullable at DB level; CHECK keeps it required for ONLINE orders (SQL)
+  customerPhone     String?      @map("customer_phone")
+  // computed server-side from price_kobo, never from the client
+  totalKobo         Int          @map("total_kobo")
+  status            OrderStatus  @default(AWAITING_PAYMENT)
+  source            OrderSource  @default(ONLINE)
+  // the account the buyer was told to pay (snapshotted at creation);
+  // nullable only for admin-issued orders (CHECK in SQL)
+  paymentAccountId  String?      @map("payment_account_id") @db.Uuid
+  // hold policy (04): created_at + 15min while AWAITING_PAYMENT;
+  // first_proof_at + 48h after the first proof; never extended. Nullable
+  // only for admin-issued orders (CHECK in SQL).
+  holdExpiresAt     DateTime?    @map("hold_expires_at") @db.Timestamptz(3)
+  firstProofAt      DateTime?    @map("first_proof_at") @db.Timestamptz(3)
+  // TOTAL proof submissions made (first = 1); max = 1 + MAX_RESUBMISSIONS = 4
+  proofAttempts     Int          @default(0) @map("proof_attempts")
+  // true once reserved inventory has been returned to the tier; makes the
+  // sweep and reject paths idempotent
+  inventoryReleased Boolean      @default(false) @map("inventory_released")
+  approvedAt        DateTime?    @map("approved_at") @db.Timestamptz(3)
+  approvedBy        String?      @map("approved_by") @db.Uuid
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  event           Event           @relation(fields: [eventId], references: [id])
+  paymentAccount  PaymentAccount? @relation(fields: [paymentAccountId], references: [id])
+  approvedByStaff StaffUser?      @relation("OrderApprovedBy", fields: [approvedBy], references: [id])
+  lineItems       OrderLineItem[]
+  proofs          PaymentProof[]
+  ticketUnits     TicketUnit[]
+  emailJobs       EmailJob[]
+
+  // (status, hold_expires_at) for the sweep; (status, first_proof_at) for the
+  // admin queue; customer_email / customer_phone for the abuse limits.
+  @@index([status, holdExpiresAt])
+  @@index([status, firstProofAt])
+  @@index([customerEmail])
+  @@index([customerPhone])
+  @@map("orders")
+}
+
+/// Option A (final decision) — captures cart contents at checkout time.
+/// ticket_units rows (with QR tokens) are minted from these line items only
+/// inside approveOrder, never at checkout.
+model OrderLineItem {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId        String  @map("order_id") @db.Uuid
+  tierId         String  @map("tier_id") @db.Uuid
+  quantity       Int
+  // price snapshot at checkout (02 v2.1)
+  unitPriceKobo  Int     @map("unit_price_kobo")
+  holderNames    Json?   @map("holder_names") // array, length == quantity when provided
+
+  order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tier           TicketTier  @relation(fields: [tierId], references: [id])
+
+  @@index([orderId])
+  @@index([tierId])
+  @@map("order_line_items")
+}
+
+/// Bank details shown to buyers (04: never hardcoded in the front end).
+/// Exactly one active row is enforced by a partial unique index (SQL).
+/// Changing/activating is OWNER-only + password re-entry + BANK_ACCOUNT_CHANGED
+/// audit with before/after (a swapped account number is the classic scam).
+model PaymentAccount {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bankName      String    @map("bank_name")
+  accountNumber String    @map("account_number")
+  accountName   String    @map("account_name")
+  isActive      Boolean   @default(false) @map("is_active")
+  createdBy     String?   @map("created_by") @db.Uuid
+  updatedBy     String?   @map("updated_by") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  createdByStaff StaffUser?  @relation("PaymentAccountCreatedBy", fields: [createdBy], references: [id])
+  updatedByStaff StaffUser?  @relation("PaymentAccountUpdatedBy", fields: [updatedBy], references: [id])
+  orders         Order[]
+
+  @@map("payment_accounts")
+}
+
+/// One uploaded transfer receipt per attempt ("I have paid" — 04).
+/// The image is EVIDENCE for the owner to check against the bank app,
+/// never proof of payment by itself.
+model PaymentProof {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId            String       @map("order_id") @db.Uuid
+  attemptNo          Int          @map("attempt_no") // 1 for the first submission
+  // idempotency key; unique with order_id (a flaky-network retry never
+  // creates a second attempt)
+  clientSubmissionId String       @map("client_submission_id")
+  // private bucket path, never a public URL
+  storagePath        String       @map("storage_path")
+  // SHA-256 of the ORIGINAL upload (duplicate-image flagging)
+  fileSha256         String       @map("file_sha256")
+  // detected from bytes (magic bytes), not the client MIME
+  mimeType           String       @map("mime_type")
+  sizeBytes          Int          @map("size_bytes")
+  // normalised (trim, uppercase, no spaces); partial unique index among
+  // PENDING/APPROVED proofs (SQL)
+  transferReference  String       @map("transfer_reference")
+  senderName         String       @map("sender_name")
+  status             ProofStatus  @default(PENDING)
+  // UNREADABLE | AMOUNT_MISMATCH | NOT_RECEIVED | DUPLICATE_REFERENCE |
+  // CAPACITY_GONE | OTHER
+  rejectReasonCode   String?      @map("reject_reason_code")
+  rejectMessage      String?      @map("reject_message") // shown to the buyer
+  rejectFinal        Boolean?     @map("reject_final")
+  // e.g. { duplicate_image_of: <proof id> }, { late: true }
+  flags              Json         @default("{}") @map("flags")
+  reviewedBy         String?      @map("reviewed_by") @db.Uuid
+  reviewedAt         DateTime?    @map("reviewed_at") @db.Timestamptz(3)
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  order          Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewedByStaff StaffUser?  @relation("ProofReviewedBy", fields: [reviewedBy], references: [id])
+
+  @@unique([orderId, clientSubmissionId])
+  @@index([fileSha256])
+  @@index([orderId])
+  @@map("payment_proofs")
+}
+
+/// The entity that gets scanned at the door — one row per admittable ticket,
+/// minted ONLY inside approveOrder.
+model TicketUnit {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId        String              @map("order_id") @db.Uuid
+  // denormalised for scan/manifest speed (02 v2.1)
+  eventId        String              @map("event_id") @db.Uuid
+  tierId         String              @map("tier_id") @db.Uuid
+  holderName     String?             @map("holder_name") // optional per-ticket name from checkout
+  // Ed25519-signed token (05): "1." + kid + "." + b64url(ticket_id||event_id)
+  //                            + "." + b64url(sig("SR1"||ticket_id||event_id))
+  qrToken        String              @unique @map("qr_token")
+  checkInStatus  TicketCheckInStatus @default(NOT_CHECKED_IN) @map("check_in_status")
+  // the EFFECTIVE check-in time (earliest valid scan)
+  checkedInAt    DateTime?           @map("checked_in_at") @db.Timestamptz(3)
+  checkedInBy    String?             @map("checked_in_by") @db.Uuid
+  // set on refund; voided tickets never validate
+  voidedAt       DateTime?           @map("voided_at") @db.Timestamptz(3)
+  // assigned by a BEFORE INSERT OR UPDATE trigger from a global sequence
+  // (SQL) — minting, check-in and voiding all bump it; drives delta sync.
+  // NEVER written by application code; always inserted via raw SQL.
+  syncSeq        BigInt              @map("sync_seq")
+  pdfUrl         String?             @map("pdf_url") // storage path, derived artifact (Phase 4)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  order          Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  event          Event       @relation(fields: [eventId], references: [id])
+  tier           TicketTier  @relation(fields: [tierId], references: [id])
+  checkedInByStaff StaffUser? @relation("TicketUnitCheckIns", fields: [checkedInBy], references: [id])
+  checkInScans   CheckInScan[]
+
+  // qr_token's unique index is created by @unique; (event_id, sync_seq)
+  // serves the scanner manifest delta (05).
+  @@index([orderId])
+  @@index([eventId, syncSeq])
+  @@map("ticket_units")
+}
+
+/// Append-only scan ledger — every scan attempt, online or offline-synced,
+/// valid or not. No update/delete API exists (02).
+model CheckInScan {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // generated on the device; makes batch sync idempotent
+  clientScanId String     @unique @map("client_scan_id")
+  eventId      String?    @map("event_id") @db.Uuid
+  // null when the token was invalid (signature failures never touch the DB)
+  ticketId     String?    @map("ticket_id") @db.Uuid
+  staffUserId  String     @map("staff_user_id") @db.Uuid
+  deviceId     String     @map("device_id")
+  // device time, corrected by the device's last measured clock offset
+  scannedAt    DateTime   @map("scanned_at") @db.Timestamptz(3)
+  receivedAt   DateTime   @default(now()) @map("received_at") @db.Timestamptz(3)
+  offline      Boolean
+  result       ScanResult
+  // e.g. { not_in_manifest: true } — stays for admin review after the server
+  // resolves the result
+  flags        Json       @default("{}") @map("flags")
+
+  event   Event?      @relation(fields: [eventId], references: [id])
+  ticket  TicketUnit? @relation(fields: [ticketId], references: [id])
+  staff   StaffUser   @relation(fields: [staffUserId], references: [id])
+
+  @@index([eventId])
+  @@index([ticketId])
+  @@map("check_in_scans")
+}
+
+/// Covers both OWNER and STAFF roles — same table, different role value,
+/// both authenticating against the same backend. Invite-only; no public signup.
+model StaffUser {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash") // bcrypt or argon2 — never plaintext, never logged
+  role         StaffRole
+  invitedBy    String?   @map("invited_by") @db.Uuid // null for the first owner account
+  isActive     Boolean   @default(true) @map("is_active") // deactivate instead of delete, preserves audit trail
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
+
+  invitedByStaff         StaffUser?         @relation("StaffInvitedBy", fields: [invitedBy], references: [id])
+  invitedStaff           StaffUser[]        @relation("StaffInvitedBy")
+  checkedInTickets       TicketUnit[]       @relation("TicketUnitCheckIns")
+  auditLogEntries        AuditLogEntry[]
+  sessions               Session[]
+  approvedOrders         Order[]            @relation("OrderApprovedBy")
+  reviewedProofs         PaymentProof[]     @relation("ProofReviewedBy")
+  createdPaymentAccounts PaymentAccount[]   @relation("PaymentAccountCreatedBy")
+  updatedPaymentAccounts PaymentAccount[]   @relation("PaymentAccountUpdatedBy")
+  pushSubscriptions      PushSubscription[]
+  checkInScans           CheckInScan[]
+
+  @@map("staff_users")
+}
+
+/// Web Push (VAPID) subscriptions — OWNER devices only (04). Table exists in
+/// v2.1; push SENDING is not implemented in this phase (job rows only).
+model PushSubscription {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  staffUserId    String    @map("staff_user_id") @db.Uuid
+  endpoint       String    @unique
+  p256dh         String
+  auth           String
+  userAgent      String?   @map("user_agent")
+  isActive       Boolean   @default(true) @map("is_active")
+  lastSuccessAt  DateTime? @map("last_success_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  staff          StaffUser @relation(fields: [staffUserId], references: [id])
+
+  @@index([staffUserId])
+  @@map("push_subscriptions")
+}
+
+/// Server-side sessions for StaffUser authentication (OWNER + STAFF).
+/// Infrastructure for 06 — not listed in spec 02. Opaque random token in an
+/// httpOnly cookie; only its SHA-256 hash is stored here. Short-lived (12h).
+model Session {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user      StaffUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Append-only audit trail. Every financially significant admin action writes
+/// a row. actor_id / entity_type / entity_id are NULLABLE — system events
+/// (e.g. PROOF_DUPLICATE_REFERENCE_ATTEMPT) have no human actor. No update or
+/// delete path exists for this table — by design, including for OWNER.
+model AuditLogEntry {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId    String?  @map("actor_id") @db.Uuid
+  action     String // ORDER_APPROVED, ORDER_REJECTED, ORDER_REVIVED, BANK_ACCOUNT_CHANGED, PROOF_DUPLICATE_REFERENCE_ATTEMPT, …
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id") @db.Uuid
+  metadata   Json? // before/after values, free-form context
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  actor      StaffUser? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@map("audit_log_entries")
+}
+
+/// DB-backed email queue (replaces Redis at this scale). Rows are enqueued by
+/// the payment flow; SENDING (Resend worker) is a later phase — job rows only.
+/// UNIQUE (order_id, kind, dedupe_key) is the enqueue-dedupe backstop.
+model EmailJob {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId         String        @map("order_id") @db.Uuid
+  kind            EmailJobKind
+  // 'initial' for PROOF_RECEIVED + first TICKETS; 'attempt-<n>' for REJECTED;
+  // fresh keys for STATUS_LINK + admin resends
+  dedupeKey       String        @default("initial") @map("dedupe_key")
+  recipientEmail  String        @map("recipient_email")
+  status          EmailJobStatus @default(QUEUED)
+  attempts        Int           @default(0)
+  nextAttemptAt   DateTime      @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
+  lastError       String?       @map("last_error")
+  resendMessageId String?       @map("resend_message_id") // populated once Resend accepts the send
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  order           Order @relation(fields: [orderId], references: [id])
+
+  // Enqueue-dedupe backstop (02 v2.1: unique with (order_id, kind, dedupe_key))
+  @@unique([orderId, kind, dedupeKey])
+  // Email worker's polling query.
+  @@index([status, nextAttemptAt])
+  @@map("email_jobs")
+}
