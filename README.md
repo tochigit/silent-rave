@@ -7,10 +7,12 @@ later milestones. See [CHECKPOINT.md](CHECKPOINT.md) for current status.
 
 ## Local verification
 
-Use Bun 1.3.14 and install the versions in `bun.lock`:
+Use Bun 1.3.14 to run the tests. On Windows install dependencies with
+`npm ci --ignore-scripts --no-audit --no-fund` using `package-lock.json`.
+Linux CI uses `bun install --frozen-lockfile` with `bun.lock`. Both paths
+are checked by CI. Then run:
 
 ```sh
-bun install --frozen-lockfile
 bun --no-env-file run test:phase3b
 bun run lint
 bun run typecheck
@@ -20,7 +22,9 @@ bun run build
 The test command creates a new embedded PostgreSQL cluster, applies migrations,
 seeds fake owner/catalog data, starts an app on its own loopback port, runs all
 Phase 3b files, and stops only its own processes. Complete test output is saved
-to `reports/phase3b-test-output.txt`. Debug app output is in the ignored
+to `reports/phase3b-<platform>-test-output.txt` (`win32` on Windows, `linux` in
+Linux CI). This keeps local evidence separate from the previous Linux report
+at `reports/phase3b-test-output.txt`. Debug app output is in the ignored
 `reports/phase3b-server.log`.
 
 Test data and private files live in a unique directory under `.test-runtime/`.

@@ -5,7 +5,7 @@ import path from "node:path";
 import { freePort, startFixture } from "./fixture";
 
 await mkdir("reports", { recursive: true });
-const output = createWriteStream("reports/phase3b-test-output.txt", { flags: "w" });
+const output = createWriteStream(`reports/phase3b-${process.platform}-test-output.txt`, { flags: "w" });
 function log(message: string) { console.log(message); output.write(`${message}\n`); }
 let server: ChildProcess | undefined;
 let testProcess: ChildProcess | undefined;

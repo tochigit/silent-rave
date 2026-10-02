@@ -10,7 +10,16 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    name: Verify (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win32
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     env:
       NEXT_TELEMETRY_DISABLED: "1"
@@ -22,7 +31,12 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
-      - run: bun install --frozen-lockfile
+      - name: Install locked dependencies with Bun
+        if: matrix.platform == 'linux'
+        run: bun install --frozen-lockfile
+      - name: Install locked dependencies with npm
+        if: matrix.platform == 'win32'
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - run: bun run db:generate
       - run: bun run lint
       - run: bun run typecheck
@@ -31,5 +45,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: baseline-test-evidence
-          path: reports/phase3b-test-output.txt
+          name: baseline-test-evidence-${{ matrix.platform }}
+          path: reports/phase3b-${{ matrix.platform }}-test-output.txt
