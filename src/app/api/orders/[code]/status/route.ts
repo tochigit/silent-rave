@@ -10,7 +10,7 @@ import { verifyStatusToken } from "@/lib/orders/status-token";
 // status, proof_attempts, max_resubmissions, latest reject reason/message
 // when NEEDS_RESUBMIT/REJECTED, hold_expires_at, late_proof_received when an
 // EXPIRED order has a late (PENDING) proof — and ONLY when APPROVED, the
-// ticket list. No PDF URLs yet (Phase 4). No PII beyond what the buyer
+// ticket list. Authenticated PDF route links (Phase 4). No PII beyond what the buyer
 // entered themselves at checkout.
 //
 // Uniform 404 for unknown codes AND wrong tokens alike (the token is the only
@@ -40,7 +40,7 @@ export async function GET(
   });
 
   if (!order || !token || !verifyStatusToken(order.id, order.statusTokenVersion, token)) {
-    return NextResponse.json({ error: "Order not found." }, { status: 404 });
+    return NextResponse.json({ error: "Order not found." }, { status: 404, headers: { "Referrer-Policy": "no-referrer", "Cache-Control": "private, no-store" } });
   }
 
   // Latest reject reason/message when NEEDS_RESUBMIT or REJECTED (03).
@@ -69,8 +69,8 @@ export async function GET(
     lateProofReceived = flags.late === true;
   }
 
-  // Ticket list ONLY when APPROVED — no PDF URLs for now (Phase 4 per 03).
-  let tickets: Array<{ ticket_id: string; tier_name: string; holder_name: string | null }> = [];
+  // Ticket list ONLY when APPROVED, with authenticated PDF route links.
+  let tickets: Array<{ ticket_id: string; tier_name: string; holder_name: string | null; pdf_url: string }> = [];
   if (order.status === "APPROVED") {
     const units = await db.ticketUnit.findMany({
       where: { orderId: order.id },
@@ -81,6 +81,7 @@ export async function GET(
       ticket_id: unit.id,
       tier_name: unit.tier.name,
       holder_name: unit.holderName,
+      pdf_url: `/api/orders/${encodeURIComponent(order.orderCode)}/tickets/${unit.id}/pdf?t=${encodeURIComponent(token)}`,
     }));
   }
 
@@ -101,7 +102,7 @@ export async function GET(
     body.tickets = tickets;
   }
 
-  return NextResponse.json(body, { status: 200 });
+  return NextResponse.json(body, { status: 200, headers: { "Referrer-Policy": "no-referrer", "Cache-Control": "private, no-store" } });
 }
 
 function latestProofFlags(proof: { flags: unknown } | null): unknown {

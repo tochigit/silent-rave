@@ -276,6 +276,20 @@ Append-only. Every financially significant admin action writes a row. Per-scan d
 
 Index: `(status, next_attempt_at)` — the worker's polling query.
 
+Phase 4 implementation state (forward migration; base business schema retained):
+`claim_token` (nullable UUID) fences expired workers; `first_send_at` (nullable
+timestamptz) bounds provider idempotency retries; `encrypted_payload` (nullable
+text) is AES-256-GCM ciphertext of the immutable provider body, never raw links;
+`payload_token_version` (nullable integer) guards token rotation. `context` is
+nullable JSON with the rejection decision (reason and re-upload flag), so later
+proof edits cannot silently change the queued decision. These private fields
+are excluded from owner DTOs.
+
+`email_worker_gate` is a singleton infrastructure row (`id='email'`, UUID owner,
+lease_until, next_send_at). It serializes workers across instances and preserves
+global spacing/quota pauses. No session advisory locks or external I/O are held
+across provider calls. Claims are just in time, one per iteration, up to twenty.
+
 ---
 
 ## Inventory reservation mechanics

@@ -1,0 +1,37 @@
+import { test, expect } from "bun:test";
+import { mkdir, writeFile } from "node:fs/promises";
+import { db } from "@/lib/db";
+import { getTicketPdf, renderTicketPdf, ticketPdfInputs, lagosDate } from "@/lib/tickets/pdf";
+import QRCode from "qrcode";
+import { approvedOrder } from "./fixtures";
+test("PDF embedded diacritics/text/Lagos offset and exact stored QR decode, >=40mm active symbol", async () => {
+  const f = await approvedOrder(1); const unit = f.tickets[0]; const { input } = await ticketPdfInputs(unit.id);
+  let encoded = "";
+  const pdf = await renderTicketPdf(input, token => { encoded = token; return QRCode.create(token, { errorCorrectionLevel: "Q" }); });
+  expect(encoded).toBe(unit.qrToken); expect(pdf.activeQrMm).toBeGreaterThanOrEqual(40);
+  await mkdir(".test-runtime", { recursive: true }); await writeFile(".test-runtime/phase4-ticket-sample.pdf", pdf.bytes);
+  const p = Bun.spawn(["python", "scripts/verify-ticket-pdf.py", ".test-runtime/phase4-ticket-sample.pdf"], { stdout: "pipe", stderr: "pipe" });
+  const out = await new Response(p.stdout).text(); const err = await new Response(p.stderr).text();
+  expect(await p.exited, err).toBe(0); const inspection = JSON.parse(out.trim().split("\n").at(-1)!);
+  for (const text of [f.event.title, "04 October 2030 at 00:30", f.order.orderCode, "Regular", "Chloé Ọlá", input.directions!]) expect(inspection.text.replaceAll("\n", "")).toContain(text);
+  expect(inspection.embedded).toBe(true); expect(inspection.decoded).toEqual([unit.qrToken]); expect(inspection.links).toContain(input.directions!);
+  expect(lagosDate(new Date("2030-10-03T23:30:00Z"))).toContain("04 October");
+}, 60_000);
+test("PDF cached second request; venue/directions/date edits regenerate; never stale", async () => {
+  const f = await approvedOrder(1); const id = f.tickets[0].id;
+  const first = await getTicketPdf(id); const second = await getTicketPdf(id);
+  expect(first.cached).toBe(false); expect(second.cached).toBe(true); expect(second.bytes).toEqual(first.bytes);
+  await db.venue.update({ where: { id: f.venue.id }, data: { name: "Changed venue" } });
+  const changed = await getTicketPdf(id); expect(changed.key).not.toBe(first.key); expect(changed.cached).toBe(false); expect(changed.bytes).not.toEqual(first.bytes);
+  expect((await db.ticketUnit.findUniqueOrThrow({ where: { id } })).pdfUrl).toBe(changed.key);
+  await db.event.update({ where: { id: f.event.id }, data: { isDateConfirmed: false } });
+  expect((await ticketPdfInputs(id)).input.date).toBe("Date to be announced");
+  const unconfirmed = await getTicketPdf(id); expect(unconfirmed.key).not.toBe(changed.key);
+  await writeFile(".test-runtime/phase4-ticket-unconfirmed.pdf", unconfirmed.bytes);
+  const p = Bun.spawn(["python", "scripts/verify-ticket-pdf.py", ".test-runtime/phase4-ticket-unconfirmed.pdf"], { stdout: "pipe", stderr: "pipe" });
+  const out = await new Response(p.stdout).text(); const err = await new Response(p.stderr).text();
+  expect(await p.exited, err).toBe(0);
+  const inspection = JSON.parse(out.trim().split("\n").at(-1)!);
+  expect(inspection.text.replaceAll("\n", "")).toContain("Date to be announced");
+  expect(inspection.decoded).toEqual([f.tickets[0].qrToken]);
+}, 60_000);

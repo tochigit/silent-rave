@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { kickEmailJobs } from "@/lib/email/kick";
+import { NextResponse, type NextRequest, after } from "next/server";
 import { PROOF_IP_RATE_PER_HOUR, STATUS_TOKEN_HEADER } from "@/lib/constants";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { submitProof } from "@/lib/proofs/service";
@@ -95,6 +96,7 @@ export async function POST(
       clientSubmissionId,
       fileBytes,
     });
+    after(kickEmailJobs);
 
     const body: Record<string, unknown> = {
       status: result.status,

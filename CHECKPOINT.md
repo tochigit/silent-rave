@@ -1,76 +1,80 @@
 # Silent Rave checkpoint
 
-## Agreed delivery
+Updated 2026-10-02, Africa/Lagos. Current specification: .docs v2.1.2.
 
-Continue one verified milestone at a time: imported baseline, Phase 4,
-customer experience, owner/staff operations, then hosted integration.
-Stop between milestones; merge only a specifically approved PR. Keep branches
-after merging (user instruction). Target: Vercel Free, Namecheap domain
-`silentrave.space` (not purchased), Supabase and Resend. About/Contact must be
-owner editable and offline staff scanning is required. No fixed deadline supplied.
+## Delivery and settled decisions
 
-## Current milestone: Step 1 complete; review and merge approval pending
+1. Imported baseline verification: COMPLETE, PR #1 merged at
+   982eb9f7f3af0d1ebdcac6456e176a6c8a71fe57.
+2. Phase 4 email/PDF/refund/resend/webhook backend: COMPLETE, PR #2 OPEN,
+   review and explicit merge approval pending.
+3. Customer experience: public events, checkout/status, editable About/Contact.
+4. Owner/staff operations, including REQUIRED offline scanner.
+5. Hosted integration and deployment acceptance.
 
-- Branch: `chore/import-and-verify-baseline`; base: `main`.
-- PR: https://github.com/tochigit/silent-rave/pull/1. Nothing merged.
-  Inspect live review status, remote head and checks on resume.
-- Imported work preserved in `ffdf940`. Verified code: `e30a837`;
-  later commits contain final documentation and saved test output.
-- Clean npm install succeeded (551 packages); `package-lock.json` is committed.
-  Windows installs with npm; Linux CI uses the existing frozen Bun lock.
-  Do not install over the usable tree to repeat earlier recovery attempts.
-- Fixture: isolated loopback database/app, UTF-8 initialization, Windows pg_ctl
-  startup/shutdown, sanitized diagnostics and file-based control output.
-- Baseline fixes: whole-order quantity cap, revival versus reservations,
-  global sweep tier locking, separate email/phone advisory namespaces.
-- Mobile/carousel use external-store subscriptions; both carousel listeners
-  unsubscribe. Test helpers avoid redundant clients and prepare the A6 fixtures
-  sequentially while all five checkout requests still run concurrently.
+Only Step 2 is authorized. Stop for PR review; no merge or later milestone.
+Keep all branches. Guest buyers, manual transfer, OWNER approval alone creates
+units/QRs. Next.js full-stack is settled. Preserve prototype dark/mint/purple
+visual intent for later UI. Vercel Free, Supabase, Resend and intended Namecheap
+silentrave.space remain selected; domain is not purchased. No service connection,
+paid upgrade, hosted mutation or real email was performed.
 
-## Verification and evidence
+## Current branch and implementation
 
-- Local Windows: npm install, lint, application/tooling type checks, production
-  build, and all 112 tests in 8 files passed; final runner exit 0.
-- Windows and Linux CI passed installation, generation, lint, both type checks,
-  all 112 tests and build at `e30a837`:
-  https://github.com/tochigit/silent-rave/actions/runs/36990540505.
-  Final documentation/evidence push triggers a separate CI run; inspect the
-  latest PR-head checks before merging.
-- Full output: `reports/phase3b-win32-test-output.txt` (local),
-  `reports/phase3b-win32-ci-test-output.txt` and
-  `reports/phase3b-linux-test-output.txt` (CI). Historical reports remain separate.
-  See `.docs/BASELINE_REPORT.md` for exact origins and earlier failures.
-- Final local cleanup independently checked: no Bun/Node/PostgreSQL/pg_ctl/initdb
-  processes, current fixture removed, root .env remained absent. No task
-  processes remain. Earlier stopped diagnostic `.test-runtime/run-5J8iZl`
-  and ignored dependency backups/caches are retained.
-- Two intermediate local runs had one setup connection failure each (111 pass);
-  sequential setup resolves the final run without changing race assertions.
-  Failure logs remain ignored. An obsolete launcher CI run was canceled.
-- No hosted database, real email or production data was used. Phase 4 has not
-  started. Most public/owner/staff UI and Supabase Storage remain stubs.
+Branch: feat/phase4-email-tickets-refunds; base origin/main 982eb9f.
+PR: https://github.com/tochigit/silent-rave/pull/2 (OPEN, base main, UNMERGED).
+Application/evidence commit: d214fdeaf9f16b4802af5a6e6e88920576c3b8ff.
+Verified application-head CI (BOTH platforms PASS): https://github.com/tochigit/silent-rave/actions/runs/37006188876
+Original main and chore/import-and-verify-baseline retained locally/remotely.
+Live PR #1 merge verified. No applicable AGENTS.md found at start. Entire outside
+Phase 4 continuation and embedded brief read; contradictions recorded in
+.docs/PHASE4_REPORT.md. This checkpoint supersedes the old pre-merge state.
 
-## Exact next action
+Phase 4 items 1-12 are implemented: fail-closed config; direct Resend HTTPS and
+private capture; leased SKIP LOCKED queue with DB-wide pacing, encrypted immutable
+retry payloads and finite retention cutoff; four React Email templates; pure
+directions; embedded-font ticket PDFs and input-hash private cache/downloads;
+status PDF links; password-confirmed atomic refunds; shared hourly resends;
+owner job DTOs; raw-body Svix webhook; authenticated cron, post-commit kicks and
+dev capture loop. Forward migration adds queue state/gate; baseline preserved.
 
-1. Inspect current PR #1, remote head and checks. Do not repeat passed baseline
-   checks unless code changes or a new failure warrants it.
-2. Wait for explicit authorization to merge PR #1. Verify the remote merge,
-   update local main without discarding work, and retain both local/remote
-   task branches. No merge is authorized yet.
-3. Await explicit continuation for Step 2: Phase 4 email worker, ticket PDFs,
-   refunds, resend-tickets and Resend webhook. Use a new branch from the merged
-   baseline; read current .docs and the attached Phase 4 prompt first.
-4. Phase 4 prompt:
-   `C:/Users/Tochi/.codex/attachments/31b64bb6-aa09-4993-a36b-e232a6e49fe1/Pasted text.txt`.
-   Preserve the current scaffold and specifications; do not restart the project.
+## Verification
 
-## Planning decisions to retain
+- Fresh Step 0: 112 pass, zero fail, eight files, runner exit 0, cleanup complete.
+  Full reports/phase3b-win32-test-output.txt. Lock-order audit found no fix needed.
+- Full Phase 3b + Phase 4: 145 pass/zero fail in 17 files plus two pass/zero fail
+  in a separate app with failing kicks/missing secrets. Total 147. Runner exit 0,
+  cleanup complete. Full reports/phase4-win32-test-output.txt, also copied to
+  reports/phase4-test-output.txt. All original baseline test files unchanged.
+- Final ticket PNG visually inspected; embedded diacritics, Lagos offset,
+  unconfirmed date, cache regeneration and exact QR decode pass.
+- ESLint PASS via direct Bun entry, no findings. Standard Node attempts
+  INCOMPLETE locally after slow Windows loading; CI runs the standard command.
+- Final both TypeScript checks PASS; production build PASS (loopback config).
+  Font verified in standalone output. Full reports/phase4-{lint,typecheck,build}-output.txt.
+- PR publication complete; Windows/Linux CI PASS on the exact application head
+  d214fde. Standard lint, both type checks, 147 cases and build passed in each.
+  Full platform outputs saved as reports/phase4-{linux,win32}-ci-test-output.txt.
+  Documentation/evidence follow-up changes no application files; CI reruns on it.
+- Earlier failed runs are retained separately and explained in the report.
+  Test/fixture fixes preserved business assertions; no failure called a pass.
 
-- Refunds require password re-entry under doc 06; doc 03 omits the field.
-- Resend retries need stable payloads and respect 24-hour idempotency retention.
-- Vercel needs shared rate limits, durable storage, bounded workers and an
-  every-minute scheduler (planned through Supabase Cron).
-- Vercel Hobby's commercial restriction was explained; user retained the free
-  plan. No paid upgrades authorized.
-- Supabase is not created/connected. Hosted setup, DNS, delivery and deployment
-  must be verified separately from local and CI checks.
+Tests use isolated loopback PostgreSQL, real Next HTTP/sharp/local private storage,
+React Email/PDF rendering, real Svix signatures and Python QR decoding. Resend
+transport is fake/capture; worker time/random/sleep injected or rows backdated.
+No real send or production secret was needed. Root .env absent. Test app/database
+stopped; all local check processes exited (inspect live state on resume).
+
+## Next action
+
+STOP FOR REVIEW of PR #2. All Step 2 implementation, required local/platform
+verification, report and publication are complete. No merge is authorized.
+Before an expressly authorized merge, inspect live PR/head/checks (documentation
+follow-up CI also runs); merge only PR #2 if approved and retain all branches.
+Do not begin Step 3 until separately instructed. Resume from this checkpoint
+and .docs/PHASE4_REPORT.md, not the superseded pre-merge notes.
+
+Supabase storage remains a stub; public/auth rate limiters remain in-memory.
+Real DNS/DKIM/SPF, attachments/send/webhook, hosted pooler/locks/migrations,
+durable storage, minute scheduler, host runtime/origins and deployment smoke
+checks remain UNVERIFIED launch prerequisites. See .docs/PHASE4_REPORT.md.

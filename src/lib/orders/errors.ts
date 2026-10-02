@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type OrderServiceErrorCode =
+  | "CHECKED_IN_TICKETS"
   | "VALIDATION" //        400 — malformed input the route's zod didn't catch
   | "NOT_FOUND" //         404 — unknown order/event/tier id or code
   | "INSUFFICIENT_INVENTORY" // 409 — a tier cannot cover a line (409 per 03)
@@ -21,6 +22,7 @@ export type OrderServiceErrorCode =
   | "FORBIDDEN"; //        403 — role/permission failures surfaced by services
 
 const HTTP_BY_CODE: Record<OrderServiceErrorCode, number> = {
+  CHECKED_IN_TICKETS: 409,
   VALIDATION: 400,
   NOT_FOUND: 404,
   INSUFFICIENT_INVENTORY: 409,

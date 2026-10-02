@@ -525,7 +525,7 @@ model AuditLogEntry {
 }
 
 /// DB-backed email queue (replaces Redis at this scale). Rows are enqueued by
-/// the payment flow; SENDING (Resend worker) is a later phase — job rows only.
+/// the payment flow; Phase 4 workers claim with leases and stable retries.
 /// UNIQUE (order_id, kind, dedupe_key) is the enqueue-dedupe backstop.
 model EmailJob {
   id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -540,6 +540,11 @@ model EmailJob {
   nextAttemptAt   DateTime      @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
   lastError       String?       @map("last_error")
   resendMessageId String?       @map("resend_message_id") // populated once Resend accepts the send
+  claimToken      String?       @map("claim_token") @db.Uuid
+  firstSendAt     DateTime?     @map("first_send_at") @db.Timestamptz(3)
+  encryptedPayload String?      @map("encrypted_payload")
+  payloadTokenVersion Int?      @map("payload_token_version")
+  context         Json?
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -548,6 +553,15 @@ model EmailJob {
   // Enqueue-dedupe backstop (02 v2.1: unique with (order_id, kind, dedupe_key))
   @@unique([orderId, kind, dedupeKey])
   // Email worker's polling query.
+  @@index([resendMessageId], map: "email_jobs_resend_message_id_idx")
   @@index([status, nextAttemptAt])
   @@map("email_jobs")
+}
+
+model EmailWorkerGate {
+  id          String   @id
+  owner       String?  @db.Uuid
+  leaseUntil  DateTime @default(dbgenerated("'epoch'::timestamptz")) @map("lease_until") @db.Timestamptz(3)
+  nextSendAt  DateTime @default(dbgenerated("'epoch'::timestamptz")) @map("next_send_at") @db.Timestamptz(3)
+  @@map("email_worker_gate")
 }

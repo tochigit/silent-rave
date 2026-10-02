@@ -472,6 +472,7 @@ async function enqueueRejectedEmail(
       kind: "REJECTED",
       dedupeKey,
       recipientEmail,
+      context: { reason: input.message, reason_code: input.reasonCode, resubmittable },
     },
   });
 }

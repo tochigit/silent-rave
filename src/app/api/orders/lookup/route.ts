@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { kickEmailJobs } from "@/lib/email/kick";
+import { NextResponse, type NextRequest, after } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -93,5 +94,6 @@ export async function POST(request: NextRequest) {
   // response time does not act as a match/non-match oracle.
   await new Promise((resolve) => setTimeout(resolve, 50));
 
+  after(kickEmailJobs);
   return generic202();
 }
