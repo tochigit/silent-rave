@@ -56,13 +56,18 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
   if (path.dirname(runDir) !== runtimeRoot) throw new Error("Unsafe fixture directory.");
   const pgPort = await freePort();
   const dbPassword = randomBytes(24).toString("hex");
+  let startupLog = "";
+  let phase = "initialization";
+  const recordStartup = (message: unknown) => {
+    startupLog = (startupLog + String(message).replaceAll(dbPassword, "[redacted]")).slice(-4000);
+  };
   const postgres = new EmbeddedPostgres({
     databaseDir: path.join(runDir, "postgres"), port: pgPort, user: "postgres",
     password: dbPassword, authMethod: "scram-sha-256", persistent: true,
     // Windows otherwise inherits WIN1252; migrations and buyer names need UTF-8.
     initdbFlags: ["--encoding=UTF8"],
     // Synchronous I/O avoids PostgreSQL 18's extra Windows I/O worker process.
-    postgresFlags: ["-h", "127.0.0.1", "-c", "io_method=sync"], onLog: () => {}, onError: () => {},
+    postgresFlags: ["-h", "127.0.0.1", "-c", "io_method=sync"], onLog: recordStartup, onError: recordStartup,
   });
   const databaseUrl = `postgresql://postgres:${dbPassword}@127.0.0.1:${pgPort}/silentrave_test`;
   const env: Record<string, string> = {};
@@ -91,8 +96,10 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     const notice = "Fixture: isolated loopback PostgreSQL; root .env is untouched.\n";
     process.stdout.write(notice); capture?.(Buffer.from(notice));
     await postgres.initialise();
+    phase = "startup";
     await postgres.start();
     started = true;
+    phase = "database creation/migration/seeding";
     await postgres.createDatabase("silentrave_test");
     await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "generate"], env, capture);
     await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "migrate", "deploy"], env, capture);
@@ -101,6 +108,9 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     return { env, runDir, cleanup };
   } catch (error) {
     await cleanup();
+    if (!(error instanceof Error)) {
+      throw new Error(`Fixture ${phase} failed: native process exited.\n${startupLog}`);
+    }
     throw error;
   }
 }
