@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, open, readFile, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
 
@@ -46,6 +46,21 @@ export async function runCommand(args: string[], env: Record<string, string>, ca
     capture ? pump(child.stderr as ReadableStream<Uint8Array>) : Promise.resolve(),
   ]);
   if (code !== 0) throw new Error(`Command failed (${code}): ${args.slice(1).join(" ")}`);
+}
+
+async function runPgControl(args: string[], env: Record<string, string>, logFile: string, capture?: (chunk: Uint8Array) => void) {
+  // Windows postgres workers inherit pg_ctl's output handles. A pipe would
+  // stay open until the database stops, so startup must wait on the process
+  // exit rather than pipe EOF. The owned file also preserves control errors.
+  const output = await open(logFile, "w");
+  let code: number;
+  try {
+    const child = Bun.spawn(args, { env, stdout: output.fd, stderr: output.fd, stdin: "ignore" });
+    code = await child.exited;
+  } finally { await output.close(); }
+  const content = await readFile(logFile);
+  process.stdout.write(content); capture?.(content);
+  if (code !== 0) throw new Error(`pg_ctl failed (${code}).`);
 }
 
 export async function startFixture(capture?: (chunk: Uint8Array) => void) {
@@ -95,7 +110,7 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     const hasPid = pgCtl && await readFile(path.join(databaseDir, "postmaster.pid"), "utf8").then(() => true, () => false);
     if (pgCtl && (started || hasPid)) {
       // pg_ctl waits for all workers in this exact owned cluster to stop.
-      await runCommand([pgCtl, "-D", databaseDir, "-w", "-t", "30", "-m", "fast", "stop"], env, capture);
+      await runPgControl([pgCtl, "-D", databaseDir, "-w", "-t", "30", "-m", "fast", "stop"], env, path.join(runDir, "control-stop.log"), capture);
       started = false;
     } else if (started) { await postgres.stop(); started = false; }
     await rm(runDir, { recursive: true, force: true });
@@ -113,8 +128,8 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     if (pgCtl) {
       // Windows CI runs as runneradmin. pg_ctl starts postgres with a restricted
       // token; launching postgres.exe directly is rejected by PostgreSQL.
-      await runCommand([pgCtl, "-D", databaseDir, "-w", "-t", "60", "-l", postgresLog,
-        "-o", `-p ${pgPort} -h 127.0.0.1 -c io_method=sync`, "start"], env, capture);
+      await runPgControl([pgCtl, "-D", databaseDir, "-w", "-t", "60", "-l", postgresLog,
+        "-o", `-p ${pgPort} -h 127.0.0.1 -c io_method=sync`, "start"], env, path.join(runDir, "control-start.log"), capture);
     } else { await postgres.start(); }
     started = true;
     phase = "database creation/migration/seeding";
