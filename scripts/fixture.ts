@@ -59,6 +59,8 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
   const postgres = new EmbeddedPostgres({
     databaseDir: path.join(runDir, "postgres"), port: pgPort, user: "postgres",
     password: dbPassword, authMethod: "scram-sha-256", persistent: true,
+    // Windows otherwise inherits WIN1252; migrations and buyer names need UTF-8.
+    initdbFlags: ["--encoding=UTF8"],
     // Synchronous I/O avoids PostgreSQL 18's extra Windows I/O worker process.
     postgresFlags: ["-h", "127.0.0.1", "-c", "io_method=sync"], onLog: () => {}, onError: () => {},
   });
