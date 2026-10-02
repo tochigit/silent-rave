@@ -128,11 +128,15 @@ describe("A6 — same-email CONCURRENT checkout cannot exceed the 2-unresolved c
   test("5 PARALLEL initialize (same email, different tiers): exactly 2 succeed, 3 get 429, caps never exceeded", async () => {
     // Five dedicated tiers so the only contention is the per-email cap (and
     // the advisory lock that serializes it), never tier inventory.
-    const tiers = await Promise.all(
-      Array.from({ length: 5 }, (_, i) => createTestTier(db, `a6-tier-${i}`, 10))
-    );
+    // Prepare fixtures sequentially so setup does not expand Prisma's pool
+    // concurrently on Windows. The checkout requests below remain parallel.
+    const tiers: Awaited<ReturnType<typeof createTestTier>>[] = [];
+    for (let i = 0; i < 5; i++) {
+      tiers.push(await createTestTier(db, `a6-tier-${i}`, 10));
+    }
     const email = `a6-race-${Date.now()}@closeout.test`;
-    const before = await Promise.all(tiers.map((t) => getTierState(db, t.id)));
+    const before: Awaited<ReturnType<typeof getTierState>>[] = [];
+    for (const tier of tiers) before.push(await getTierState(db, tier.id));
 
     // Same email, DISTINCT phones, one IP — the EMAIL cap is the only binder.
     const attempts = await Promise.all(
@@ -170,7 +174,8 @@ describe("A6 — same-email CONCURRENT checkout cannot exceed the 2-unresolved c
       },
     });
     checkEqual(unresolved, 2, "exactly 2 unresolved orders committed for the racing email");
-    const after = await Promise.all(tiers.map((t) => getTierState(db, t.id)));
+    const after: Awaited<ReturnType<typeof getTierState>>[] = [];
+    for (const tier of tiers) after.push(await getTierState(db, tier.id));
     const reservedTotal = after.reduce((sum, t) => sum + t.reserved, 0) - before.reduce((sum, t) => sum + t.reserved, 0);
     checkEqual(reservedTotal, 2, "exactly 2 units reserved across the 5 tiers");
     for (let i = 0; i < tiers.length; i++) {
