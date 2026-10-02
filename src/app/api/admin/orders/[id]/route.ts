@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { guardApi, ADMIN_API_ROLES } from "@/lib/auth/guards";
 import { getStorage } from "@/lib/storage";
 import { PROOF_SIGNED_URL_TTL_SECONDS } from "@/lib/constants";
+import { emailJobDto, emailJobSelect } from "@/lib/email/dto";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/admin/orders/:id — full review detail (03 v21): buyer info, line
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     where: { id },
     select: {
       id: true,
+      emailJobs: { select: emailJobSelect, orderBy: { createdAt: "asc" } },
       orderCode: true,
       status: true,
       source: true,
@@ -105,6 +107,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json(
     {
       order_id: order.id,
+      email_jobs: order.emailJobs.map(emailJobDto),
       order_code: order.orderCode,
       status: order.status,
       source: order.source,

@@ -114,7 +114,7 @@ export class LocalDiskStorage implements StorageAdapter {
     const bytes = await readFile(absolute);
     // Re-encoded server-side as JPEG (see the proof pipeline); the manifest
     // of stored types is tracked per-object by callers when it matters.
-    const contentType = storagePath.endsWith(".png")
+    const contentType = storagePath.endsWith(".pdf") ? "application/pdf" : storagePath.endsWith(".png")
       ? "image/png"
       : storagePath.endsWith(".webp")
         ? "image/webp"

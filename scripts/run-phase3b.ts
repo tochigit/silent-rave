@@ -46,7 +46,7 @@ try {
   server.stderr?.pipe(serverLog, { end: false });
   let serverError: Error | undefined;
   server.once("error", (error) => { serverError = error; });
-  const deadline = Date.now() + 120_000;
+  const deadline = Date.now() + 300_000;
   let ready = false;
   while (Date.now() < deadline) {
     if (serverError) throw serverError;

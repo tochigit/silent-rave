@@ -99,7 +99,9 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     TICKET_SIGNING_PRIVATE_KEY: randomBytes(32).toString("base64url"),
     TICKET_SIGNING_KID: "fixture", TICKET_SIGNING_PUBLIC_KEYS_JSON: "",
     STORAGE_DRIVER: "local", LOCAL_STORAGE_DIR: path.join(runDir, "storage"),
-    EMAIL_TRANSPORT: "capture", RESEND_API_KEY: "", RESEND_WEBHOOK_SECRET: "",
+    EMAIL_TRANSPORT: "capture", RESEND_API_KEY: "", RESEND_WEBHOOK_SECRET: "whsec_" + randomBytes(32).toString("base64"),
+    EMAIL_FROM: "tickets@example.test", EMAIL_REPLY_TO: "help@example.test", PUBLIC_BASE_URL: "http://localhost:3000",
+    EMAIL_PAYLOAD_SECRET: randomBytes(32).toString("base64url"), EMAIL_KICK_ENABLED: "0",
     OWNER_EMAIL: "owner@silentrave.ng", OWNER_PASSWORD: "silentrave-dev-owner", OWNER_NAME: "Fixture Owner",
     INITIALIZE_IP_RATE_LIMIT_PER_HOUR: "10",
   });
@@ -110,7 +112,7 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     const hasPid = pgCtl && await readFile(path.join(databaseDir, "postmaster.pid"), "utf8").then(() => true, () => false);
     if (pgCtl && (started || hasPid)) {
       // pg_ctl waits for all workers in this exact owned cluster to stop.
-      await runPgControl([pgCtl, "-D", databaseDir, "-w", "-t", "30", "-m", "fast", "stop"], env, path.join(runDir, "control-stop.log"), capture);
+      await runPgControl([pgCtl, "-D", databaseDir, "-w", "-t", "120", "-m", "fast", "stop"], env, path.join(runDir, "control-stop.log"), capture);
       started = false;
     } else if (started) { await postgres.stop(); started = false; }
     await rm(runDir, { recursive: true, force: true });

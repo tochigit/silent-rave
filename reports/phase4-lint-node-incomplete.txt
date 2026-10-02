@@ -1,0 +1,7 @@
+bun : $ eslint .
+At line:2 char:1
++ bun --no-env-file run lint *> reports/phase4-lint-output.txt; $phase4 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ eslint .:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

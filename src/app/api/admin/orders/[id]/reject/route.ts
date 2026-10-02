@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { kickEmailJobs } from "@/lib/email/kick";
+import { NextResponse, type NextRequest, after } from "next/server";
 import { z } from "zod";
 import { guardApi, ADMIN_API_ROLES } from "@/lib/auth/guards";
 import { originCheck } from "@/lib/auth/origin";
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       message: parsed.data.message,
       final: parsed.data.final,
     });
+    after(kickEmailJobs);
     return NextResponse.json(
       {
         ok: true,

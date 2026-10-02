@@ -1,0 +1,5 @@
+﻿bun --no-env-file node_modules/eslint/bin/eslint.js .
+No findings on stdout/stderr.
+Exit code: 0
+Standard Node invocation incomplete; see phase4-lint-node-incomplete.txt.
+Both CI platforms also run the standard bun run lint command.

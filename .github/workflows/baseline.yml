@@ -1,4 +1,4 @@
-name: Baseline verification
+name: Backend verification
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ jobs:
           - os: windows-latest
             platform: win32
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       # Generation/build need syntactically valid configuration, not a hosted DB.
@@ -40,10 +40,14 @@ jobs:
       - run: bun run db:generate
       - run: bun run lint
       - run: bun run typecheck
-      - run: bun run test:phase3b
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r scripts/requirements-pdf-test.txt
+      - run: bun run test:phase4
       - run: bun run build
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: baseline-test-evidence-${{ matrix.platform }}
-          path: reports/phase3b-${{ matrix.platform }}-test-output.txt
+          name: phase4-test-evidence-${{ matrix.platform }}
+          path: reports/phase4-${{ matrix.platform }}-test-output.txt
