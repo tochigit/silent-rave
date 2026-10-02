@@ -6,8 +6,8 @@ Updated 2026-10-02, Africa/Lagos. Current specification: .docs v2.1.2.
 
 1. Imported baseline verification: COMPLETE, PR #1 merged at
    982eb9f7f3af0d1ebdcac6456e176a6c8a71fe57.
-2. Phase 4 email/PDF/refund/resend/webhook backend: implementation verified
-   locally; publication and PR/platform CI gate in progress.
+2. Phase 4 email/PDF/refund/resend/webhook backend: COMPLETE, PR #2 OPEN,
+   review and explicit merge approval pending.
 3. Customer experience: public events, checkout/status, editable About/Contact.
 4. Owner/staff operations, including REQUIRED offline scanner.
 5. Hosted integration and deployment acceptance.
@@ -22,6 +22,9 @@ paid upgrade, hosted mutation or real email was performed.
 ## Current branch and implementation
 
 Branch: feat/phase4-email-tickets-refunds; base origin/main 982eb9f.
+PR: https://github.com/tochigit/silent-rave/pull/2 (OPEN, base main, UNMERGED).
+Application/evidence commit: d214fdeaf9f16b4802af5a6e6e88920576c3b8ff.
+Verified application-head CI (BOTH platforms PASS): https://github.com/tochigit/silent-rave/actions/runs/37006188876
 Original main and chore/import-and-verify-baseline retained locally/remotely.
 Live PR #1 merge verified. No applicable AGENTS.md found at start. Entire outside
 Phase 4 continuation and embedded brief read; contradictions recorded in
@@ -49,7 +52,10 @@ dev capture loop. Forward migration adds queue state/gate; baseline preserved.
   INCOMPLETE locally after slow Windows loading; CI runs the standard command.
 - Final both TypeScript checks PASS; production build PASS (loopback config).
   Font verified in standalone output. Full reports/phase4-{lint,typecheck,build}-output.txt.
-- Windows/Linux CI and PR publication pending.
+- PR publication complete; Windows/Linux CI PASS on the exact application head
+  d214fde. Standard lint, both type checks, 147 cases and build passed in each.
+  Full platform outputs saved as reports/phase4-{linux,win32}-ci-test-output.txt.
+  Documentation/evidence follow-up changes no application files; CI reruns on it.
 - Earlier failed runs are retained separately and explained in the report.
   Test/fixture fixes preserved business assertions; no failure called a pass.
 
@@ -61,10 +67,12 @@ stopped; all local check processes exited (inspect live state on resume).
 
 ## Next action
 
-Local checks, standalone font/process cleanup and diff/secret review are complete.
-Full report includes all Step 0/combined output and launch gaps. Commit/push this branch,
-open focused PR to main and verify BOTH platforms on its current head. Record
-PR/check evidence here, then STOP FOR REVIEW. Do not merge or start Step 3.
+STOP FOR REVIEW of PR #2. All Step 2 implementation, required local/platform
+verification, report and publication are complete. No merge is authorized.
+Before an expressly authorized merge, inspect live PR/head/checks (documentation
+follow-up CI also runs); merge only PR #2 if approved and retain all branches.
+Do not begin Step 3 until separately instructed. Resume from this checkpoint
+and .docs/PHASE4_REPORT.md, not the superseded pre-merge notes.
 
 Supabase storage remains a stub; public/auth rate limiters remain in-memory.
 Real DNS/DKIM/SPF, attachments/send/webhook, hosted pooler/locks/migrations,

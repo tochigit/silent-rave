@@ -1,7 +1,14 @@
-# Phase 4 report (local verification complete; CI pending)
+# Phase 4 report (COMPLETE; PR #2 ready for review)
 
 Step 2 on `feat/phase4-email-tickets-refunds`, based on merged baseline
-`982eb9f`. No merge or later milestone authorized. Current spec: v2.1.2.
+`982eb9f`. Current spec: v2.1.2.
+
+PR: https://github.com/tochigit/silent-rave/pull/2 (base main, OPEN, UNMERGED).
+Verified application/evidence commit: d214fdeaf9f16b4802af5a6e6e88920576c3b8ff.
+Both Windows and Linux CI PASSED on that exact head:
+https://github.com/tochigit/silent-rave/actions/runs/37006188876
+Each platform passed standard lint, both type checks, all 147 cases, cleanup
+and production build. No merge or later milestone authorized.
 
 ## Step 0
 
@@ -45,6 +52,18 @@ already present, so no rename or Maps code required.
   Hosted invocations require a configured runtime budget and minute scheduler.
 - Old sandbox network claim is historical. Actual account/domain/send/webhook
   access remains unverified; tests use mocks, never real recipients.
+- Docs still mark backend, About/Contact editing, hosting and domain decisions
+  OPEN. The continuation settles Next.js full-stack, owner-editable content,
+  Vercel Free/Supabase/Resend and intended silentrave.space. Preserve those
+  choices; later UI/connection/deployment work remains outside this step.
+
+Additional assumptions: sender/reply values are bare validated email addresses;
+PUBLIC_BASE_URL is an origin (no credentials/path/query), with HTTPS required
+outside local development. Pacing is configurable but never below 500ms, and
+server clocks must be synchronized. Cache hashes cover rendered content plus
+font/layout bytes; retry attachments remain the encrypted first-send snapshot
+to satisfy provider idempotency even if event text later changes. Current
+downloads independently regenerate from the latest inputs.
 
 ## Current official references
 
@@ -724,3 +743,23 @@ server stopped
 Cleanup complete: owned app and database stopped; temporary fixture removed.
 
 ```
+
+## Platform evidence and review handoff
+
+Downloaded COMPLETE CI test outputs:
+- `reports/phase4-linux-ci-test-output.txt`
+- `reports/phase4-win32-ci-test-output.txt`
+
+Each contains 112 unchanged baseline cases plus 35 Phase 4 cases, zero failures,
+runner exit 0 and successful fixture cleanup. These are additional files in this
+PR's final documentation/evidence commit; the application tree is unchanged
+from the verified d214fde head. CI also reruns on that documentation commit.
+Before any separately authorized merge, inspect the latest PR head/checks.
+
+Local test/build/type checks pass. Local ESLint passes using its direct Bun
+entry; stopped standard Node attempts remain explicitly incomplete locally.
+Standard Node `bun run lint` passed on BOTH CI platforms. All earlier failures
+remain available as failure evidence, and none is treated as a pass.
+
+STOP FOR REVIEW. PR #2 is unmerged; all original branches are retained.
+No customer UI, scanner, live integration, deployment or later step was started.
