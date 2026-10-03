@@ -1,10 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+const subscribeToHydration = () => () => {};
 export function PasswordForm() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  const ready = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
   return (
     <form
       method="post"
