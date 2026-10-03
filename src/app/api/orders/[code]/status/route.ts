@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { MAX_RESUBMISSIONS, STATUS_TOKEN_HEADER } from "@/lib/constants";
+import {
+  MAX_RESUBMISSIONS,
+  MAX_PROOF_SUBMISSIONS,
+  LATE_PROOF_GRACE_MS,
+  STATUS_TOKEN_HEADER,
+} from "@/lib/constants";
 import { verifyStatusToken } from "@/lib/orders/status-token";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -19,11 +24,13 @@ import { verifyStatusToken } from "@/lib/orders/status-token";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ code: string }> }
+  { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
   const token =
-    request.headers.get(STATUS_TOKEN_HEADER) ?? request.nextUrl.searchParams.get("t") ?? "";
+    request.headers.get(STATUS_TOKEN_HEADER) ??
+    request.nextUrl.searchParams.get("t") ??
+    "";
 
   const order = await db.order.findUnique({
     where: { orderCode: code },
@@ -34,17 +41,72 @@ export async function GET(
       statusTokenVersion: true,
       holdExpiresAt: true,
       proofAttempts: true,
+      firstProofAt: true,
+      totalKobo: true,
+      paymentAccountSnapshot: true,
       eventId: true,
       event: { select: { title: true } },
     },
   });
 
-  if (!order || !token || !verifyStatusToken(order.id, order.statusTokenVersion, token)) {
-    return NextResponse.json({ error: "Order not found." }, { status: 404, headers: { "Referrer-Policy": "no-referrer", "Cache-Control": "private, no-store" } });
+  if (
+    !order ||
+    !token ||
+    !verifyStatusToken(order.id, order.statusTokenVersion, token)
+  ) {
+    return NextResponse.json(
+      { error: "Order not found." },
+      {
+        status: 404,
+        headers: {
+          "Referrer-Policy": "no-referrer",
+          "Cache-Control": "private, no-store",
+        },
+      },
+    );
   }
 
+  const latest = await db.paymentProof.findFirst({
+    where: { orderId: order.id },
+    orderBy: { attemptNo: "desc" },
+    select: { status: true, flags: true },
+  });
+  const pendingProof = latest?.status === "PENDING";
+  const now = Date.now();
+  const elapsed = !!order.holdExpiresAt && order.holdExpiresAt.getTime() < now;
+  const grace = order.holdExpiresAt
+    ? new Date(order.holdExpiresAt.getTime() + LATE_PROOF_GRACE_MS)
+    : null;
+  const canSubmit =
+    order.proofAttempts < MAX_PROOF_SUBMISSIONS &&
+    !pendingProof &&
+    ((!elapsed &&
+      ["AWAITING_PAYMENT", "NEEDS_RESUBMIT"].includes(order.status)) ||
+      (elapsed &&
+        ["AWAITING_PAYMENT", "EXPIRED"].includes(order.status) &&
+        !order.firstProofAt &&
+        !!grace &&
+        grace.getTime() >= now));
+  const snapshot = order.paymentAccountSnapshot as {
+    bank_name?: unknown;
+    account_number?: unknown;
+    account_name?: unknown;
+  } | null;
+  const account =
+    snapshot &&
+    typeof snapshot.bank_name === "string" &&
+    typeof snapshot.account_number === "string" &&
+    typeof snapshot.account_name === "string"
+      ? {
+          bank_name: snapshot.bank_name,
+          account_number: snapshot.account_number,
+          account_name: snapshot.account_name,
+        }
+      : null;
+
   // Latest reject reason/message when NEEDS_RESUBMIT or REJECTED (03).
-  let rejection: { reason_code: string | null; message: string | null } | null = null;
+  let rejection: { reason_code: string | null; message: string | null } | null =
+    null;
   if (order.status === "NEEDS_RESUBMIT" || order.status === "REJECTED") {
     const latestProof = await db.paymentProof.findFirst({
       where: { orderId: order.id },
@@ -65,22 +127,34 @@ export async function GET(
       orderBy: { attemptNo: "desc" },
       select: { flags: true },
     });
-    const flags = (latestProofFlags(lateProof)) as Record<string, unknown>;
+    const flags = latestProofFlags(lateProof) as Record<string, unknown>;
     lateProofReceived = flags.late === true;
   }
 
   // Ticket list ONLY when APPROVED, with authenticated PDF route links.
-  let tickets: Array<{ ticket_id: string; tier_name: string; holder_name: string | null; pdf_url: string }> = [];
+  let tickets: Array<{
+    ticket_id: string;
+    tier_name: string;
+    holder_name: string | null;
+    pdf_url: string;
+    voided: boolean;
+  }> = [];
   if (order.status === "APPROVED") {
     const units = await db.ticketUnit.findMany({
       where: { orderId: order.id },
       orderBy: { createdAt: "asc" },
-      select: { id: true, holderName: true, tier: { select: { name: true } } },
+      select: {
+        id: true,
+        holderName: true,
+        voidedAt: true,
+        tier: { select: { name: true } },
+      },
     });
     tickets = units.map((unit) => ({
       ticket_id: unit.id,
       tier_name: unit.tier.name,
       holder_name: unit.holderName,
+      voided: !!unit.voidedAt,
       pdf_url: `/api/orders/${encodeURIComponent(order.orderCode)}/tickets/${unit.id}/pdf?t=${encodeURIComponent(token)}`,
     }));
   }
@@ -90,6 +164,12 @@ export async function GET(
     status: order.status,
     proof_attempts: order.proofAttempts,
     max_resubmissions: MAX_RESUBMISSIONS,
+    amount_kobo: order.totalKobo,
+    event_title: order.event.title,
+    pending_proof: pendingProof,
+    can_submit_proof: canSubmit,
+    late_proof_deadline: grace?.toISOString() ?? null,
+    payment_account: account,
     hold_expires_at: order.holdExpiresAt?.toISOString() ?? null,
   };
   if (rejection) {
@@ -102,7 +182,13 @@ export async function GET(
     body.tickets = tickets;
   }
 
-  return NextResponse.json(body, { status: 200, headers: { "Referrer-Policy": "no-referrer", "Cache-Control": "private, no-store" } });
+  return NextResponse.json(body, {
+    status: 200,
+    headers: {
+      "Referrer-Policy": "no-referrer",
+      "Cache-Control": "private, no-store",
+    },
+  });
 }
 
 function latestProofFlags(proof: { flags: unknown } | null): unknown {

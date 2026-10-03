@@ -1,0 +1,3 @@
+Command: bun --no-env-file node_modules/typescript/bin/tsc --noEmit -p tsconfig.tooling.json
+
+Exit code: 0

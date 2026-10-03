@@ -1,0 +1,91 @@
+Command: bun --no-env-file run db:fixture --browser-step3
+$ bun --no-env-file scripts/dev-fixture.ts "--browser-step3"
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+waiting for server to start..... done
+server started
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 827ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:52814"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 45f751e4-7e01-4e88-aba9-1e749a189343
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+Starting isolated fixture app on localhost:3000; Ctrl+C stops it.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+
+✓ Starting...
+✓ Ready in 4.2s
+○ Compiling / ...
+Bundled 13 modules in 24ms
+
+  step3-run.mjs  45.18 KB  (entry point)
+
+Owned Chrome connected over loopback CDP.
+PASS: mobile home: no narrow viewport overflow
+PASS: keyboard starts at skip link
+PASS: skip link focuses main content
+PASS: mobile event: no narrow viewport overflow
+PASS: mismatched email focuses confirmation field
+○ Compiling /api/checkout/initialize ...
+PASS: mobile payment: no narrow viewport overflow
+PASS: status token is absent from sessionStorage
+PASS: refresh restores the recorded bank details without email
+PASS: failed upload preserves reference
+PASS: failed upload preserves sender
+○ Compiling /api/orders/[code]/proof ...
+PASS: upload retry uses the same submission ID and compressed image
+PASS: failed/retried upload created one proof attempt
+PASS: receipt submission creates no tickets
+prisma:error 
+Invalid `prisma.paymentProof.updateMany()` invocation:
+
+
+Transaction API error: Transaction already closed: A query cannot be executed on an expired transaction. The timeout for this transaction was 10000 ms, however 11711 ms passed since the start of the transaction. Consider increasing the interactive transaction timeout or doing less work in the transaction.
+FAILED: 
+Invalid `prisma.paymentProof.updateMany()` invocation:
+
+
+Transaction API error: Transaction already closed: A query cannot be executed on an expired transaction. The timeout for this transaction was 10000 ms, however 11711 ms passed since the start of the transaction. Consider increasing the interactive transaction timeout or doing less work in the transaction.
+waiting for server to shut down................................................................ done
+server stopped
+43 |   const [code] = await Promise.all([
+44 |     child.exited,
+45 |     capture ? pump(child.stdout as ReadableStream<Uint8Array>) : Promise.resolve(),
+46 |     capture ? pump(child.stderr as ReadableStream<Uint8Array>) : Promise.resolve(),
+47 |   ]);
+48 |   if (code !== 0) throw new Error(`Command failed (${code}): ${args.slice(1).join(" ")}`);
+                                 ^
+error: Command failed (1): .test-runtime/browser-check/step3-run.mjs
+      at runCommand (C:\Users\Tochi\Desktop\Silent Rave\scripts\fixture.ts:48:29)
+
+Bun v1.3.14 (Windows x64)
+error: script "db:fixture" exited with code 1
+
+Exit code: 1

@@ -1,0 +1,11 @@
+2026-10-02 19:39:04.390 WAT [12796] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+2026-10-02 19:39:04.392 WAT [12796] LOG:  listening on IPv4 address "127.0.0.1", port 51195
+2026-10-02 19:39:04.625 WAT [13488] LOG:  database system was shut down at 2026-10-02 19:37:43 WAT
+2026-10-02 19:39:04.701 WAT [12796] LOG:  database system is ready to accept connections
+2026-10-02 19:42:12.776 WAT [12796] LOG:  received fast shutdown request
+2026-10-02 19:42:13.362 WAT [12796] LOG:  aborting any active transactions
+2026-10-02 19:42:13.400 WAT [12796] LOG:  background worker "logical replication launcher" (PID 12916) exited with exit code 1
+2026-10-02 19:42:13.626 WAT [13424] LOG:  shutting down
+2026-10-02 19:42:13.926 WAT [13424] LOG:  checkpoint starting: shutdown immediate
+2026-10-02 19:44:56.159 WAT [13424] LOG:  checkpoint complete: wrote 1075 buffers (6.6%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.675 s, sync=157.782 s, total=162.448 s; sync files=404, longest=5.005 s, average=0.391 s; distance=5426 kB, estimate=5426 kB; lsn=0/1D332A0, redo lsn=0/1D332A0
+2026-10-02 19:45:04.953 WAT [12796] LOG:  database system is shut down

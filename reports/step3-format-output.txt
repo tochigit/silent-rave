@@ -1,0 +1,36 @@
+src/components/customer/cart.tsx 1906ms
+src/components/customer/checkout.tsx 104ms
+src/components/customer/contact-form.tsx 23ms
+src/components/customer/content-page.tsx 50ms
+src/components/customer/event-card.tsx 34ms
+src/components/customer/event-detail.tsx 95ms
+src/components/customer/events-browser.tsx 510ms
+src/components/customer/lookup.tsx 26ms
+src/components/customer/order-status.tsx 82ms
+src/components/customer/proof-form.tsx 346ms
+src/components/customer/shell.tsx 20ms
+src/components/customer/use-poll.ts 23ms
+src/lib/customer/compress-proof.ts 124ms
+src/lib/customer/format.ts 10ms
+src/lib/customer/types.ts 28ms
+src/lib/events/catalog.ts 125ms
+src/lib/events/calendar.ts 32ms
+src/lib/content/contact.ts 26ms
+src/lib/content/pages.ts 12ms
+bun : [error] No files matching the pattern were found: "src/app/(public)/**/*".
+At line:2 char:1
++ bun --no-env-file node_modules/prettier/bin/prettier.cjs --write 'src ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([error] No file...(public)/**/*".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+src/app/api/events/[slug]/calendar/[format]/route.ts 19ms
+src/app/api/events/[slug]/route.ts 8ms
+src/app/api/events/next-upcoming/route.ts 4ms
+src/app/api/events/route.ts 6ms
+src/app/api/pages/[slug]/route.ts 7ms
+src/app/api/contact/route.ts 37ms
+tests/step3/catalog.test.ts 70ms
+tests/step3/content.test.ts 37ms
+tests/step3/status.test.ts 49ms
+scripts/run-step3.ts 5ms (unchanged)

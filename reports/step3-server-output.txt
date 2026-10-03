@@ -1,0 +1,35 @@
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://127.0.0.1:60810
+- Network:       http://127.0.0.1:60810
+
+✓ Starting...
+✓ Ready in 110.4s
+○ Compiling / ...
+○ Compiling /api/auth/logout ...
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `23505`. Message: `Key (transfer_reference)=(DUPREF1791019910690) already exists.`
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://127.0.0.1:61131
+- Network:       http://127.0.0.1:61131
+
+✓ Starting...
+✓ Ready in 4.8s
+○ Compiling / ...
+○ Compiling /api/webhooks/resend ...
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://127.0.0.1:61201
+- Network:       http://127.0.0.1:61201
+
+✓ Starting...
+✓ Ready in 4.6s
+○ Compiling / ...
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://127.0.0.1:61228
+- Network:       http://127.0.0.1:61228
+
+✓ Starting...
+✓ Ready in 4.8s
+○ Compiling / ...

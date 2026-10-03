@@ -82,7 +82,9 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     databaseDir, port: pgPort, user: "postgres",
     password: dbPassword, authMethod: "scram-sha-256", persistent: true,
     // Windows otherwise inherits WIN1252; migrations and buyer names need UTF-8.
-    initdbFlags: ["--encoding=UTF8"],
+    // This newly owned cluster is disposable. Skip initialization-only fsync;
+    // normal database fsync/transactions stay enabled during acceptance tests.
+    initdbFlags: ["--encoding=UTF8", "--no-sync"],
     // Synchronous I/O avoids PostgreSQL 18's extra Windows I/O worker process.
     postgresFlags: ["-h", "127.0.0.1", "-c", "io_method=sync"], onLog: recordStartup, onError: recordStartup,
   });
@@ -90,9 +92,9 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(process.env)) if (value !== undefined) env[key] = value;
   Object.assign(env, {
-    NODE_ENV: "development", DATABASE_URL: `${databaseUrl}?connection_limit=8`,
+    NODE_ENV: "development", SILENT_RAVE_ISOLATED_FIXTURE: "1", DATABASE_URL: `${databaseUrl}?connection_limit=8`,
     DIRECT_URL: databaseUrl, TEST_DATABASE_URL: `${databaseUrl}?connection_limit=8`,
-    ROOT_DOMAIN: "localhost", ALLOW_DEV_ORIGIN: "", NEXT_TELEMETRY_DISABLED: "1",
+    ROOT_DOMAIN: "localhost", ALLOW_DEV_ORIGIN: "", NEXT_TELEMETRY_DISABLED: "1", CHECKPOINT_DISABLE: "1",
     STATUS_TOKEN_SECRET: randomBytes(32).toString("base64url"),
     STORAGE_SIGNING_SECRET: randomBytes(32).toString("base64url"),
     CRON_SECRET: randomBytes(24).toString("base64url"),
@@ -112,7 +114,9 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     const hasPid = pgCtl && await readFile(path.join(databaseDir, "postmaster.pid"), "utf8").then(() => true, () => false);
     if (pgCtl && (started || hasPid)) {
       // pg_ctl waits for all workers in this exact owned cluster to stop.
-      await runPgControl([pgCtl, "-D", databaseDir, "-w", "-t", "120", "-m", "fast", "stop"], env, path.join(runDir, "control-stop.log"), capture);
+      // Cold Windows filesystem sync was observed taking 162 seconds. This is
+      // shutdown of the owned disposable cluster, not a test assertion retry.
+      await runPgControl([pgCtl, "-D", databaseDir, "-w", "-t", "300", "-m", "fast", "stop"], env, path.join(runDir, "control-stop.log"), capture);
       started = false;
     } else if (started) { await postgres.stop(); started = false; }
     await rm(runDir, { recursive: true, force: true });

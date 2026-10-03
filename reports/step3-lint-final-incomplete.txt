@@ -1,0 +1,5 @@
+Command: bun --no-env-file run lint
+$ eslint .
+error: script "lint" exited with code 255
+
+Exit code: 255

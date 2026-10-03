@@ -16,6 +16,9 @@ import { db } from "../src/lib/db";
 const FIXTURE_SLUG = "dev-fixture-silent-rave";
 
 async function main() {
+  if (process.env.NODE_ENV === "production" || process.env.SILENT_RAVE_ISOLATED_FIXTURE !== "1" || !process.env.TEST_DATABASE_URL || process.env.DATABASE_URL !== process.env.TEST_DATABASE_URL || new URL(process.env.DATABASE_URL).hostname !== "127.0.0.1" || new URL(process.env.DATABASE_URL).pathname !== "/silentrave_test") {
+    throw new Error("Refusing fixture content outside the owned disposable database.");
+  }
   const existing = await db.event.findUnique({ where: { slug: FIXTURE_SLUG } });
   if (existing) {
     console.log(`✔ dev fixture event already present (${FIXTURE_SLUG}) — skipping event seed`);
@@ -56,6 +59,11 @@ async function main() {
   }
 
   // Active payment account — exactly one (partial unique index enforces it).
+  const fixtureEvent = await db.event.findUniqueOrThrow({ where: { slug: FIXTURE_SLUG } });
+  await db.event.update({ where: { id: fixtureEvent.id }, data: { bannerImageUrl: "/fixture-poster.jpeg" } });
+  for (const slug of ["about", "contact"]) {
+    await db.sitePage.upsert({ where: { slug }, update: {}, create: { slug, title: slug === "about" ? "About Silent Rave · local fixture" : "Contact · local fixture", body: "Disposable local fixture content. The owner will supply and edit real public information before launch.", isPublished: true, contactOrganizerId: slug === "contact" ? fixtureEvent.organizerId : null } });
+  }
   const active = await db.paymentAccount.findFirst({ where: { isActive: true } });
   if (!active) {
     await db.paymentAccount.create({

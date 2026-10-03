@@ -1,0 +1,4 @@
+Command: bun --no-env-file node_modules/prettier/bin/prettier.cjs --write scripts/browser-step3.ts
+scripts/browser-step3.ts 1055ms
+
+Exit code: 0
