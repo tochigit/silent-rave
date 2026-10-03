@@ -1,0 +1,27 @@
+src/components/customer/cart.tsx 1804ms
+src/components/customer/checkout.tsx 233ms (unchanged)
+src/components/customer/contact-form.tsx 92ms (unchanged)
+src/components/customer/content-page.tsx 13ms (unchanged)
+src/components/customer/event-card.tsx 28ms (unchanged)
+src/components/customer/event-detail.tsx 191ms
+src/components/customer/events-browser.tsx 109ms
+src/components/customer/lookup.tsx 47ms (unchanged)
+src/components/customer/order-status.tsx 82ms (unchanged)
+src/components/customer/proof-form.tsx 48ms (unchanged)
+src/components/customer/shell.tsx 29ms (unchanged)
+src/components/customer/use-poll.ts 31ms
+src/lib/customer/compress-proof.ts 19ms (unchanged)
+src/lib/customer/format.ts 9ms (unchanged)
+src/lib/customer/types.ts 14ms (unchanged)
+src/lib/content/contact.ts 13ms (unchanged)
+src/lib/content/pages.ts 8ms (unchanged)
+src/lib/events/calendar.ts 19ms (unchanged)
+src/lib/events/catalog.ts 71ms (unchanged)
+tests/step3/catalog.test.ts 57ms (unchanged)
+tests/step3/content.test.ts 26ms (unchanged)
+tests/step3/status.test.ts 59ms
+scripts/browser-step3.ts 107ms
+scripts/run-step3.ts 5ms (unchanged)
+scripts/dev-fixture.ts 11ms
+next.config.ts 10ms (unchanged)
+src/app/globals.css 873ms

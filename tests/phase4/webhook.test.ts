@@ -20,7 +20,9 @@ test("webhook valid signature/tag-before-message-id, replay no-op, bounce wins o
 test("webhook missing/invalid/stale/future signatures rejected; malformed JSON and oversized body", async () => {
   const event = { type: "email.delivered", data: { email_id: "unmatched" } };
   expect((await post(event, { missing: true })).status).toBe(401); expect((await post(event, { invalid: true })).status).toBe(401);
-  expect((await post(event, { time: new Date(Date.now() - 301_000) })).status).toBe(401); expect((await post(event, { time: new Date(Date.now() + 301_000) })).status).toBe(401);
+  // A full minute outside the inclusive replay window survives second rounding
+  // and HTTP transit; the production five-minute verifier remains unchanged.
+  expect((await post(event, { time: new Date(Date.now() - 360_000) })).status).toBe(401); expect((await post(event, { time: new Date(Date.now() + 360_000) })).status).toBe(401);
   expect((await post("{" )).status).toBe(400); expect((await post("x".repeat(65537))).status).toBe(413);
   expect((await post(event)).status).toBe(404); expect((await post({ type: "email.opened" })).status).toBe(200);
 });

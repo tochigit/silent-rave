@@ -19,6 +19,7 @@
     "keygen:ed25519": "bun scripts/keygen-ed25519.ts",
     "test:phase3b": "bun --no-env-file scripts/run-phase3b.ts",
     "test:phase4": "bun --no-env-file scripts/run-phase4.ts",
+    "test:step3": "bun --no-env-file scripts/run-step3.ts",
     "email:dev": "bun scripts/email-dev-loop.ts"
   },
   "dependencies": {

@@ -3,7 +3,7 @@ import { Webhook } from "svix";
 import { z } from "zod";
 import { db } from "@/lib/db";
 export const runtime = "nodejs";
-export const WEBHOOK_BODY_LIMIT = 64 * 1024;
+const WEBHOOK_BODY_LIMIT = 64 * 1024;
 async function rawBody(request: NextRequest) {
   const declared = Number(request.headers.get("content-length") ?? 0);
   if (declared > WEBHOOK_BODY_LIMIT) throw new Error("TOO_LARGE");

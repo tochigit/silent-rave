@@ -19,6 +19,22 @@ EmailJob (references Order)
 
 ---
 
+## Step 3 forward additions
+
+Step 3 forward migration adds `site_pages` for owner-editable About/Contact.
+`slug` is the primary key, constrained to `about`/`contact`; `title`, escaped
+plain-text `body`, `is_published` (default false), `updated_at`, and nullable
+`contact_organizer_id` FK (ON DELETE SET NULL). Public DTO excludes routing fields.
+No production editorial seed or editing UI is included; Step 4 supplies the editor.
+Contact uses that organizer's contact_email server-side, never a client recipient.
+
+Orders gain nullable JSONB `payment_account_snapshot`: bank_name/account_number/
+account_name, set to the exact checkout response at order creation. Later bank
+edits never update it. Legacy orders are backfilled from their referenced account
+at migration time; earlier edited values cannot be recovered by this migration.
+Status returns this allowlisted snapshot only after token verification, along
+with total/event title, pending-proof state and time-based submission eligibility.
+
 ## `organizers`
 
 | Column | Type | Constraints |

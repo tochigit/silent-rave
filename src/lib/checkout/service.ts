@@ -267,6 +267,7 @@ export async function initializeCheckout(input: InitializeInput): Promise<Initia
               status: "AWAITING_PAYMENT",
               source: "ONLINE",
               paymentAccountId: activeAccount.id,
+              paymentAccountSnapshot: { bank_name: activeAccount.bankName, account_number: activeAccount.accountNumber, account_name: activeAccount.accountName },
               holdExpiresAt,
               firstProofAt: null,
               proofAttempts: 0,

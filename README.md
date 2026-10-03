@@ -2,10 +2,12 @@
 
 Next.js and Prisma/PostgreSQL campus event ticketing with manual bank-transfer
 review. The backend includes queued email delivery, ticket PDFs, owner refunds
-and resends. The customer site, full dashboards, offline scanner and hosted
-integrations are later milestones. See [CHECKPOINT.md](CHECKPOINT.md) for current
-verification and review status, and [.docs/PHASE4_REPORT.md](.docs/PHASE4_REPORT.md)
-for the Phase 4 implementation and launch checklist.
+and resends. Step 3 adds the public catalog, guest checkout, receipt upload,
+private order status/recovery, calendars and content/contact pages. Full dashboards,
+offline scanner and hosted integrations remain later milestones. See
+[CHECKPOINT.md](CHECKPOINT.md) and [.docs/STEP3_REPORT.md](.docs/STEP3_REPORT.md)
+for verification and review status; [.docs/PHASE4_REPORT.md](.docs/PHASE4_REPORT.md)
+preserves the completed backend evidence and launch checklist.
 
 ## Local verification
 
@@ -15,7 +17,7 @@ Linux CI uses `bun install --frozen-lockfile` with `bun.lock`. Both paths
 are checked by CI. Then run:
 
 ```sh
-bun --no-env-file run test:phase4
+bun --no-env-file run test:step3
 bun run lint
 bun run typecheck
 bun run build
@@ -23,12 +25,17 @@ bun run build
 
 The test command creates a new embedded PostgreSQL cluster, applies migrations,
 seeds fake owner/catalog data, starts an app on its own loopback port, runs all
-Phase 3b and Phase 4 files, then HTTP tests with failing email kicks, and stops
+Phase 3b, Phase 4 and Step 3 files, then HTTP tests with failing email kicks, and stops
 only its own processes. Install Python 3.13 and the PDF verification dependencies
 with `python -m pip install -r scripts/requirements-pdf-test.txt` first. Complete
-output is saved to `reports/phase4-<platform>-test-output.txt`; downloaded CI
+output is saved to `reports/step3-<platform>-test-output.txt`; downloaded CI
 evidence uses a separate `-ci-test-output.txt` suffix. The baseline-only command
-`bun --no-env-file run test:phase3b` remains available. Debug app output is ignored.
+`bun --no-env-file run test:phase3b` and backend `test:phase4` remain available.
+Node 24 LTS must be on PATH for Next's CSS workers; Bun runs the guarded fixture/tests
+with dotenv disabled and Next receives their explicit local environment.
+Fixture launchers use supported Next Webpack mode after local Turbopack CSS
+worker stalls; default production build remains separately verified.
+Debug app output is ignored.
 
 Test data and private files live in a unique directory under `.test-runtime/`.
 Cleanup verifies that path before removing it. The command never writes root
@@ -47,6 +54,21 @@ command running. It uses strict Origin checks: public `localhost:3000`, owner
 `admin.localhost:3000`, staff `staff.localhost:3000`. The fixture account is
 `owner@silentrave.ng` / `silentrave-dev-owner` (local test data only). The fixture
 is removed when the command stops; it never seeds a real project.
+
+The focused browser fallback is `bun --no-env-file run db:fixture --browser-step3`.
+It uses installed Chrome and `playwright-core` from ignored
+`.test-runtime/browser-check/node_modules` (install only there with npm).
+`BROWSER_EXECUTABLE` can select another installed Chromium. No dependency locks
+are changed for browser QA. Complete output/screenshots are under `reports/step3-*`.
+Only public cart selection and optional holder names use tab-scoped sessionStorage;
+tokens, checkout email/phone and receipt files are never stored there. Order links
+are bearer credentials; save the private link and do not share it.
+
+The new reviewed forward migration adds About/Contact content plus checkout bank
+snapshots. Existing orders are backfilled from their referenced account as it
+exists at migration time; past edits cannot be reconstructed. Fresh checkouts
+record exact bank instructions. Missing snapshots never use a different active
+bank. Content editing UI remains Step 4; production has no fake content seed.
 
 For the real application, copy `.env.example` into a gitignored `.env`, provide
 the intended database/secrets, and use `bun run dev`. Use `db:deploy` for reviewed

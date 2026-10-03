@@ -158,6 +158,7 @@ model Organizer {
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   events       Event[]
+  pages        SitePage[]
 
   @@map("organizers")
 }
@@ -258,6 +259,7 @@ model Order {
   // the account the buyer was told to pay (snapshotted at creation);
   // nullable only for admin-issued orders (CHECK in SQL)
   paymentAccountId  String?      @map("payment_account_id") @db.Uuid
+  paymentAccountSnapshot Json?   @map("payment_account_snapshot")
   // hold policy (04): created_at + 15min while AWAITING_PAYMENT;
   // first_proof_at + 48h after the first proof; never extended. Nullable
   // only for admin-issued orders (CHECK in SQL).
@@ -556,6 +558,18 @@ model EmailJob {
   @@index([resendMessageId], map: "email_jobs_resend_message_id_idx")
   @@index([status, nextAttemptAt])
   @@map("email_jobs")
+}
+
+/// Public editorial content; contact routing stays server-side. Owner UI is Step 4.
+model SitePage {
+  slug String @id
+  title String
+  body String
+  isPublished Boolean @default(false) @map("is_published")
+  contactOrganizerId String? @map("contact_organizer_id") @db.Uuid
+  contactOrganizer Organizer? @relation(fields: [contactOrganizerId], references: [id], onDelete: SetNull)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  @@map("site_pages")
 }
 
 model EmailWorkerGate {

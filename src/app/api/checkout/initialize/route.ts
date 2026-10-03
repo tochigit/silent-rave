@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 }
 
 /** x-forwarded-for first hop, else "local" (dev server has no remote addr). */
-export function clientIp(request: NextRequest): string {
+function clientIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();

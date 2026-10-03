@@ -11,6 +11,13 @@ List published events. Supports the List/Month/Day views described in `01-contex
 
 Query params: `view` (`list` | `month` | `day`), `date`, `search`, `page`.
 
+Step 3 additions: `city` (case-insensitive exact city), `filter=all|upcoming`.
+Pages contain 12 events, ordered by start then ID. `date` is `YYYY-MM-DD`
+(day/list) or `YYYY-MM` (month); date filters include confirmed events overlapping
+that Lagos day/month. Unconfirmed dates return null timestamps; draft/cancelled
+events are excluded from lists. Invalid query/date returns 400. Month calendars
+show the current results page and include pagination; day links retain filters.
+
 Response:
 ```json
 {
@@ -86,6 +93,13 @@ Errors: `409` insufficient inventory on any line (nothing partially reserved), `
 Multipart. Fields: `proof` (image), `transfer_reference`, `sender_name`, `client_submission_id`; requires the order's `status_token` (header or query). Idempotent on `client_submission_id`. Full validation, storage and transition contract in `04-manual-payment.md`. Returns `{ status, attempt_no, late?: true }`. A proof on an `EXPIRED` order with no proof yet is accepted within `LATE_PROOF_GRACE` (`late: true`, order stays `EXPIRED`; see `04` "Late proofs"). Errors: `409` duplicate `transfer_reference` among pending/approved proofs, `410` hold expired and outside the late-proof grace, `422` bad file, `403` resubmissions exhausted. An unknown order code, a wrong token and a missing token are indistinguishable: all return the same `404` body, exactly as on the status route.
 
 ### `GET /api/orders/:code/status`
+
+Step 3 allowlisted additions: `amount_kobo`, `event_title`, `payment_account`
+(the checkout snapshot, never a currently active account), `pending_proof`,
+`can_submit_proof`, `late_proof_deadline`; approved tickets include `voided`.
+Null legacy snapshots do not fall back to a different bank account. All status
+responses are private/no-store/no-referrer. Pending proofs remain visible at
+expiry, including timely proofs reaching the 48-hour review cap.
 Requires `status_token`. Returns `status`, `proof_attempts`, `max_resubmissions`, latest reject reason/message if `NEEDS_RESUBMIT`/`REJECTED`, `hold_expires_at`, `late_proof_received` when an `EXPIRED` order has a late proof, and — only when `APPROVED` — the ticket list with download links to `GET /api/orders/:code/tickets/:ticketId/pdf` (requires `status_token`; the PDF is generated on demand and cached, so the page works before the email worker has run; Phase 4). An unknown code, wrong token or missing token returns one uniform `404`. No other PII beyond what the buyer entered.
 
 ### `GET /api/orders/:code/tickets/:ticketId/pdf`
@@ -99,9 +113,21 @@ Requires `status_token` (header or query, since it is used as a link). Unknown o
 ## Static content
 
 ### `GET /api/pages/:slug`
+
+Step 3 resolves the open persistence decision: `site_pages` stores only `about`
+and `contact`, published content returns `{slug,title,body,updated_at}`. Missing,
+unpublished and unsupported slugs return 404. Body is escaped plain text.
+Organizer contact routing stays server-side. Owner editing UI belongs to Step 4.
 Backs the About/Contact static pages if content-managed rather than hardcoded. (**OPEN**: confirm with client whether About/Contact need to be admin-editable or can be static JSX — if static, this route isn't needed at all.)
 
 ### `POST /api/contact`
+
+Step 3: strict `{name,email,message}` input, name 1-200, valid email <=254,
+message 10-5000 characters, 16 KiB streaming body cap, 5 requests/hour/IP.
+Recipient is the published Contact page's organizer, never client supplied.
+Capture/Resend transport is independent of order jobs. Success 202, malformed
+400, too large 413, limited 429, unavailable configuration/provider 503. Messages
+are not persisted; fixed sender/reply-to prevents user-controlled mail headers.
 Contact form submission ("Send Brief" equivalent from the reference site). Sends an email to the organizer's contact address; no DB persistence required unless the client wants submitted briefs logged.
 
 ---
