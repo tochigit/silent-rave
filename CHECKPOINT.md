@@ -20,7 +20,7 @@ Webhook preflight COMPLETE: 4 pass, 0 fail, 23 expectations, runner exit0 and cl
 
 First full run FAILED:149 pass,11 fail,1 error over160 cases;112 baseline cases passed, Phase4 PDF/API timeouts and two new status timeouts. Captured reports/step3-first-full-run-failed.txt; cleanup passed; failing-kick group correctly not run after failure. 13/15 new cases passed including approved/voided/refunded PDF behavior. Test/transaction limits unchanged. Runner now splits baseline/Phase4/Step3 with fresh owned app/test processes on one owned DB, plus bounded invalid-input route/native-library warmups. Second full run pending.
 
-Prisma generation and local lint passed. Combined types failed at app stage because Webpack validators revealed two pre-existing unused route exports; removed only export keywords, preserving helper/body-limit/verifier behavior. Final both-types rerun ACTIVE, output reports/step3-typecheck-final-output.txt. Old tooling4-error and other incomplete attempts retained; never treated as passes. Build/browser/platform checks pending; lint must recheck final harness changes.
+Prisma generation and local lint passed. Combined types initially failed at app stage because Webpack validators revealed two pre-existing unused route exports; removed only export keywords, preserving helper/body-limit/verifier behavior. Final application AND tooling type checks PASSED (exit 0), output reports/step3-typecheck-final-output.txt. Old tooling4-error and other incomplete attempts retained; never treated as passes. Build/browser/platform checks pending; lint must recheck final harness changes.
 
 Browser plugin has no connected browser; desktop native pipe unavailable. Installed temporary playwright-core in ignored .test-runtime/browser-check for installed Chrome fallback. Reproduce browser check with bun --no-env-file run db:fixture --browser-step3 after tests. Capture only; script uses actual UI/backend and saves screenshots/output. No root .env or real recipients used.
 
@@ -28,6 +28,6 @@ No PostgreSQL process remained after second fixture shutdown; third cleanup pass
 
 ## Next
 
-Finish focused webhook, then full 147-case regression, new Step 3 suite, lint/both types/build, browser and Windows/Linux CI. Save full outputs and final .docs/STEP3_REPORT.md, commit/push/open focused PR, verify latest head/checks and stop for review.
+Focused webhook complete. Second full local regression ACTIVE. Draft PR #3 is published: https://github.com/tochigit/silent-rave/pull/3, implementation head 08a81441d4d2a03415dc1665f5ead04e5aa8f1ad. Windows/Linux CI run 37101263963 ACTIVE. Finish regression, final lint/build and browser; save full outputs and final .docs/STEP3_REPORT.md, publish final evidence and verify latest PR head/checks, then stop for review.
 
 Hosted durable storage/pooler/limits/Resend/DNS/scheduler/runtime/real content/deployed smoke remain unverified. No hosted changes, real email or deployment.

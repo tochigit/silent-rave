@@ -1,6 +1,7 @@
 # Step 3 customer experience report
 
 ACTIVE, incomplete. Branch feat/step3-customer-experience, base main 7fcf42d.
+Draft PR #3: https://github.com/tochigit/silent-rave/pull/3.
 Only customer experience authorized. No merge, later step or deployment.
 
 ## Start and preflight
@@ -142,3 +143,22 @@ carries no token. Failed warmup contracts fail immediately. Production gates,
 SQL lock order, runtime database fsync and assertion/transaction limits unchanged.
 Only installed Python3.14 is available locally; CI explicitly uses3.13. The next
 run must verify the native imports rather than infer a PDF pass from setup.
+
+Both final type checks PASSED, combined exit 0; full output
+reports/step3-typecheck-final-output.txt. Windows AND Linux CI run 37101263963
+PASSED at implementation head 08a81441d4d2a03415dc1665f5ead04e5aa8f1ad:
+162 tests each (112 + 33 + 15 + 2), lint, both types, production build and cleanup.
+Complete artifacts retained in reports/step3-ci-{linux,win32}-test-output.txt.
+
+Second full local run FAILED:159 pass/1 fail across160 cases, final kick group
+not run. All112 baseline and33 Phase4 cases passed, including native PDF
+inspection;14/15 new cases passed. Full output
+reports/step3-second-full-run-failed.txt; owned cleanup passed. The real global
+expiry sweep encountered a Phase4 test's deliberately inconsistent leftover
+order: APPROVED was changed to PROOF_SUBMITTED without restoring reserved,
+and its fixture hold is only60s. A longer local run allows that hold to expire;
+the shorter CI run did not. Customer group now receives a fresh owned database
+after the previous group is stopped/cleaned. No global expiry logic, counter
+constraint, existing assertions, timeouts or fixture hold values changed.
+The entire suite and latest-head CI must rerun after this harness correction.
+Browser fixture verification ACTIVE; production build and final lint pending.

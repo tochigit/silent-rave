@@ -276,8 +276,17 @@ try {
           : []),
       ];
   for (const group of groups) {
+    if (group.mode === "customer") {
+      // Legacy tests deliberately alter order/counter rows. Their short holds
+      // can lapse during a slow local run; the customer's real global expiry
+      // sweep must start from a consistent fresh database, not those leftovers.
+      await fixture.cleanup();
+      fixture = undefined;
+      fixture = await startFixture((chunk) => output.write(chunk));
+      log("Customer group: fresh owned database; prior fixture cleanup passed.");
+    }
     log(
-      `Test group: ${group.mode}; same owned database; fresh app/test processes.`,
+      `Test group: ${group.mode}; isolated database; fresh app/test processes.`,
     );
     if (
       group.mode === "phase4" &&
