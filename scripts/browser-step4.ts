@@ -111,8 +111,9 @@ page.setDefaultTimeout(30000);
 page.setDefaultNavigationTimeout(180000);
 const errors: string[] = [];
 page.on("pageerror", () => errors.push("browser JavaScript error"));
-const adminBase = "http://admin.localhost:3000",
-  staffBase = "http://staff.localhost:3000";
+const appPort = new URL(process.env.TEST_BASE_URL!).port;
+const adminBase = `http://admin.localhost:${appPort}`,
+  staffBase = `http://staff.localhost:${appPort}`;
 try {
   const event = await db.event.findUniqueOrThrow({
     where: { slug: "dev-fixture-silent-rave" },
@@ -269,7 +270,17 @@ try {
       (f: HTMLElement) => ((f.parentElement as HTMLDetailsElement).open = true),
     );
   await page.getByLabel("Ticket QR token").fill(token);
-  await page.getByRole("button", { name: "Check ticket", exact: true }).click();
+  await page
+    .getByLabel("Or choose a QR image")
+    .setInputFiles({
+      name: "fixture-ticket.png",
+      mimeType: "image/png",
+      buffer: await QRCode.toBuffer(token, {
+        width: 500,
+        margin: 4,
+        errorCorrectionLevel: "Q",
+      }),
+    });
   await page
     .locator("#result")
     .filter({ hasText: /OFFLINE.*VALID/ })

@@ -1,4 +1,4 @@
-import { runCommand, startFixture } from "./fixture";
+import { freePort, runCommand, startFixture } from "./fixture";
 import { spawn } from "node:child_process";
 
 // The fixture stays alive only while this dev command runs; it never writes .env.
@@ -7,12 +7,28 @@ try {
   console.log(
     "Starting isolated fixture app on localhost:3000; Ctrl+C stops it.",
   );
-  if (process.argv.includes("--browser-step3") || process.argv.includes("--browser-step4")) {
+  if (
+    process.argv.includes("--browser-step3") ||
+    process.argv.includes("--browser-step4")
+  ) {
     const step = process.argv.includes("--browser-step4") ? "step4" : "step3";
-    await runCommand([process.execPath, "--no-env-file", "scripts/build-scanner.ts"], fixture.env);
+    const port = step === "step4" ? await freePort() : 3000;
+    fixture.env.TEST_BASE_URL = `http://localhost:${port}`;
+    await runCommand(
+      [process.execPath, "--no-env-file", "scripts/build-scanner.ts"],
+      fixture.env,
+    );
     const server = spawn(
       "node",
-      ["node_modules/next/dist/bin/next", "dev", "--webpack", "--hostname", "127.0.0.1", "--port", "3000"],
+      [
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "--webpack",
+        "--hostname",
+        "127.0.0.1",
+        "--port",
+        String(port),
+      ],
       {
         env: fixture.env,
         windowsHide: true,
@@ -27,7 +43,7 @@ try {
         if (server.exitCode !== null)
           throw new Error("Browser fixture app exited.");
         try {
-          const r = await fetch("http://localhost:3000", {
+          const r = await fetch(fixture.env.TEST_BASE_URL, {
             signal: AbortSignal.timeout(5000),
           });
           if (r.ok) {

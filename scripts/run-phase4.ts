@@ -229,6 +229,10 @@ try {
             const response = await fetch(env.TEST_BASE_URL + target, { headers: { cookie }, signal: AbortSignal.timeout(120000) });
             if (response.status !== 200) throw new Error(`Step 4 warmup failed: ${target}`); await response.arrayBuffer();
           }
+          for (const target of ["/api/admin/orders/issue", "/api/auth/password"]) {
+            const response = await fetch(env.TEST_BASE_URL + target, { method: "POST", headers: { cookie, host: "admin.localhost:3000", origin: "http://admin.localhost:3000", "content-type": "application/json" }, body: "{}", signal: AbortSignal.timeout(120000) });
+            if (response.status !== 400) throw new Error(`Step 4 controller warmup failed: ${target}`); await response.arrayBuffer();
+          }
         }
         return env;
       }

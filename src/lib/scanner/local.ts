@@ -120,7 +120,13 @@ export function offlineDecision(
   token: string,
   now = Date.now(),
 ) {
-  if (now + state.offset >= Math.min(new Date(state.manifest.offline_until).getTime(), new Date(state.manifest.ends_at).getTime()))
+  if (
+    now + state.offset >=
+    Math.min(
+      new Date(state.manifest.offline_until).getTime(),
+      new Date(state.manifest.ends_at).getTime(),
+    )
+  )
     return {
       result: "expired",
       message: "Offline preparation has expired. Connect and prepare again.",

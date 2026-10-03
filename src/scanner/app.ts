@@ -135,9 +135,17 @@ async function identify() {
   return user;
 }
 async function expirePreparation() {
-  if (!state || Date.now() + state.offset < new Date(state.manifest.ends_at).getTime() || !state.manifest.tickets.length) return;
+  if (
+    !state ||
+    Date.now() + state.offset < new Date(state.manifest.ends_at).getTime() ||
+    !state.manifest.tickets.length
+  )
+    return;
   // Clear holder data at event end, while preserving unsynced admission evidence.
-  await mutate(saved => saved && ({ ...saved, manifest: { ...saved.manifest, tickets: [] } }));
+  await mutate(
+    (saved) =>
+      saved && { ...saved, manifest: { ...saved.manifest, tickets: [] } },
+  );
 }
 async function loadEvents() {
   await identify();
@@ -206,7 +214,9 @@ async function sync() {
         ),
       );
       const conflicts = response.results.filter((r: { result: string }) =>
-        ["conflict", "duplicate", "void", "invalid", "wrong_event"].includes(r.result),
+        ["conflict", "duplicate", "void", "invalid", "wrong_event"].includes(
+          r.result,
+        ),
       );
       await mutate((old) => {
         if (
@@ -304,7 +314,10 @@ async function scanToken(token: string) {
   busy = true;
   try {
     state = await readState();
-    if (authBlocked || currentUser && state?.userId !== currentUser) throw new Error("Sign in as the preparing staff member before continuing. Pending scans remain saved.");
+    if (authBlocked || (currentUser && state?.userId !== currentUser))
+      throw new Error(
+        "Sign in as the preparing staff member before continuing. Pending scans remain saved.",
+      );
     if (!state) throw new Error("Connect and prepare before scanning.");
     // Unsynced local admissions must be reconciled before taking the online path.
     if (!navigator.onLine || state.outbox.length) await admitOffline(token);
@@ -559,4 +572,9 @@ async function boot() {
   }
 }
 void boot();
-setInterval(() => { render(); void expirePreparation().catch(() => show("Could not clear ended-event preparation.", "error")); }, 30000);
+setInterval(() => {
+  render();
+  void expirePreparation().catch(() =>
+    show("Could not clear ended-event preparation.", "error"),
+  );
+}, 30000);

@@ -141,8 +141,8 @@ export async function issueOrder(
     for (const l of lines)
       for (let n = 0; n < l.quantity; n++) {
         const id = randomUUID();
-      const token = signTicketToken(id, input.event_id);
-      await tx.$executeRaw`INSERT INTO ticket_units (id, order_id, event_id, tier_id, holder_name, qr_token)
+        const token = signTicketToken(id, input.event_id);
+        await tx.$executeRaw`INSERT INTO ticket_units (id, order_id, event_id, tier_id, holder_name, qr_token)
         VALUES (${id}::uuid, ${created.id}::uuid, ${input.event_id}::uuid, ${l.tier_id}::uuid, ${l.holder_names?.[n] ?? null}, ${token})`;
       }
     await tx.emailJob.create({

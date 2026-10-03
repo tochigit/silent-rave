@@ -9,9 +9,19 @@ const build = await Bun.build({
   minify: true,
 });
 if (!build.success) throw new Error(build.logs.join("\n"));
-for (const size of [192, 512]) await sharp(await readFile("public/scanner-icon.svg")).resize(size, size).png().toFile(`public/scanner-icon-${size}.png`);
+for (const size of [192, 512])
+  await sharp(await readFile("public/scanner-icon.svg"))
+    .resize(size, size)
+    .png()
+    .toFile(`public/scanner-icon-${size}.png`);
 const hash = createHash("sha256");
-for (const name of ["scanner.js", "scanner.html", "scanner.css"])
+for (const name of [
+  "scanner.js",
+  "scanner.html",
+  "scanner.css",
+  "scanner.webmanifest",
+  "scanner-icon.svg",
+])
   hash.update(await readFile(`public/${name}`));
 const version = hash.digest("hex").slice(0, 16);
 // Cache only the generic shell and public code. Never cache API, login, RSC,
