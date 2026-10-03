@@ -183,7 +183,29 @@ async function prepare() {
       offset: new Date(manifest.server_time).getTime() - Date.now(),
       outbox: [],
     }));
-    await navigator.serviceWorker?.ready;
+    if (!navigator.serviceWorker)
+      throw new Error(
+        "This browser cannot cache the offline scanner. Use a supported browser before relying on offline reload.",
+      );
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => {
+          timer = setTimeout(
+            () =>
+              reject(
+                new Error(
+                  "Offline cache is not ready. Stay connected and retry preparation.",
+                ),
+              ),
+            12000,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
     show("Prepared. The scanner can now work during a network outage.");
   } catch (error) {
     show((error as Error).message, "error");
@@ -561,10 +583,11 @@ document.addEventListener("visibilitychange", () => {
 });
 async function boot() {
   try {
-    await navigator.serviceWorker?.register("/scanner-sw.js", { scope: "/" });
     state = await readState();
     await expirePreparation();
     render();
+    if (navigator.onLine)
+      await navigator.serviceWorker?.register("/scanner-sw.js", { scope: "/" });
     await loadEvents();
     void sync();
   } catch (error) {

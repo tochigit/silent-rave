@@ -67,10 +67,26 @@ export async function checkIn(
           409,
           "Scan identifier already belongs to another request.",
         );
+      const previousUnit = existing.ticketId
+        ? await tx.ticketUnit.findUnique({
+            where: { id: existing.ticketId },
+            select: ticketSelect,
+          })
+        : null;
       return {
         client_scan_id: existing.clientScanId,
         result: existing.result.toLowerCase(),
         idempotent: true,
+        ...(previousUnit &&
+        ["VALID", "DUPLICATE", "CONFLICT"].includes(existing.result)
+          ? {
+              tier_name: previousUnit.tier.name,
+              holder_name: previousUnit.holderName,
+              event_name: previousUnit.event.title,
+              checked_in_at: previousUnit.checkedInAt?.toISOString(),
+              checked_in_by_name: previousUnit.checkedInByStaff?.name,
+            }
+          : {}),
       };
     }
     const event = await tx.event.findUnique({
@@ -116,7 +132,9 @@ export async function checkIn(
         else if (
           unit.voidedAt ||
           order?.status !== "APPROVED" ||
-          event.status === "CANCELLED" || !event.isDateConfirmed || event.endsAt <= new Date()
+          event.status === "CANCELLED" ||
+          !event.isDateConfirmed ||
+          event.endsAt <= new Date()
         )
           result = "VOID";
         else if (unit.checkInStatus === "NOT_CHECKED_IN") {

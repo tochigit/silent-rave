@@ -405,7 +405,13 @@ export async function adminOperation(
     }
     const input = await body(
       request,
-      method === "PATCH" ? eventSchema.partial().extend({ status: z.enum(["DRAFT", "PUBLISHED", "CANCELLED"]).optional() }) : eventSchema,
+      method === "PATCH"
+        ? eventSchema
+            .partial()
+            .extend({
+              status: z.enum(["DRAFT", "PUBLISHED", "CANCELLED"]).optional(),
+            })
+        : eventSchema,
     );
     const event = await db.$transaction(async (tx) => {
       const previous = id
@@ -550,7 +556,13 @@ export async function adminOperation(
         ? null
         : await body(
             request,
-            method === "PATCH" ? tierSchema.partial().extend({ sort_order: z.number().int().min(0).max(10000).optional() }) : tierSchema,
+            method === "PATCH"
+              ? tierSchema
+                  .partial()
+                  .extend({
+                    sort_order: z.number().int().min(0).max(10000).optional(),
+                  })
+              : tierSchema,
           );
     const tier = await db.$transaction(async (tx) => {
       if (path[0] === "tiers")
@@ -643,6 +655,15 @@ export async function adminOperation(
     const isVenue = path[0] === "venues";
     if (method === "DELETE") {
       await db.$transaction(async (tx) => {
+        if (
+          await tx.event.count({
+            where: isVenue ? { venueId: id } : { organizerId: id },
+          })
+        )
+          throw new OperationError(
+            409,
+            "This record is referenced by an event and cannot be deleted.",
+          );
         if (isVenue) await tx.venue.delete({ where: { id } });
         else await tx.organizer.delete({ where: { id } });
         await writeAudit(tx, {
@@ -657,7 +678,9 @@ export async function adminOperation(
     const input = isVenue
       ? await body(
           request,
-          method === "PATCH" ? venueSchema.partial().extend({ country: text.optional() }) : venueSchema,
+          method === "PATCH"
+            ? venueSchema.partial().extend({ country: text.optional() })
+            : venueSchema,
         )
       : await body(
           request,

@@ -59,6 +59,16 @@ export async function body<T>(
 export function failure(error: unknown) {
   if (error instanceof OperationError)
     return reply({ error: error.message }, error.status);
+  // PostgreSQL connector versions can surface a Restrict FK violation as an
+  // unknown Prisma error. Classify it without logging its SQL or parameters.
+  if (
+    error instanceof Prisma.PrismaClientUnknownRequestError &&
+    error.message.toLowerCase().includes("foreign key constraint")
+  )
+    return reply(
+      { error: "This record is referenced and cannot be deleted." },
+      409,
+    );
   if (
     error instanceof Prisma.PrismaClientKnownRequestError &&
     ["P2002", "P2003", "P2004", "P2014", "P2025"].includes(error.code)
