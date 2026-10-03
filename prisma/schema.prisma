@@ -453,6 +453,7 @@ model StaffUser {
   role         StaffRole
   invitedBy    String?   @map("invited_by") @db.Uuid // null for the first owner account
   isActive     Boolean   @default(true) @map("is_active") // deactivate instead of delete, preserves audit trail
+  mustChangePassword Boolean @default(false) @map("must_change_password")
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
 

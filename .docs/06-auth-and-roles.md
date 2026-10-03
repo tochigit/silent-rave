@@ -44,6 +44,12 @@ The session cookie is scoped to the root domain, so `SameSite=Lax` does **not** 
 
 ## Offline scanner session
 
+Step 4 enforces temporary-password replacement: newly invited STAFF must use
+`/staff/password` and `POST /api/auth/password` before protected APIs work.
+The request verifies the current password and surface Origin, rate limits,
+requires a different 12–72 character password, and revokes other sessions.
+Existing OWNER credentials are unchanged. No public registration is added.
+
 A staff device that logged in and prepared the event while online may keep scanning offline for that event day with a locally held session grace (no server refresh needed); it re-authenticates at the next sync. Deactivation (`is_active = false`) takes effect on the next online request or sync. Logout clears the manifest and outbox handling rules in `05-ticketing-and-qr.md`.
 
 ## Account creation — invite-only, no public signup

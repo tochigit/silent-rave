@@ -1,4 +1,5 @@
 import { kickEmailJobs } from "@/lib/email/kick";
+import { dispatchOwnerPush } from "@/lib/operations/push";
 import { NextResponse, type NextRequest, after } from "next/server";
 import { PROOF_IP_RATE_PER_HOUR, STATUS_TOKEN_HEADER } from "@/lib/constants";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
@@ -97,6 +98,7 @@ export async function POST(
       fileBytes,
     });
     after(kickEmailJobs);
+    if (!result.idempotentReplay) after(() => dispatchOwnerPush(code));
 
     const body: Record<string, unknown> = {
       status: result.status,

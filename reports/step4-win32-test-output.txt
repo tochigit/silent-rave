@@ -1,0 +1,413 @@
+step4: baseline + Phase 4 + Step 3; real HTTP/PostgreSQL/sharp/PDF; capture/fake transport; injected clock/backdated rows.
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+waiting for server to start..... done
+server started
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 570ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:53994"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id f6462452-0de0-442a-b74a-b9cd5dab764b
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+Test group: baseline; isolated database; fresh app/test processes.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+tests\phase3b\authz.test.ts:
+(pass) authorization — STAFF and anonymous vs every admin route > anonymous GET /api/admin/payments → 401 [47.34ms]
+(pass) authorization — STAFF and anonymous vs every admin route > STAFF GET /api/admin/payments → 403 [39.07ms]
+(pass) authorization — STAFF and anonymous vs every admin route > OWNER GET /api/admin/payments → 200 [1537.25ms]
+(pass) authorization — STAFF and anonymous vs every admin route > anonymous GET /api/admin/orders/__ID__ → 401 [20.23ms]
+(pass) authorization — STAFF and anonymous vs every admin route > STAFF GET /api/admin/orders/__ID__ → 403 [24.37ms]
+(pass) authorization — STAFF and anonymous vs every admin route > OWNER GET /api/admin/orders/__ID__ → 200 [2173.25ms]
+(pass) authorization — STAFF and anonymous vs every admin route > anonymous GET /api/admin/payment-accounts → 401 [23.47ms]
+(pass) authorization — STAFF and anonymous vs every admin route > STAFF GET /api/admin/payment-accounts → 403 [22.56ms]
+(pass) authorization — STAFF and anonymous vs every admin route > OWNER GET /api/admin/payment-accounts → 200 [1431.26ms]
+(pass) authorization — STAFF and anonymous vs every admin route > anonymous POST approve/reject → 401 (proxy gates before the route) [77.10ms]
+(pass) authorization — STAFF and anonymous vs every admin route > STAFF POST approve/reject/payment-accounts → 403 [167.13ms]
+(pass) authorization — STAFF and anonymous vs every admin route > the order is untouched by every rejected admin call above [38.10ms]
+(pass) payment-accounts — password re-entry + at-most-one-active + audit > create + activate requires the OWNER's password; wrong password → 403 [1515.60ms]
+(pass) payment-accounts — password re-entry + at-most-one-active + audit > PATCH edits with password re-entry, audits before/after, keeps one active [3087.13ms]
+(pass) status tokens on order routes > status route: missing/wrong token and unknown code all 404 uniformly [4132.32ms]
+A3 timing (ms): unknown code=45.0, wrong token=46.6, missing token=50.8
+(pass) status tokens on order routes > proof route: unknown code, wrong token and missing token return the IDENTICAL status code and body, in comparable time (A3) [392.09ms]
+(pass) signed proof-image URLs (owner-only, expiring) > valid signed URL + OWNER session → 200 image; without session → 401; tampered sig → 403 [3027.29ms]
+(pass) signed proof-image URLs (owner-only, expiring) > expired signed URL → 410 even with an OWNER session; non-proof namespace → 403 [193.24ms]
+(pass) signed proof-image URLs (owner-only, expiring) > admin order detail mints short-lived signed URLs but never leaks the raw storage path [349.13ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > POST /api/auth/login with bad Origin → 403; missing Origin → 403 [139.44ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > POST approve with bad Origin → 403 and no state change [3744.08ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > POST reject with bad Origin → 403 [3171.63ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > POST payment-accounts with bad Origin → 403; PATCH with bad Origin → 403 [159.20ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > POST logout with bad Origin → 403 [4531.24ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > same-origin requests still work (regression): login + logout round-trip [708.88ms]
+(pass) Origin checks (06) — every state-changing admin/staff/auth route > GET admin routes do NOT require Origin (06 scopes the check to state-changing methods) [427.80ms]
+(pass) Origin-check STRICT DEFAULT (A2) — ALLOW_DEV_ORIGIN is unset on this server > flag UNSET → strict: the ROOT host's Origin is NOT accepted on the admin surface (was the old dev relaxation) [882.11ms]
+(pass) Origin boot guard (A2) — the startup assertion instrumentation runs > ALLOW_DEV_ORIGIN=1 set while NODE_ENV=production → startup REFUSES [1676.43ms]
+(pass) Origin boot guard (A2) — the startup assertion instrumentation runs > flag UNSET in production mode → the guard passes (strict, boots normally) [550.30ms]
+(pass) Origin boot guard (A2) — the startup assertion instrumentation runs > flag set in DEV mode → the guard passes (the opt-in is legal outside production) [224.44ms]
+(pass) internal expire-holds guard > missing or wrong CRON secret → 401; correct secret → 200 [1759.65ms]
+(pass) order status endpoint content rules (03) > no PII beyond buyer-entered data; ticket list only when APPROVED; late_proof_received flag [148.37ms]
+
+tests\phase3b\baseline-regressions.test.ts:
+(pass) Imported baseline regressions > MAX_QTY_PER_ORDER applies to the whole order across multiple lines [314.52ms]
+(pass) Imported baseline regressions > revive respects another buyer's reservation and returns CAPACITY_GONE without side effects [1152.01ms]
+(pass) Imported baseline regressions > a sweep locks tiers globally across orders, avoiding a cycle with a multi-tier writer [874.40ms]
+
+tests\phase3b\checkout.test.ts:
+(pass) initialize — validation list (03) > happy path: 201, order code from the unambiguous alphabet, derived status token, server-side price [424.20ms]
+(pass) initialize — validation list (03) > holder_names length mismatch → 400 [257.75ms]
+(pass) initialize — validation list (03) > quantity over MAX_QTY_PER_ORDER (10) → 400 [212.46ms]
+(pass) initialize — validation list (03) > tier belonging to a different event → 400 (VALIDATION) [527.32ms]
+(pass) initialize — validation list (03) > DRAFT event → 409; unconfirmed date → 409 [381.31ms]
+(pass) initialize — validation list (03) > sales window closed → 409 [266.45ms]
+(pass) initialize — validation list (03) > no active payment account → 503 and nothing reserved [209.68ms]
+(pass) initialize — atomic conditional reservation under concurrency > 8 parallel requests for the last 4 units: exactly 4 succeed, 4 get 409, CHECKs never violated [1030.60ms]
+(pass) initialize — atomic conditional reservation under concurrency > single line exceeding availability → 409 with nothing partially reserved [220.24ms]
+(pass) initialize — atomic conditional reservation under concurrency > multi-line order where ONE line fails → 409, the other line rolled back too [128.72ms]
+(pass) initialize — abuse limits (04) > third unresolved order for the same EMAIL is refused (cap 2) [753.22ms]
+(pass) initialize — abuse limits (04) > third unresolved order for the same PHONE is refused (cap 2), across different emails [545.35ms]
+(pass) initialize — abuse limits (04) > resolved orders don't count toward the cap (an APPROVED order frees the email) [829.38ms]
+(pass) initialize — abuse limits (04) > two different emails from the SAME IP are NOT blocked by any unresolved cap (IP is rate-only) [839.71ms]
+(pass) initialize — abuse limits (04) > per-IP RATE limit triggers at its threshold (default 10/hour) [2375.54ms]
+
+tests\phase3b\closeout.test.ts:
+(pass) A1 — initialize rejects ended events (03 v2.1.1: ends_at > now()) > ENDED event (PUBLISHED, date-confirmed, open sales window) → 409, nothing reserved [169.34ms]
+(pass) A1 — initialize rejects ended events (03 v2.1.1: ends_at > now()) > event IN PROGRESS (starts_at past, ends_at future) → still purchasable (201) [218.14ms]
+(pass) A6 — same-email CONCURRENT checkout cannot exceed the 2-unresolved cap > 5 PARALLEL initialize (same email, different tiers): exactly 2 succeed, 3 get 429, caps never exceeded [660.17ms]
+(pass) A4 — lookup rate limiting counts nonexistent codes; limited responses are identical > a NONEXISTENT code fills its own per-code bucket: 4th lookup of a fake code → 429 [2588.58ms]
+(pass) A4 — lookup rate limiting counts nonexistent codes; limited responses are identical > after the threshold, an EXISTING code and a NONEXISTENT code get the IDENTICAL limited response [789.47ms]
+(pass) A5 — db:fixture refuses unsafe environments (guards run before ANY destructive step) > NODE_ENV=production → refuses (exit 1) before doing anything [261.25ms]
+(pass) A5 — db:fixture refuses unsafe environments (guards run before ANY destructive step) > DATABASE_URL pointing at a non-embedded Postgres → refuses (exit 1) before doing anything [185.26ms]
+(pass) B — proof vs sweep racing on a hold-boundary order (no orphan PENDING proofs) > lapsed hold, proof upload and sweep in parallel: EXPIRED + released exactly once + ONE late-flagged PENDING proof [1568.05ms]
+
+tests\phase3b\lookup.test.ts:
+(pass) lookup — uniform 202 responses, no order data > matching and non-matching code/email give byte-identical 202 bodies [346.65ms]
+(pass) lookup — uniform 202 responses, no order data > malformed body → same generic 202 (no validation oracle) [125.83ms]
+(pass) lookup — uniform 202 responses, no order data > no order data in any response payload [354.90ms]
+(pass) lookup — STATUS_LINK jobs (match only, fresh keys, nothing sent) > job created ONLY on a match, with a fresh key each time [399.28ms]
+(pass) lookup — rate limits (per IP and per order code) > per-code limit triggers at its threshold (3/hour) [299.30ms]
+(pass) lookup — rate limits (per IP and per order code) > per-IP limit triggers at its threshold (10/hour) [839.61ms]
+
+tests\phase3b\proofs.test.ts:
+(pass) proof — file validation (magic bytes, size, dimensions) > non-image file → 422 [213.40ms]
+(pass) proof — file validation (magic bytes, size, dimensions) > disguised file (renamed .jpg but wrong magic bytes) → 422 [233.16ms]
+(pass) proof — file validation (magic bytes, size, dimensions) > oversized (> 4 MB) valid JPEG → 422 [360.34ms]
+(pass) proof — file validation (magic bytes, size, dimensions) > absurd pixel dimensions → 422 [385.73ms]
+(pass) proof — file validation (magic bytes, size, dimensions) > PNG and WebP accepted; stored re-encoded JPEG strips EXIF [3893.67ms]
+(pass) proof — transfer reference & duplicate handling > duplicate LIVE transfer_reference → 409 + system audit PROOF_DUPLICATE_REFERENCE_ATTEMPT, no row [1267.38ms]
+(pass) proof — transfer reference & duplicate handling > duplicate image (same sha256, different order) → FLAGGED, not blocked [555.75ms]
+(pass) proof — transfer reference & duplicate handling > idempotent retry with the same client_submission_id creates no second attempt [434.94ms]
+(pass) proof — hold policy (04 'Hold policy (locked)') > no proof in 15 min → sweep sets EXPIRED + releases; second sweep is a no-op [360.56ms]
+(pass) proof — hold policy (04 'Hold policy (locked)') > proof submitted → hold becomes first_proof_at + 48h and does NOT move on resubmission [1699.47ms]
+(pass) proof — hold policy (04 'Hold policy (locked)') > wrong/missing status token and unknown code on the proof route are INDISTINGUISHABLE (A3: uniform 404) [457.17ms]
+(pass) proof — LATE proofs (04 'Late proofs') > within grace → recorded PENDING with flags.late, order STAYS EXPIRED, inventory untouched, in queue, revivable [1962.28ms]
+(pass) proof — LATE proofs (04 'Late proofs') > outside grace (hold_expires_at + 24h) → 410 [379.49ms]
+(pass) proof — LATE proofs (04 'Late proofs') > a SECOND late proof is rejected [622.63ms]
+
+tests\phase3b\review.test.ts:
+(pass) approveOrder — concurrency and idempotency > double-click + two admins racing: ONE transition, sold incremented once, exactly N tickets, ONE TICKETS job [1158.58ms]
+(pass) approveOrder — concurrency and idempotency > approve on a CANCELLED event → EVENT_CANCELLED, nothing changed [713.23ms]
+(pass) approveOrder — concurrency and idempotency > approve requires confirmed_in_bank: true [581.15ms]
+(pass) approveOrder — concurrency and idempotency > approve vs reject racing on the same PROOF_SUBMITTED order: exactly ONE wins, the loser gets a clean INVALID_STATE, inventory consistent [677.91ms]
+(pass) approveOrder — concurrency and idempotency > approve vs sweep racing on an order at its hold cap: consistent final state, inventory never negative, no double release [725.31ms]
+(pass) full lifecycles > initialize → proof → approve: statuses, inventory, emails, audit [608.46ms]
+(pass) full lifecycles > initialize → proof → reject(resubmittable) → resubmit ×3 → fourth rejection exhausted → REJECTED, inventory released once [1828.43ms]
+(pass) full lifecycles > OWNER closing a NEEDS_RESUBMIT order → REJECTED and inventory released once (fresh close-<n> email key) [1186.03ms]
+(pass) revive rules (04 + CHANGELOG v2.1 item 4) > revive with capacity: EXPIRED + PENDING proof → APPROVED, re-reserves atomically [960.97ms]
+(pass) revive rules (04 + CHANGELOG v2.1 item 4) > revive WITHOUT capacity → CAPACITY_GONE rollback, then dismiss → REJECTED final, releases nothing [1351.61ms]
+(pass) revive rules (04 + CHANGELOG v2.1 item 4) > an order that expired from NEEDS_RESUBMIT is NOT revivable (no PENDING proof) [1250.84ms]
+(pass) sync_seq trigger (02 v2.1) > changes on INSERT (mint) and UPDATE (check-in, void); monotonic per statement [843.91ms]
+SAMPLE CLOSE AUDIT ROW:
+{
+  "id": "00bcb9b2-c857-4119-a38c-63c418194393",
+  "actor_id": "f6462452-0de0-442a-b74a-b9cd5dab764b",
+  "action": "ORDER_REJECTED",
+  "entity_type": "order",
+  "entity_id": "1493d778-9f37-4321-af71-77398e3ca42f",
+  "metadata": {
+    "to": "REJECTED",
+    "from": "NEEDS_RESUBMIT",
+    "after": {
+      "final": true,
+      "message": "No matching credit found — closing.",
+      "reason_code": "NOT_RECEIVED"
+    },
+    "before": {
+      "final": false,
+      "message": "Blurry receipt — re-upload.",
+      "reason_code": "UNREADABLE"
+    }
+  },
+  "created_at": "2026-10-03T11:41:17.101Z"
+}
+(pass) close/dismiss audit entries — before/after reject snapshots (A7) > closing a NEEDS_RESUBMIT order: the audit records the PREVIOUS rejection and the NEW close reason (before/after) [865.84ms]
+(pass) close/dismiss audit entries — before/after reject snapshots (A7) > dismissing an EXPIRED order with a PENDING (late) proof: before is the null snapshot, after is the dismiss reason [1084.74ms]
+(pass) REJECTED email-job dedupe keys (B) > attempt-<n> keys for two different attempts BOTH exist; the SAME key cannot duplicate (unique index backstop) [1496.49ms]
+
+tests\phase3b\unit-tokens.test.ts:
+(pass) QR token module (Ed25519, 05) > valid token verifies and round-trips ticket_id + event_id [171.51ms]
+(pass) QR token module (Ed25519, 05) > tampered payload → bad_signature (signature covers the payload) [0.83ms]
+(pass) QR token module (Ed25519, 05) > tampered signature → bad_signature [0.53ms]
+(pass) QR token module (Ed25519, 05) > truncated signature → malformed [0.80ms]
+(pass) QR token module (Ed25519, 05) > wrong kid → unknown_kid (before any signature math) [0.35ms]
+(pass) QR token module (Ed25519, 05) > wrong version → bad_version [0.20ms]
+(pass) QR token module (Ed25519, 05) > truncated / garbage input → malformed, never throws [0.15ms]
+(pass) QR token module (Ed25519, 05) > wrong event: signature is valid but event_id inside the payload differs — the caller's event check catches it (05 verification order) [0.37ms]
+(pass) QR token module (Ed25519, 05) > multiple public keys: old kid keeps verifying after rotation (extra keys via TICKET_SIGNING_PUBLIC_KEYS_JSON) [168.37ms]
+(pass) Derived status token (02 v2.1) > derived token verifies; recomputation is deterministic [203.47ms]
+(pass) Derived status token (02 v2.1) > wrong token (one char changed) fails [0.52ms]
+(pass) Derived status token (02 v2.1) > right token, wrong order id fails [0.26ms]
+(pass) Derived status token (02 v2.1) > right token, wrong version fails (bumping the version invalidates old links) [0.26ms]
+(pass) Derived status token (02 v2.1) > malformed/truncated tokens fail without throwing [0.27ms]
+(pass) Derived status token (02 v2.1) > comparison is constant-time by construction: the derived HMAC is always 32 bytes, compared with timingSafeEqual (32 vs 32); non-32-byte inputs are rejected on length, which is not secret [0.20ms]
+(pass) Local storage signed URLs > sign → verify round-trips [0.43ms]
+(pass) Local storage signed URLs > expired signature → expired (checked against wall clock) [0.14ms]
+(pass) Local storage signed URLs > tampered signature → bad_signature (constant-time compare on the digest) [0.21ms]
+(pass) Local storage signed URLs > signature for a different key/path → bad_signature [0.18ms]
+
+ 112 pass
+ 0 fail
+ 65 expect() calls
+Ran 112 tests across 8 files. [102.04s]
+Test group: phase4; isolated database; fresh app/test processes.
+PDF verifier native imports ready.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+tests\phase4\config.test.ts:
+(pass) config is fail-closed; capture cannot run in production; origins have no credentials/path [110.32ms]
+(pass) backoff schedule has bounded jitter and errors contain no provider content [0.91ms]
+
+tests\phase4\directions.test.ts:
+(pass) directions prefers place id, then coordinates, then safe URL, then null [81.82ms]
+
+tests\phase4\kick.test.ts:
+(pass) best-effort kick swallows worker failure; fixture flag disables automatic sends [116.79ms]
+
+tests\phase4\pdf.test.ts:
+(pass) PDF embedded diacritics/text/Lagos offset and exact stored QR decode, >=40mm active symbol [18918.75ms]
+(pass) PDF cached second request; venue/directions/date edits regenerate; never stale [5316.52ms]
+
+tests\phase4\routes.test.ts:
+(pass) PDF authz: unknown order/ticket, wrong order/token and missing token are identical 404; headers/status links [13254.65ms]
+(pass) refund voids all units and bumps sync_seq; restock/audit; repeat/concurrent refund restocks once [12393.06ms]
+(pass) refund restock=false preserves sold; undercount clamp never negative; non-approved 409 [6480.69ms]
+(pass) checked-in refund needs acknowledgement, then succeeds with audit [2294.82ms]
+(pass) refund/resend OWNER matrix: STAFF 403, anonymous 401, bad Origin 403; password re-entry [1975.89ms]
+(pass) resends fresh keys/order recipient/audits; sixth in sliding hour rate-limited; rejects recipient input [2362.24ms]
+(pass) concurrent resend limit across requests admits exactly five [1453.15ms]
+(pass) owner email-jobs filters/pagination and order-detail jobs contain no links/tokens/private payload [2650.94ms]
+
+tests\phase4\templates.test.ts:
+(pass) all React Email kinds render HTML/text, valid status links, no bank details/buyer subjects [5829.47ms]
+
+tests\phase4\transport.test.ts:
+(pass) direct transport sends stable idempotency header, job tag, base64 attachments and timeout [36.99ms]
+(pass) transport classifies 500/422/429/quota/concurrent-key; errors never retain provider messages [4.91ms]
+(pass) Retry-After supports seconds/date and capture returns same id for same payload [158.79ms]
+
+tests\phase4\webhook.test.ts:
+(pass) webhook valid signature/tag-before-message-id, replay no-op, bounce wins over delivery [4366.18ms]
+(pass) webhook missing/invalid/stale/future signatures rejected; malformed JSON and oversized body [347.87ms]
+(pass) webhook raw-body tampering fails; array job_id tag matches before stored id [477.18ms]
+(pass) process endpoint wrong/missing CRON_SECRET 401; correct drains capture job [5017.81ms]
+
+tests\phase4\worker.test.ts:
+(pass) worker success QUEUED -> SENT, stores message id, attempts=1; only order recipient [1398.95ms]
+(pass) worker transient 500 queues 1m backoff; MAX_EMAIL_ATTEMPTS fails [2453.42ms]
+(pass) permanent 422 fails immediately; last_error excludes URLs/tokens/addresses [1401.50ms]
+(pass) 429 Retry-After honoured; quota pauses batch and shared gate [1616.88ms]
+(pass) crash after acceptance retries SAME key and payload, one effective send [1550.77ms]
+(pass) two concurrent workers send each job once; shared spacing persists across invocations [2049.57ms]
+(pass) stuck expired claim reclaimed; live lease skipped; refunded ticket job never sends [1352.96ms]
+(pass) expired ownership after slow preparation blocks provider; no late batch lease send [694.91ms]
+(pass) ambiguous outcomes after retention stop; immutable payload guards token rotation [1899.86ms]
+(pass) webhook winning during send retains BOUNCED while message id is persisted [761.29ms]
+(pass) immutable retry payload refuses changed order recipient and ciphertext tampering [1521.23ms]
+
+ 33 pass
+ 0 fail
+ 277 expect() calls
+Ran 33 tests across 9 files. [158.85s]
+waiting for server to shut down................................... done
+server stopped
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+waiting for server to start...... done
+server started
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 2.65s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:54217"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 6a925a8d-4b8f-4549-80ab-10dba6b5223d
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+Customer group: fresh owned database; prior fixture cleanup passed.
+Test group: customer; isolated database; fresh app/test processes.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+tests\step3\catalog.test.ts:
+(pass) public list/detail allowlist excludes drafts, private counters, finance, buyers and unsafe poster URLs [11316.91ms]
+(pass) CTA none, single, Lagos-day tie, in-progress and unconfirmed fallback [5114.83ms]
+(pass) month/day use Lagos midnight, spanning events, search/city and invalid dates [1551.97ms]
+(pass) stable pagination covers all published events without duplicates [5771.99ms]
+(pass) tier state covers unconfirmed, cancelled, ended, coming-soon, closed and sold-out [1551.73ms]
+(pass) all calendar formats use true UTC instants; unconfirmed date returns 200 empty state [8441.03ms]
+
+tests\step3\content.test.ts:
+(pass) public content reflects database edits, publication and exact allowlist [6786.75ms]
+(pass) contact resolves organizer recipient, escapes input, fixed subject, separate transport without order jobs [108.81ms]
+(pass) contact HTTP capture, strict validation/body cap and rate limit [3750.63ms]
+(pass) missing organizer/contact configuration fails closed; fake provider failure is not a success [561.79ms]
+
+tests\step3\status.test.ts:
+(pass) private refreshed status includes exact recorded bank snapshot after edits and activating another bank [4988.69ms]
+(pass) status uniform 404 and page/API private/no-referrer headers [2584.53ms]
+(pass) pending/resubmittable/final rejection status, remaining attempts and idempotent retry [14851.37ms]
+(pass) expired grace without proof, late PENDING proof, out-of-grace and timely proof at cap [4050.16ms]
+(pass) approved on-demand PDF works before email; refund/voided tickets lose download eligibility [14833.02ms]
+
+ 15 pass
+ 0 fail
+ 168 expect() calls
+Ran 15 tests across 3 files. [88.49s]
+waiting for server to shut down.............................................. done
+server stopped
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+waiting for server to start..... done
+server started
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 2.38s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:54295"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 47fc2a74-6b51-4eef-ae21-077db44d4913
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+Customer group: fresh owned database; prior fixture cleanup passed.
+Test group: operations; isolated database; fresh app/test processes.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+tests\step4\local.test.ts:
+(pass) browser verifier matches Node Ed25519, and rejects tamper/version/malformed/key [207.25ms]
+(pass) offline event/void/local duplicate/pending/unlisted/expiry decisions [43.59ms]
+(pass) out-of-order overlap deltas never un-check-in or un-void a ticket or regress cursor [1.55ms]
+
+tests\step4\operations.test.ts:
+(pass) new surfaces require sessions, OWNER role and matching mutation Origin [414.23ms]
+(pass) CASH server price, COMP zero price, idempotent issue, changed retry and rollback capacity [5338.63ms]
+(pass) online simultaneous phones admit once; replay is idempotent; malformed/wrong event recorded [1498.12ms]
+(pass) offline reversed device arrival selects earliest scan, flags conflict, keeps ledger immutable and retries safe [813.12ms]
+(pass) manifest overlap and attendee allowlist, refunds and cancelled events invalidate admission [7369.91ms]
+(pass) staff invitation requires first password reset; reset strips other sessions; deactivation revokes access [4601.10ms]
+(pass) event draft/banner/publish gates, protected inventory edits and referenced deletes [5743.32ms]
+(pass) content editor, CSV formula neutralization and totals, append-only audit surface [7833.82ms]
+
+tests\step4\push.test.ts:
+(pass) OWNER push subscriptions reject arbitrary URLs and never expose private VAPID keys [4023.83ms]
+(pass) STAFF cannot register owner notifications and Places fails closed without configuration [727.08ms]
+
+ 13 pass
+ 0 fail
+ 102 expect() calls
+Ran 13 tests across 3 files. [53.48s]
+Phase 4 kick-failure HTTP acceptance: kicks enabled; invalid worker sender; no real sends.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+tests\phase4-kick-failure.test.ts:
+(pass) real HTTP approve/reject succeed with kicks enabled and worker configuration failure [9289.57ms]
+(pass) missing configured CRON_SECRET/webhook secret fail closed over real HTTP [2798.58ms]
+
+ 2 pass
+ 0 fail
+ 12 expect() calls
+Ran 2 tests across 1 file. [12.56s]
+Phase 4 + Phase 3b runner exit: 0
+waiting for server to shut down.............................................. done
+server stopped
+Cleanup complete: owned app and database stopped; temporary fixture removed.

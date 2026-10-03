@@ -1,0 +1,245 @@
+2026-10-03T12:18:02.2650564Z Current runner version: '2.337.0'
+2026-10-03T12:18:02.2666957Z ##[group]Runner Image Provisioner
+2026-10-03T12:18:02.2667444Z Hosted Compute Agent
+2026-10-03T12:18:02.2667815Z Version: 20260901.588
+2026-10-03T12:18:02.2668153Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-03T12:18:02.2668590Z Build Date: 2026-09-01T19:56:44Z
+2026-10-03T12:18:02.2668984Z Worker ID: {83a9ee45-ac1c-4749-ac04-567bd701769d}
+2026-10-03T12:18:02.2669351Z Azure Region: westus3
+2026-10-03T12:18:02.2669666Z ##[endgroup]
+2026-10-03T12:18:02.2670368Z ##[group]Operating System
+2026-10-03T12:18:02.2670692Z Microsoft Windows Server 2025
+2026-10-03T12:18:02.2671038Z 10.0.26100
+2026-10-03T12:18:02.2671335Z Datacenter
+2026-10-03T12:18:02.2671647Z ##[endgroup]
+2026-10-03T12:18:02.2671951Z ##[group]Runner Image
+2026-10-03T12:18:02.2672314Z Image: windows-2025-vs2026
+2026-10-03T12:18:02.2672658Z Version: 20260925.250.1
+2026-10-03T12:18:02.2673587Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20260925.250/images/windows/Windows2025-VS2026-Readme.md
+2026-10-03T12:18:02.2674535Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20260925.250
+2026-10-03T12:18:02.2675074Z ##[endgroup]
+2026-10-03T12:18:02.2675684Z ##[group]GITHUB_TOKEN Permissions
+2026-10-03T12:18:02.2677055Z Contents: read
+2026-10-03T12:18:02.2677383Z Metadata: read
+2026-10-03T12:18:02.2677708Z ##[endgroup]
+2026-10-03T12:18:02.2679046Z Secret source: Actions
+2026-10-03T12:18:02.2679536Z Cache mode: write
+2026-10-03T12:18:02.2679947Z Prepare workflow directory
+2026-10-03T12:18:02.2909823Z Prepare all required actions
+2026-10-03T12:18:02.2940637Z Getting action download info
+2026-10-03T12:18:02.6159912Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-03T12:18:02.7718716Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-03T12:18:02.8748123Z Download action repository 'oven-sh/setup-bun@v2' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+2026-10-03T12:18:03.3746763Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-10-03T12:18:03.4647182Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-03T12:18:03.8315047Z Complete job name: Verify (win32)
+2026-10-03T12:18:03.9488019Z ##[group]Run actions/checkout@v4
+2026-10-03T12:18:03.9488722Z with:
+2026-10-03T12:18:03.9488962Z   repository: tochigit/silent-rave
+2026-10-03T12:18:03.9491203Z   token: ***
+2026-10-03T12:18:03.9491420Z   ssh-strict: true
+2026-10-03T12:18:03.9491647Z   ssh-user: git
+2026-10-03T12:18:03.9491877Z   persist-credentials: true
+2026-10-03T12:18:03.9492133Z   clean: true
+2026-10-03T12:18:03.9492370Z   sparse-checkout-cone-mode: true
+2026-10-03T12:18:03.9492648Z   fetch-depth: 1
+2026-10-03T12:18:03.9492877Z   fetch-tags: false
+2026-10-03T12:18:03.9493110Z   show-progress: true
+2026-10-03T12:18:03.9493504Z   lfs: false
+2026-10-03T12:18:03.9493727Z   submodules: false
+2026-10-03T12:18:03.9493968Z   set-safe-directory: true
+2026-10-03T12:18:03.9494238Z   allow-unsafe-pr-checkout: false
+2026-10-03T12:18:03.9494601Z env:
+2026-10-03T12:18:03.9494817Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:03.9495218Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:03.9495718Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:03.9496103Z ##[endgroup]
+2026-10-03T12:18:04.0465661Z Syncing repository: tochigit/silent-rave
+2026-10-03T12:18:04.0466805Z ##[group]Getting Git version info
+2026-10-03T12:18:04.0467163Z Working directory is 'D:\a\silent-rave\silent-rave'
+2026-10-03T12:18:04.0992381Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-03T12:18:04.4988818Z git version 2.55.0.windows.5
+2026-10-03T12:18:04.5020660Z ##[endgroup]
+2026-10-03T12:18:04.5033142Z Temporarily overriding HOME='D:\a\_temp\59749383-5410-4738-bd74-3a5ec71acf32' before making global git config changes
+2026-10-03T12:18:04.5035253Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-03T12:18:04.5039914Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\silent-rave\silent-rave
+2026-10-03T12:18:04.5630624Z Deleting the contents of 'D:\a\silent-rave\silent-rave'
+2026-10-03T12:18:04.5634945Z ##[group]Initializing the repository
+2026-10-03T12:18:04.5642184Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\silent-rave\silent-rave
+2026-10-03T12:18:04.6364189Z Initialized empty Git repository in D:/a/silent-rave/silent-rave/.git/
+2026-10-03T12:18:04.6393988Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/tochigit/silent-rave
+2026-10-03T12:18:04.6871658Z ##[endgroup]
+2026-10-03T12:18:04.6872086Z ##[group]Disabling automatic garbage collection
+2026-10-03T12:18:04.6878019Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-03T12:18:04.7062050Z ##[endgroup]
+2026-10-03T12:18:04.7062435Z ##[group]Setting up auth
+2026-10-03T12:18:04.7070240Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-03T12:18:04.7254506Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-03T12:18:05.9934408Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-03T12:18:06.0110622Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-03T12:18:06.3779103Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-03T12:18:06.3970593Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-03T12:18:06.7308897Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-03T12:18:06.7501884Z ##[endgroup]
+2026-10-03T12:18:06.7502377Z ##[group]Fetching the repository
+2026-10-03T12:18:06.7522105Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +bc858a73fe487529c2538a60cba80460e637effd:refs/remotes/pull/4/merge
+2026-10-03T12:18:08.2623603Z From https://github.com/tochigit/silent-rave
+2026-10-03T12:18:08.2624124Z  * [new ref]         bc858a73fe487529c2538a60cba80460e637effd -> pull/4/merge
+2026-10-03T12:18:08.2653404Z ##[endgroup]
+2026-10-03T12:18:08.2653644Z ##[group]Determining the checkout info
+2026-10-03T12:18:08.2655015Z ##[endgroup]
+2026-10-03T12:18:08.2661929Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-03T12:18:08.2991338Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-03T12:18:08.3200587Z ##[group]Checking out the ref
+2026-10-03T12:18:08.3201083Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/4/merge
+2026-10-03T12:18:08.4217894Z Note: switching to 'refs/remotes/pull/4/merge'.
+2026-10-03T12:18:08.4218117Z
+2026-10-03T12:18:08.4218228Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-03T12:18:08.4218594Z changes and commit them, and you can discard any commits you make in this
+2026-10-03T12:18:08.4218849Z state without impacting any branches by switching back to a branch.
+2026-10-03T12:18:08.4219021Z
+2026-10-03T12:18:08.4219126Z If you want to create a new branch to retain commits you create, you may
+2026-10-03T12:18:08.4219637Z do so (now or later) by using -c with the switch command. Example:
+2026-10-03T12:18:08.4220713Z
+2026-10-03T12:18:08.4220812Z   git switch -c <new-branch-name>
+2026-10-03T12:18:08.4220925Z
+2026-10-03T12:18:08.4220982Z Or undo this operation with:
+2026-10-03T12:18:08.4221110Z
+2026-10-03T12:18:08.4221176Z   git switch -
+2026-10-03T12:18:08.4221250Z
+2026-10-03T12:18:08.4221377Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-03T12:18:08.4221538Z
+2026-10-03T12:18:08.4221782Z HEAD is now at bc858a7 Merge b54f925748e41d3ed93e8e04b69215cc99151aa8 into 8984f9eccff51ff96088155e47e9afeef0c4d633
+2026-10-03T12:18:08.4319522Z ##[endgroup]
+2026-10-03T12:18:08.4627923Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-03T12:18:08.4786601Z bc858a73fe487529c2538a60cba80460e637effd
+2026-10-03T12:18:08.5097152Z ##[group]Run actions/setup-node@v4
+2026-10-03T12:18:08.5097357Z with:
+2026-10-03T12:18:08.5097466Z   node-version: 24
+2026-10-03T12:18:08.5097574Z   always-auth: false
+2026-10-03T12:18:08.5097702Z   check-latest: false
+2026-10-03T12:18:08.5099025Z   token: ***
+2026-10-03T12:18:08.5099123Z env:
+2026-10-03T12:18:08.5099228Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:08.5099417Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:08.5099670Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:08.5099859Z ##[endgroup]
+2026-10-03T12:18:08.6138086Z Found in cache @ C:\hostedtoolcache\windows\node\24.21.0\x64
+2026-10-03T12:18:08.6142934Z (node:5332) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:18:08.6143281Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:18:08.6145118Z ##[group]Environment details
+2026-10-03T12:18:13.6975133Z node: v24.21.0
+2026-10-03T12:18:13.6975385Z npm: 11.19.0
+2026-10-03T12:18:13.6975531Z yarn: 1.22.22
+2026-10-03T12:18:13.6976786Z ##[endgroup]
+2026-10-03T12:18:13.7222299Z ##[group]Run oven-sh/setup-bun@v2
+2026-10-03T12:18:13.7222501Z with:
+2026-10-03T12:18:13.7222616Z   bun-version: 1.3.14
+2026-10-03T12:18:13.7222736Z   no-cache: false
+2026-10-03T12:18:13.7224173Z   token: ***
+2026-10-03T12:18:13.7224275Z env:
+2026-10-03T12:18:13.7224378Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:13.7224587Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:13.7224856Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:13.7225052Z ##[endgroup]
+2026-10-03T12:18:14.1373469Z Cache hit for: bun-xETSyylFWPAobx/lMzEMUmGLIN4=
+2026-10-03T12:18:15.2537303Z Received 36521308 of 36521308 (100.0%), 39.5 MBs/sec
+2026-10-03T12:18:15.2540002Z Cache Size: ~35 MB (36521308 B)
+2026-10-03T12:18:15.2605224Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/d6cb8492-305e-4d6b-a820-f033fcf4d488/cache.tzst -P -C D:/a/silent-rave/silent-rave --force-local --use-compress-program "zstd -d"
+2026-10-03T12:18:15.4814047Z Cache restored successfully
+2026-10-03T12:18:15.4843317Z [command]C:\Users\runneradmin\.bun\bin\bun.exe --revision
+2026-10-03T12:18:16.5491250Z 1.3.14+0d9b296af
+2026-10-03T12:18:16.5508353Z Using a cached version of Bun: 1.3.14+0d9b296af
+2026-10-03T12:18:16.5766622Z ##[group]Run npm ci --ignore-scripts --no-audit --no-fund
+2026-10-03T12:18:16.5766912Z [36;1mnpm ci --ignore-scripts --no-audit --no-fund[0m
+2026-10-03T12:18:16.6290137Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-03T12:18:16.6290337Z env:
+2026-10-03T12:18:16.6290446Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:16.6290651Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:16.6290907Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:16.6291096Z ##[endgroup]
+2026-10-03T12:18:26.3623231Z npm warn deprecated recharts@2.15.4: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
+2026-10-03T12:18:26.9473536Z npm warn deprecated eslint@9.39.2: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2026-10-03T12:18:38.3138742Z
+2026-10-03T12:18:38.3139598Z added 621 packages in 21s
+2026-10-03T12:18:40.4888886Z ##[group]Run bun run db:generate
+2026-10-03T12:18:40.4889104Z [36;1mbun run db:generate[0m
+2026-10-03T12:18:40.4934622Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-03T12:18:40.4934816Z env:
+2026-10-03T12:18:40.4934931Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:40.4935130Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:40.4935393Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:40.4935587Z ##[endgroup]
+2026-10-03T12:18:40.6918139Z $ prisma generate
+2026-10-03T12:18:41.6179346Z Prisma schema loaded from prisma\schema.prisma
+2026-10-03T12:18:41.8894717Z
+2026-10-03T12:18:41.8895646Z ✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 97ms
+2026-10-03T12:18:41.8895873Z
+2026-10-03T12:18:41.8896075Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-03T12:18:41.8896259Z
+2026-10-03T12:18:41.8896523Z Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+2026-10-03T12:18:41.8896679Z
+2026-10-03T12:18:41.9903411Z ##[group]Run bun run lint
+2026-10-03T12:18:41.9903602Z [36;1mbun run lint[0m
+2026-10-03T12:18:41.9950335Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-03T12:18:41.9950531Z env:
+2026-10-03T12:18:41.9950643Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:41.9950852Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:41.9951132Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:41.9951328Z ##[endgroup]
+2026-10-03T12:18:42.1887792Z $ eslint .
+2026-10-03T12:18:47.1649550Z
+2026-10-03T12:18:47.1650419Z D:\a\silent-rave\silent-rave\src\components\operations\password-form.tsx
+2026-10-03T12:18:47.1651084Z   7:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+2026-10-03T12:18:47.1651423Z
+2026-10-03T12:18:47.1652267Z Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+2026-10-03T12:18:47.1653111Z * Update external systems with the latest state from React.
+2026-10-03T12:18:47.1653667Z * Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+2026-10-03T12:18:47.1654067Z
+2026-10-03T12:18:47.1654724Z Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+2026-10-03T12:18:47.1655356Z
+2026-10-03T12:18:47.1655692Z D:\a\silent-rave\silent-rave\src\components\operations\password-form.tsx:7:19
+2026-10-03T12:18:47.1656132Z    5 |   const [busy, setBusy] = useState(false);
+2026-10-03T12:18:47.1656433Z    6 |   const [ready, setReady] = useState(false);
+2026-10-03T12:18:47.1656771Z >  7 |   useEffect(() => setReady(true), []);
+2026-10-03T12:18:47.1657180Z      |                   ^^^^^^^^ Avoid calling setState() directly within an effect
+2026-10-03T12:18:47.1657495Z    8 |   return (
+2026-10-03T12:18:47.1657666Z    9 |     <form
+2026-10-03T12:18:47.1658016Z   10 |       method="post"  react-hooks/set-state-in-effect
+2026-10-03T12:18:47.1658236Z
+2026-10-03T12:18:47.1658621Z ✖ 1 problem (1 error, 0 warnings)
+2026-10-03T12:18:47.1658786Z
+2026-10-03T12:18:53.8759201Z error: script "lint" exited with code 1
+2026-10-03T12:18:53.9453398Z ##[error]Process completed with exit code 1.
+2026-10-03T12:18:53.9597820Z ##[group]Run actions/upload-artifact@v4
+2026-10-03T12:18:53.9598005Z with:
+2026-10-03T12:18:53.9598126Z   name: step4-test-evidence-win32
+2026-10-03T12:18:53.9598283Z   path: reports/step4-win32-test-output.txt
+2026-10-03T12:18:53.9598450Z   if-no-files-found: warn
+2026-10-03T12:18:53.9598575Z   compression-level: 6
+2026-10-03T12:18:53.9598691Z   overwrite: false
+2026-10-03T12:18:53.9598807Z   include-hidden-files: false
+2026-10-03T12:18:53.9598938Z env:
+2026-10-03T12:18:53.9599042Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:53.9599246Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:53.9599508Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:53.9599708Z ##[endgroup]
+2026-10-03T12:18:54.0800594Z (node:2188) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:18:54.0801097Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:18:54.0834953Z ##[warning]No files were found with the provided path: reports/step4-win32-test-output.txt. No artifacts will be uploaded.
+2026-10-03T12:18:54.1068244Z Post job cleanup.
+2026-10-03T12:18:54.2024966Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-03T12:18:54.2205162Z git version 2.55.0.windows.5
+2026-10-03T12:18:54.2245748Z Temporarily overriding HOME='D:\a\_temp\4caa4ae2-92de-4a4b-b12d-c0eb89f6ff7d' before making global git config changes
+2026-10-03T12:18:54.2246301Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-03T12:18:54.2252152Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\silent-rave\silent-rave
+2026-10-03T12:18:54.2437363Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-03T12:18:54.2613528Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-03T12:18:54.6068287Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-03T12:18:54.6221751Z http.https://github.com/.extraheader
+2026-10-03T12:18:54.6246190Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-03T12:18:54.6421037Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-03T12:18:55.0001705Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-03T12:18:55.0182955Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-03T12:18:55.4100272Z Cleaning up orphan processes
+2026-10-03T12:18:55.4230223Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

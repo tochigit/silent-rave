@@ -3,9 +3,11 @@
 Next.js and Prisma/PostgreSQL campus event ticketing with manual bank-transfer
 review. The backend includes queued email delivery, ticket PDFs, owner refunds
 and resends. Step 3 adds the public catalog, guest checkout, receipt upload,
-private order status/recovery, calendars and content/contact pages. Full dashboards,
-offline scanner and hosted integrations remain later milestones. See
-[CHECKPOINT.md](CHECKPOINT.md) and [.docs/STEP3_REPORT.md](.docs/STEP3_REPORT.md)
+private order status/recovery, calendars and content/contact pages. Step 4 adds
+owner operations, invite-only staff and an online scanner with required offline
+preparation, signature verification and durable sync. Hosted integration and
+deployment remain Step 5. See
+[CHECKPOINT.md](CHECKPOINT.md) and [.docs/STEP4_REPORT.md](.docs/STEP4_REPORT.md)
 for verification and review status; [.docs/PHASE4_REPORT.md](.docs/PHASE4_REPORT.md)
 preserves the completed backend evidence and launch checklist.
 
@@ -17,7 +19,7 @@ Linux CI uses `bun install --frozen-lockfile` with `bun.lock`. Both paths
 are checked by CI. Then run:
 
 ```sh
-bun --no-env-file run test:step3
+bun --no-env-file run test:step4
 bun run lint
 bun run typecheck
 bun run build
@@ -25,11 +27,12 @@ bun run build
 
 The test command creates owned embedded PostgreSQL clusters, applies migrations,
 seeds fake owner/catalog data, starts an app on its own loopback port, runs all
-Phase 3b, Phase 4 and Step 3 files, then HTTP tests with failing email kicks, and stops
+Phase 3b, Phase 4, Step 3 and Step 4 files, then HTTP tests with failing email kicks, and stops
 only its own processes. Install Python 3.13 and the PDF verification dependencies
 with `python -m pip install -r scripts/requirements-pdf-test.txt` first. Complete
-output is saved to `reports/step3-<platform>-test-output.txt`; downloaded CI
-evidence is saved to `reports/step3-ci-<platform>-test-output.txt`. The customer
+output is saved to `reports/step4-<platform>-test-output.txt`; downloaded CI
+evidence is saved to `reports/step4-ci-*-<platform>-test-output.txt`. Customer and
+operations groups each receive a fresh owned database. The customer
 group starts from a fresh database after the backend fixture is cleaned up,
 because legacy tests deliberately alter counters/order states. The baseline-only command
 `bun --no-env-file run test:phase3b` and backend `test:phase4` remain available.
@@ -57,14 +60,15 @@ command running. It uses strict Origin checks: public `localhost:3000`, owner
 `owner@silentrave.ng` / `silentrave-dev-owner` (local test data only). The fixture
 is removed when the command stops; it never seeds a real project.
 
-The focused browser fallback is `bun --no-env-file run db:fixture --browser-step3`.
+The focused browser fallback is `bun --no-env-file run db:fixture --browser-step4`
+(the Step 3 browser command remains available).
 It uses installed Chrome and `playwright-core` from ignored
 `.test-runtime/browser-check/node_modules` (install only there with
 `npm install --prefix .test-runtime/browser-check --no-audit --no-fund playwright-core@1.58.2`).
 The fixture bundles the check into an ignored temporary Node script with Bun,
 then runs it under Node 24 with an owned Chrome profile and loopback CDP port.
 `BROWSER_EXECUTABLE` can select another installed Chromium. No dependency locks
-are changed for browser QA. Complete output/screenshots are under `reports/step3-*`.
+are changed for browser QA. Complete Step 4 output/screenshots are under `reports/step4-*`.
 Only public cart selection and optional holder names use tab-scoped sessionStorage;
 tokens, checkout email/phone and receipt files are never stored there. Order links
 are bearer credentials; save the private link and do not share it.
@@ -73,7 +77,13 @@ The new reviewed forward migration adds About/Contact content plus checkout bank
 snapshots. Existing orders are backfilled from their referenced account as it
 exists at migration time; past edits cannot be reconstructed. Fresh checkouts
 record exact bank instructions. Missing snapshots never use a different active
-bank. Content editing UI remains Step 4; production has no fake content seed.
+bank. Step 4 provides the owner content editor; production has no fake content seed.
+
+Read [.docs/07-owner-and-scanner-operations.md](.docs/07-owner-and-scanner-operations.md)
+before operating the door. Connected scanners share atomic server admission.
+During an outage use **one offline scanner for the whole event**. Refunds,
+cancellations and other devices' scans can be stale until sync; multiple offline
+devices cannot prevent double entry. Never discard pending scan evidence.
 
 For the real application, copy `.env.example` into a gitignored `.env`, provide
 the intended database/secrets, and use `bun run dev`. Use `db:deploy` for reviewed

@@ -1,0 +1,83 @@
+step4 focused: tests/step4/local.test.ts, tests/step4/operations.test.ts, tests/step4/push.test.ts; isolated PostgreSQL/HTTP; fake transport/time.
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+waiting for server to start...... done
+server started
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 572ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:53908"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 6a6f5ca3-7475-42f8-957d-19f86e7904f6
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+Test group: phase4; isolated database; fresh app/test processes.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+tests\step4\local.test.ts:
+(pass) browser verifier matches Node Ed25519, and rejects tamper/version/malformed/key [52.41ms]
+(pass) offline event/void/local duplicate/pending/unlisted/expiry decisions [26.66ms]
+(pass) out-of-order overlap deltas never un-check-in or un-void a ticket or regress cursor [0.85ms]
+
+tests\step4\operations.test.ts:
+(pass) new surfaces require sessions, OWNER role and matching mutation Origin [322.55ms]
+(pass) CASH server price, COMP zero price, idempotent issue, changed retry and rollback capacity [1603.54ms]
+(pass) online simultaneous phones admit once; replay is idempotent; malformed/wrong event recorded [1757.56ms]
+(pass) offline reversed device arrival selects earliest scan, flags conflict, keeps ledger immutable and retries safe [867.17ms]
+(pass) manifest overlap and attendee allowlist, refunds and cancelled events invalidate admission [5200.36ms]
+(pass) staff invitation requires first password reset; reset strips other sessions; deactivation revokes access [3758.27ms]
+381 |   expect((await admin(`events/${eventId}`, undefined, "DELETE")).status).toBe(
+382 |     409,
+383 |   );
+384 |   expect(
+385 |     (await admin(`venues/${current.venueId}`, undefined, "DELETE")).status,
+386 |   ).toBe(409);
+          ^
+error: expect(received).toBe(expected)
+
+Expected: 409
+Received: 500
+
+      at <anonymous> (C:\Users\Tochi\Desktop\Silent Rave\tests\step4\operations.test.ts:386:5)
+(fail) event draft/banner/publish gates, protected inventory edits and referenced deletes [5373.81ms]
+(pass) content editor, CSV formula neutralization and totals, append-only audit surface [4398.05ms]
+
+tests\step4\push.test.ts:
+(pass) OWNER push subscriptions reject arbitrary URLs and never expose private VAPID keys [1899.42ms]
+(pass) STAFF cannot register owner notifications and Places fails closed without configuration [464.17ms]
+
+ 12 pass
+ 1 fail
+ 101 expect() calls
+Ran 13 tests across 3 files. [34.32s]
+Phase 4 + Phase 3b runner exit: 1
+waiting for server to shut down.................................. done
+server stopped
+Cleanup complete: owned app and database stopped; temporary fixture removed.

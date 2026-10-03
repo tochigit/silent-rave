@@ -1,0 +1,20 @@
+src/app/api/staff/[...path]/route.ts(39,48): error TS2345: Argument of type '{ tier_name?: string | undefined; holder_name?: string | null | undefined; event_name?: string | undefined; checked_in_at?: string | undefined; checked_in_by_name?: string | undefined; client_scan_id: string; result: string; idempotent: boolean; }' is not assignable to parameter of type 'never'.
+src/lib/operations/admin.ts(78,28): error TS2322: Type 'string | Date | DateTimeFilter<"AuditLogEntry">' is not assignable to type 'string | Date | DateTimeFilter<"CheckInScan"> | undefined'.
+  Type 'DateTimeFilter<"AuditLogEntry">' is not assignable to type 'string | Date | DateTimeFilter<"CheckInScan"> | undefined'.
+    Type 'DateTimeFilter<"AuditLogEntry">' is not assignable to type 'DateTimeFilter<"CheckInScan">'.
+      Type '"AuditLogEntry"' is not assignable to type '"CheckInScan"'.
+src/lib/operations/issue.ts(37,50): error TS2345: Argument of type '{ price: number; tier_id: string; quantity: number; holder_names?: string[] | undefined; }' is not assignable to parameter of type 'never'.
+src/lib/operations/issue.ts(46,56): error TS2339: Property 'tier_id' does not exist on type 'never'.
+src/lib/operations/issue.ts(46,77): error TS2339: Property 'quantity' does not exist on type 'never'.
+src/lib/operations/issue.ts(46,104): error TS2339: Property 'price' does not exist on type 'never'.
+src/lib/operations/issue.ts(46,126): error TS2339: Property 'holder_names' does not exist on type 'never'.
+src/lib/operations/issue.ts(48,50): error TS2339: Property 'quantity' does not exist on type 'never'.
+src/lib/operations/issue.ts(50,36): error TS2322: Type '{ id: `${string}-${string}-${string}-${string}-${string}`; orderId: string; eventId: string; tierId: any; holderName: any; qrToken: string; }' is not assignable to type '(Without<TicketUnitCreateInput, TicketUnitUncheckedCreateInput> & TicketUnitUncheckedCreateInput) | (Without<...> & TicketUnitCreateInput)'.
+  Type '{ id: `${string}-${string}-${string}-${string}-${string}`; orderId: string; eventId: string; tierId: any; holderName: any; qrToken: string; }' is not assignable to type 'Without<TicketUnitCreateInput, TicketUnitUncheckedCreateInput> & TicketUnitUncheckedCreateInput'.
+    Property 'syncSeq' is missing in type '{ id: `${string}-${string}-${string}-${string}-${string}`; orderId: string; eventId: string; tierId: any; holderName: any; qrToken: string; }' but required in type 'TicketUnitUncheckedCreateInput'.
+src/lib/operations/issue.ts(50,104): error TS2339: Property 'tier_id' does not exist on type 'never'.
+src/lib/operations/issue.ts(50,127): error TS2339: Property 'holder_names' does not exist on type 'never'.
+src/lib/scanner/service.ts(79,42): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+src/lib/scanner/service.ts(81,61): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+src/lib/scanner/service.ts(81,78): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+src/lib/scanner/service.ts(81,86): error TS2737: BigInt literals are not available when targeting lower than ES2020.

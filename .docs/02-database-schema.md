@@ -35,6 +35,15 @@ at migration time; earlier edited values cannot be recovered by this migration.
 Status returns this allowlisted snapshot only after token verification, along
 with total/event title, pending-proof state and time-based submission eligibility.
 
+## Step 4 forward additions
+
+The additive `20261003000000_step4_staff_password` migration adds
+`staff_users.must_change_password BOOLEAN NOT NULL DEFAULT false`. Existing
+accounts, including the permanent OWNER, retain their credentials and access.
+New owner-created STAFF accounts explicitly set it true. Password replacement
+clears it and revokes other sessions. Two indexes support received-time scan
+review and created-time audit pagination. No historical migration is rewritten.
+
 ## `organizers`
 
 | Column | Type | Constraints |

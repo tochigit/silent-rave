@@ -7,12 +7,13 @@ import { freePort, runCommand, startFixture } from "./fixture";
 await mkdir("reports", { recursive: true });
 const focus = process.argv.slice(2);
 const step3 = process.env.SILENT_RAVE_TEST_STEP3 === "1";
-const suite = step3 ? "step3" : "phase4";
+const step4 = process.env.SILENT_RAVE_TEST_STEP4 === "1";
+const suite = step4 ? "step4" : step3 ? "step3" : "phase4";
 if (
   focus.some(
     (p) =>
       !new RegExp(
-        `^tests/${step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
+        `^tests/${step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
       ).test(p),
   )
 )
@@ -72,7 +73,7 @@ try {
   });
   const startApp = async (
     overrides: Record<string, string> = {},
-    mode: "baseline" | "phase4" | "customer" = "phase4",
+    mode: "baseline" | "phase4" | "customer" | "operations" = "phase4",
   ) => {
     const port = await freePort();
     const env: Record<string, string> = {
@@ -220,6 +221,19 @@ try {
         log(
           "Fixture app ready; login compiled; strict Origin checks; dedicated app port.",
         );
+        if (step4 && (mode === "operations" || focus.some(p => p.includes("/step4/")))) {
+          const login = await fetch(env.TEST_BASE_URL + "/api/auth/login", { method: "POST", headers: { host: "localhost:3000", origin: "http://localhost:3000", "content-type": "application/json" }, body: JSON.stringify({ email: env.OWNER_EMAIL, password: env.OWNER_PASSWORD }), signal: AbortSignal.timeout(120000) });
+          const cookie = login.headers.get("set-cookie")?.split(";")[0];
+          if (login.status !== 200 || !cookie) throw new Error("Step 4 warmup login failed.");
+          for (const target of ["/api/admin/events", "/api/staff/session"]) {
+            const response = await fetch(env.TEST_BASE_URL + target, { headers: { cookie }, signal: AbortSignal.timeout(120000) });
+            if (response.status !== 200) throw new Error(`Step 4 warmup failed: ${target}`); await response.arrayBuffer();
+          }
+          for (const target of ["/api/admin/orders/issue", "/api/auth/password"]) {
+            const response = await fetch(env.TEST_BASE_URL + target, { method: "POST", headers: { cookie, host: "admin.localhost:3000", origin: "http://admin.localhost:3000", "content-type": "application/json" }, body: "{}", signal: AbortSignal.timeout(120000) });
+            if (response.status !== 400) throw new Error(`Step 4 controller warmup failed: ${target}`); await response.arrayBuffer();
+          }
+        }
         return env;
       }
       await Bun.sleep(250);
@@ -274,9 +288,10 @@ try {
         ...(step3
           ? [{ paths: ["tests/step3/"], mode: "customer" as const }]
           : []),
+        ...(step4 ? [{ paths: ["tests/step4/"], mode: "operations" as const }] : []),
       ];
   for (const group of groups) {
-    if (group.mode === "customer") {
+    if (group.mode === "customer" || group.mode === "operations") {
       // Legacy tests deliberately alter order/counter rows. Their short holds
       // can lapse during a slow local run; the customer's real global expiry
       // sweep must start from a consistent fresh database, not those leftovers.

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#101218" />
+    <title>Silent Rave • Door scanner</title>
+    <link rel="manifest" href="/scanner.webmanifest" />
+    <link rel="stylesheet" href="/scanner.css" />
+    <script src="/scanner.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <span class="brand">SILENT RAVE</span><span>Door scanner</span>
+    </header>
+    <main>
+      <h1>Check in guests</h1>
+      <p id="status" role="status">Opening scanner…</p>
+      <p><a id="login" href="/staff/login">Sign in to prepare or sync</a></p>
+      <aside id="offline-warning">
+        <strong
+          >During an outage, use one offline scanner for the whole
+          event.</strong
+        >
+        Disconnected phones cannot share check-ins. Recent refunds or
+        cancellations may be missing until sync.
+      </aside>
+      <section>
+        <label for="event">Event</label
+        ><select id="event"></select>
+        <div class="actions">
+          <button id="prepare">Prepare for event</button
+          ><button id="sync">Sync now</button>
+        </div>
+      </section>
+      <section>
+        <h2>Scan a ticket</h2>
+        <div class="actions">
+          <button id="start-camera">Start camera</button
+          ><button id="stop-camera">Stop camera</button>
+        </div>
+        <video id="camera" playsinline muted hidden></video>
+        <p id="result" role="status" aria-live="polite">
+          Prepare while connected before scanning.
+        </p>
+        <label for="qr-image">Or choose a QR image</label
+        ><input id="qr-image" type="file" accept="image/*" />
+        <details>
+          <summary>Enter QR token manually</summary>
+          <form id="manual-form">
+            <label for="token">Ticket QR token</label
+            ><textarea id="token" required maxlength="300"></textarea
+            ><button>Check ticket</button>
+          </form>
+        </details>
+      </section>
+      <section>
+        <h2>Prepared attendee list</h2>
+        <label for="search">Search holder name</label
+        ><input id="search" type="search" />
+        <p>
+          Shows up to 100 matching tickets. No buyer contact or payment
+          information is stored here.
+        </p>
+        <ul id="attendees"></ul>
+      </section>
+      <section>
+        <h2>Device and recovery</h2>
+        <p>
+          Pending scans stay saved through refresh and failed sync. Sign in as
+          the same staff member to upload them.
+        </p>
+        <div class="actions">
+          <button id="export">Export pending scans</button
+          ><button id="clear">Clear preparation</button
+          ><button id="logout">Log out</button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

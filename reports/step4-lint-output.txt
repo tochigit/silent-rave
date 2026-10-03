@@ -1,0 +1,5 @@
+Command: bun --no-env-file node_modules/eslint/bin/eslint.js .
+ESLint produced no output.
+Exit code: 0
+Same files, configuration and rules as the standard lint command.
+Standard invocation was stopped as incomplete; its full output is separate.
