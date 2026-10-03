@@ -108,7 +108,7 @@ during their final checks. Existing historical reports/outputs are unchanged.
 | Changed-tool lint | PASS: same repository ESLint config/rules, invoked directly under Bun; exit 0. |
 | Offline readiness CLI | Expected BLOCKED: exit 1, configurationValid=false, readyForLaunch=false, four fingerprints. Inspection worked; this is not a launch pass. |
 | Diff/secret/process review | PASS: final staged review and diff check, no task-owned node/bun/postgres processes, root .env absent. |
-| Current-head PR CI | Pending publication. |
+| Current-head PR CI | PR #5 published; exact-head CI pending. Verify its live description/checks before merge. |
 | Hosted/provider/physical behavior | UNVERIFIED, not performed. |
 
 DB preflight used PostgreSQL 18.4's embedded package and the complete four-file
@@ -148,10 +148,12 @@ normalized evidence passed. No output message or failure was removed.
 
 ## Git publication and next action
 
-Implementation/publication head, focused PR and exact-head CI will be recorded
-after publication. The final head/check state belongs in the PR description to
-avoid a self-referential committed hash. Local main remains the merged Step 4
-baseline. No branch deletion, merge or deploy occurs during this milestone.
+Verified local implementation head: 502f8e2655bec81e9635c857a68553ba9ce56166.
+Focused [PR #5](https://github.com/tochigit/silent-rave/pull/5) is OPEN against
+main. Final documentation publication head and exact-head CI are recorded in
+the PR description to avoid a self-referential committed hash. CI was pending
+when this report was frozen; verify its live checks. Local main remains the
+merged Step 4 baseline. No branch deletion, merge or deploy occurred.
 
 Stop for user review. After a separately approved merge/continuation, the proposed
 next local Step 5 milestone is durable storage/shared limits/Data API protection

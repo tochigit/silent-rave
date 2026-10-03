@@ -7,8 +7,8 @@ Updated 2026-10-03, Africa/Lagos. Specifications: .docs v2.1.2.
 3. Customer experience COMPLETE; PR #3 merged at 8984f9e.
 4. Owner/staff/offline scanner COMPLETE; approved PR #4 squash-merged at
    4e5e68b8927e1fa3e70254f364e4f3cda0d70adc on 2026-10-03T13:14:25Z.
-5. Readiness/preflight and reversible local preparation COMPLETE locally;
-   publication/checks pending, then STOP FOR REVIEW.
+5. Readiness/preflight and reversible local preparation COMPLETE; PR #5 OPEN,
+   STOPPED FOR REVIEW. Hosted launch remains blocked.
    Hosted implementation/configuration/migration/deployment remain pending.
 
 ## Authorized scope and current state
@@ -20,6 +20,10 @@ Main/origin/main are 4e5e68b. Initial working tree was clean; no applicable
 AGENTS.md found in repository/ancestors. All earlier branches retained.
 
 Current branch: feat/step5-hosted-readiness, from that verified main.
+PR #5: https://github.com/tochigit/silent-rave/pull/5 (base main).
+Verified local implementation head: 502f8e2655bec81e9635c857a68553ba9ce56166.
+Final documentation publication head/current-head CI are recorded in PR #5's
+description to avoid a self-referential committed hash. Verify them live.
 Scope: local readiness tools/plan, appropriate validation, checkpoint/report,
 focused PR publication, then STOP FOR REVIEW. No merge, hosted writes/migrations,
 permanent owner changes, real mail/push or deployment authorized.
@@ -51,7 +55,7 @@ paid upgrade authorized.
   PASSED, exit 0, same repository config/rules. Offline audit returned expected
   exit 1, configurationValid=false, readyForLaunch=false, four fingerprints.
 - Diff check PASSED. Final process inventory empty; root .env remains absent.
-  PR publication/exact-head CI pending; verify live and record in PR description.
+  PR #5 published. Exact-head CI pending; verify live via its description/checks.
 - Application code, dependency locks and migration SQL unchanged. Reuse verified
   post-merge baseline CI; do not repeat installs/full local checks for unchanged
   evidence. Existing CI retains full regression/build checks.
@@ -62,9 +66,9 @@ branches and unrelated processes. Verify live process state on resume.
 
 ## Remaining action and boundary
 
-Finish secret-free diff review, commit/push and publish focused PR against main.
-Full report: .docs/STEP5_REPORT.md. Record exact
-implementation/publication head, PR/checks and next action here and in the PR.
-STOP FOR REVIEW. No approval for merge or further hosted/local implementation.
+Next action: USER REVIEW of PR #5 and its exact-head checks. Full report:
+.docs/STEP5_REPORT.md. Plan: .docs/08-hosted-readiness.md. STOP FOR REVIEW.
+No approval for merge or further hosted/local implementation. On resume read
+these documents and the Desktop Step 5 handoff; inspect Git/PR/CI/process state.
 After review, suggested next separately authorized local milestone is durable
 storage/shared limits/Data API protection with chosen-host compatibility.
