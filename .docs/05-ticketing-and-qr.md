@@ -51,6 +51,15 @@ All results return HTTP 200 with a `result` field. The transition is a single co
 
 ## Scanner: offline mode (required for v1)
 
+Step 4 operating rule: **use one offline scanner for the whole event during
+an outage**. Multiple connected scanners use atomic server admission. Offline
+refund/cancellation and other devices' admissions remain stale until sync.
+See `07-owner-and-scanner-operations.md` for preparation and recovery.
+The PWA caches only its generic shell/assets; admission data lives separately
+in IndexedDB. A successful offline result follows durable outbox persistence.
+Logout cannot silently discard unsynced evidence. Scanning expires at event end
+or event-day grace, whichever comes first; pending evidence remains for sync.
+
 Campus network is unreliable. The scanner must keep working with no signal and stay accurate.
 
 **Prepare (online, before the event):** staff open the scanner while connected and tap **Prepare for event**. The PWA (service worker) caches itself so it loads offline, and downloads the manifest (`GET /api/staff/events/:id/manifest`) into IndexedDB: ticket id, tier, holder name, status, void flag, plus the public keys and `server_time`. The UI always shows manifest age, last successful sync, and pending-unsynced-scan count, and warns loudly if the device was never prepared. The device records `clock_offset_ms = server_time - device_time` at each sync.

@@ -112,8 +112,18 @@ function Editor({
                   name={f.key}
                   type={f.type ?? "text"}
                   required={f.required}
-                  min={f.type === "number" && !["latitude", "longitude"].includes(f.key) ? 0 : undefined}
-                  step={f.type === "number" && ["latitude", "longitude"].includes(f.key) ? "any" : undefined}
+                  min={
+                    f.type === "number" &&
+                    !["latitude", "longitude"].includes(f.key)
+                      ? 0
+                      : undefined
+                  }
+                  step={
+                    f.type === "number" &&
+                    ["latitude", "longitude"].includes(f.key)
+                      ? "any"
+                      : undefined
+                  }
                   defaultChecked={
                     f.type === "checkbox" ? !!initial[f.key] : undefined
                   }
@@ -950,6 +960,15 @@ function OrderReview({ order, refresh }: { order: any; refresh: () => void }) {
           {order.buyer.name} · {order.buyer.email} · {order.buyer.phone}
         </p>
         <p>Hold ends {when(order.hold_expires_at)}</p>
+        {order.payment_account && (
+          <p>
+            Bank instructions given to buyer: {order.payment_account.bank_name}
+            {" · "}
+            {order.payment_account.account_number}
+            {" · "}
+            {order.payment_account.account_name}
+          </p>
+        )}
         {order.line_items.map((l: any, i: number) => (
           <p key={i}>
             {l.quantity} × {l.tier_name} · {money(l.unit_price_kobo)} each ·{" "}

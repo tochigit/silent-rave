@@ -298,6 +298,64 @@ test("manifest overlap and attendee allowlist, refunds and cancelled events inva
     data: { status: "PUBLISHED" },
   });
 });
+test("offline evidence reconciles after event end but post-end scans cannot admit", async () => {
+  const admitted = await issue(),
+    late = await issue();
+  const event = await db.event.findUniqueOrThrow({ where: { id: eventId } });
+  const end = new Date(Date.now() - 60000);
+  await db.event.update({ where: { id: eventId }, data: { endsAt: end } });
+  try {
+    const batch = async (token: string, scannedAt: Date) =>
+      json(
+        await scanner("check-in/batch", {
+          event_id: eventId,
+          device_id: "after-event-recovery",
+          clock_offset_ms: 0,
+          scans: [
+            {
+              event_id: eventId,
+              token,
+              client_scan_id: crypto.randomUUID(),
+              scanned_at: scannedAt.toISOString(),
+            },
+          ],
+        }),
+      );
+    const before = await batch(
+      admitted.ticket.qrToken,
+      new Date(end.getTime() - 60000),
+    );
+    expect(before.results[0].result).toBe("valid");
+    expect(
+      (
+        await db.ticketUnit.findUniqueOrThrow({
+          where: { id: admitted.ticket.id },
+        })
+      ).checkedInAt?.getTime(),
+    ).toBe(end.getTime() - 60000);
+    const after = await batch(late.ticket.qrToken, new Date());
+    expect(after.results[0].result).toBe("void");
+    expect(
+      (await db.ticketUnit.findUniqueOrThrow({ where: { id: late.ticket.id } }))
+        .checkInStatus,
+    ).toBe("NOT_CHECKED_IN");
+    const online = await json(
+      await scanner("check-in", {
+        event_id: eventId,
+        token: late.ticket.qrToken,
+        device_id: "ended-online",
+        client_scan_id: crypto.randomUUID(),
+      }),
+    );
+    expect(online.result).toBe("void");
+  } finally {
+    await db.event.update({
+      where: { id: eventId },
+      data: { endsAt: event.endsAt },
+    });
+  }
+});
+
 test("staff invitation requires first password reset; reset strips other sessions; deactivation revokes access", async () => {
   const email = `invited-${crypto.randomUUID()}@test.ng`,
     temporary = "temporary-fixture-password";

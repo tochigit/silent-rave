@@ -134,7 +134,9 @@ export async function checkIn(
           order?.status !== "APPROVED" ||
           event.status === "CANCELLED" ||
           !event.isDateConfirmed ||
-          event.endsAt <= new Date()
+          // Offline evidence may arrive after event end. Evaluate admission at
+          // its corrected scan time; cancellation/refund still use current state.
+          event.endsAt <= corrected
         )
           result = "VOID";
         else if (unit.checkInStatus === "NOT_CHECKED_IN") {

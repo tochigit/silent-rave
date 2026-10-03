@@ -16,6 +16,7 @@ This is a living specification intended to be handed to an implementation model 
 | [`04-manual-payment.md`](./04-manual-payment.md) | Bank-transfer flow, proof upload, admin approve/reject, hold policy, push/realtime, bank accounts |
 | [`05-ticketing-and-qr.md`](./05-ticketing-and-qr.md) | Ticket units, PDFs, Ed25519 QR tokens, online and offline scanner, abuse mitigation |
 | [`06-auth-and-roles.md`](./06-auth-and-roles.md) | Admin vs. staff roles, subdomain routing, session scope, audit logging |
+| [`07-owner-and-scanner-operations.md`](./07-owner-and-scanner-operations.md) | Owner/staff operating guide, offline preparation, conflicts and recovery |
 | [`CHANGELOG.md`](./CHANGELOG.md) | What changed from v2 to v2.1 and why |
 
 ## Reading order

@@ -162,6 +162,112 @@ try {
     "COMP order and ticket persisted exactly once",
   );
   const token = order.ticketUnits[0].qrToken;
+  // Create receipt evidence only in this owned fixture, then use the actual
+  // owner UI for the financial decisions (no direct database transitions).
+  const publicBase = `http://localhost:${appPort}`;
+  const initialize = await context.request.post(
+    publicBase + "/api/checkout/initialize",
+    {
+      data: {
+        event_id: event.id,
+        customer_name: "Browser Payment Guest",
+        customer_email: "browser-review@example.test",
+        customer_phone: "08012345678",
+        line_items: [{ tier_id: event.ticketTiers[0].id, quantity: 1 }],
+      },
+    },
+  );
+  if (initialize.status() !== 201)
+    throw new Error("Browser review fixture initialization failed.");
+  const guest = await initialize.json();
+  const receipt = await sharp({
+    create: { width: 640, height: 480, channels: 3, background: "#ffeebb" },
+  })
+    .jpeg()
+    .toBuffer();
+  async function submitReceipt() {
+    const response = await context.request.post(
+      `${publicBase}/api/orders/${guest.order_code}/proof`,
+      {
+        headers: { "x-status-token": guest.status_token },
+        multipart: {
+          proof: {
+            name: "fixture-receipt.jpg",
+            mimeType: "image/jpeg",
+            buffer: receipt,
+          },
+          transfer_reference: "BROWSER-REVIEW-" + crypto.randomUUID(),
+          sender_name: "Browser Fixture Sender",
+          client_submission_id: crypto.randomUUID(),
+        },
+        timeout: 120000,
+      },
+    );
+    if (!response.ok())
+      throw new Error("Browser fixture receipt submission failed.");
+  }
+  await submitReceipt();
+  const reviewOrder = await db.order.findUniqueOrThrow({
+    where: { orderCode: guest.order_code },
+  });
+  await page.goto(`${adminBase}/admin/orders/${reviewOrder.id}`);
+  await page.getByRole("heading", { name: "Receipt attempt 1" }).waitFor();
+  await page
+    .getByLabel("Message to buyer")
+    .fill("Please send a clearer fixture receipt.");
+  await page.getByRole("button", { name: "Reject or dismiss" }).click();
+  await page
+    .getByText(/NEEDS_RESUBMIT/)
+    .first()
+    .waitFor();
+  check(
+    (await db.order.findUniqueOrThrow({ where: { id: reviewOrder.id } }))
+      .status === "NEEDS_RESUBMIT",
+    "owner UI rejects receipt with a resubmission message",
+  );
+  await submitReceipt();
+  await page.reload();
+  await page.getByRole("heading", { name: "Receipt attempt 2" }).waitFor();
+  await page.getByLabel("I checked the credit in the bank app").check();
+  await page
+    .getByRole("button", { name: "Approve payment", exact: true })
+    .click();
+  await page.getByRole("heading", { name: "Tickets and refunds" }).waitFor();
+  check(
+    (await db.order.findUniqueOrThrow({ where: { id: reviewOrder.id } }))
+      .status === "APPROVED" &&
+      (await db.ticketUnit.count({ where: { orderId: reviewOrder.id } })) === 1,
+    "owner bank-confirmation UI approves and mints exactly one ticket",
+  );
+  await page
+    .getByRole("button", { name: "Resend tickets to original buyer" })
+    .click();
+  await page.getByText("Saved.", { exact: true }).waitFor();
+  check(
+    (await db.emailJob.count({
+      where: { orderId: reviewOrder.id, kind: "TICKETS" },
+    })) === 2,
+    "owner UI resends only to the original purchaser",
+  );
+  await page
+    .getByLabel("Re-enter your password", { exact: true })
+    .fill(process.env.OWNER_PASSWORD!);
+  page.once("dialog", (dialog: any) => dialog.accept());
+  await page
+    .getByRole("button", { name: "Record refund", exact: true })
+    .click();
+  await page
+    .getByText(/REFUNDED/)
+    .first()
+    .waitFor();
+  check(
+    (await db.order.findUniqueOrThrow({ where: { id: reviewOrder.id } }))
+      .status === "REFUNDED" &&
+      (await db.ticketUnit.count({
+        where: { orderId: reviewOrder.id, voidedAt: { not: null } },
+      })) === 1,
+    "owner UI password-confirmed refund voids tickets without moving money",
+  );
   const tier = event.ticketTiers[0];
   const issueMore = async () => {
     const response = await context.request.post(
@@ -270,17 +376,15 @@ try {
       (f: HTMLElement) => ((f.parentElement as HTMLDetailsElement).open = true),
     );
   await page.getByLabel("Ticket QR token").fill(token);
-  await page
-    .getByLabel("Or choose a QR image")
-    .setInputFiles({
-      name: "fixture-ticket.png",
-      mimeType: "image/png",
-      buffer: await QRCode.toBuffer(token, {
-        width: 500,
-        margin: 4,
-        errorCorrectionLevel: "Q",
-      }),
-    });
+  await page.getByLabel("Or choose a QR image").setInputFiles({
+    name: "fixture-ticket.png",
+    mimeType: "image/png",
+    buffer: await QRCode.toBuffer(token, {
+      width: 500,
+      margin: 4,
+      errorCorrectionLevel: "Q",
+    }),
+  });
   await page
     .locator("#result")
     .filter({ hasText: /OFFLINE.*VALID/ })

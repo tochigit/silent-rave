@@ -204,6 +204,26 @@ Request: `{ "token": "...", "event_id": "uuid", "device_id": "...", "client_scan
 ### `POST /api/staff/check-in/batch`  (offline sync)
 Request: `{ device_id, clock_offset_ms, scans: [{ client_scan_id, token, event_id, scanned_at }] }`. Idempotent per `client_scan_id`. Each scan may carry `not_in_manifest: true` (stored in `check_in_scans.flags`). Server verifies each token, applies scans in `scanned_at` order (earliest wins), records every scan in `check_in_scans`, marks losers `CONFLICT`. Response: per-scan result plus the manifest delta since the device's last `sync_seq`.
 
+Step 4 adds a required top-level `event_id` and optional string `since` cursor;
+all scans must belong to that event. Maximum 100 scans and 64 KiB JSON per
+request. Scan IDs are UUIDs; retries with a changed actor/device/token are
+rejected. Clock offset is bounded to one day, corrected evidence to seven days
+past or five minutes ahead. The shipped client stores corrected timestamps
+at admission and sends offset zero, preserving their time through later syncs.
+Result strings are lowercase; persisted ledger enums are uppercase. Expected
+ticket outcomes are HTTP 200; invalid bodies, auth and scan-ID collisions use
+normal HTTP errors. When earlier evidence arrives after a later valid scan,
+a new `CONFLICT` entry records the displaced attribution/time and the ticket's
+effective admission changes; old ledger entries remain immutable.
+
+Additional Step 4 routes: `GET /api/staff/session` returns only the caller's
+id/name; `POST /api/auth/password` replaces invited staff passwords;
+`GET /api/admin/places/search` and `/places/details` proxy Google Places for
+OWNER only. Owner About/Contact editor uses `/api/admin/content/:slug`;
+`POST /api/admin/orders/issue` is an explicit static route, preserving the
+existing dynamic order-detail and payment-action routes. All new owner/staff
+JSON and authenticated pages use private no-store/no-referrer headers.
+
 ### `GET /api/staff/attendee-list`
 Read-only, event-scoped: holder names and check-in status only. No pricing, no buyer contact data.
 
