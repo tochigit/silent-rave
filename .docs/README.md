@@ -17,6 +17,7 @@ This is a living specification intended to be handed to an implementation model 
 | [`05-ticketing-and-qr.md`](./05-ticketing-and-qr.md) | Ticket units, PDFs, Ed25519 QR tokens, online and offline scanner, abuse mitigation |
 | [`06-auth-and-roles.md`](./06-auth-and-roles.md) | Admin vs. staff roles, subdomain routing, session scope, audit logging |
 | [`07-owner-and-scanner-operations.md`](./07-owner-and-scanner-operations.md) | Owner/staff operating guide, offline preparation, conflicts and recovery |
+| [`08-hosted-readiness.md`](./08-hosted-readiness.md) | Step 5 local preflight, provider limits, forward migrations and deployment plan |
 | [`CHANGELOG.md`](./CHANGELOG.md) | What changed from v2 to v2.1 and why |
 
 ## Reading order

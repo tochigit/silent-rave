@@ -1,82 +1,74 @@
-﻿# Silent Rave checkpoint
+# Silent Rave checkpoint
 
 Updated 2026-10-03, Africa/Lagos. Specifications: .docs v2.1.2.
 
 1. Baseline COMPLETE; PR #1 merged at 982eb9f.
-2. Email/PDF/refund backend COMPLETE; PR #2 merged at 7fcf42d8fb13e5f77ce6f8db8fe613987e591670.
-3. Customer experience COMPLETE; approved PR #3 squash-merged at 8984f9eccff51ff96088155e47e9afeef0c4d633 after exact-head checks.
-4. Owner/staff and REQUIRED offline-capable scanner COMPLETE; STOPPED FOR REVIEW. PR #4: https://github.com/tochigit/silent-rave/pull/4.
-5. Hosted integration/deployment NOT STARTED.
+2. Email/PDF/refund backend COMPLETE; PR #2 merged at 7fcf42d.
+3. Customer experience COMPLETE; PR #3 merged at 8984f9e.
+4. Owner/staff/offline scanner COMPLETE; approved PR #4 squash-merged at
+   4e5e68b8927e1fa3e70254f364e4f3cda0d70adc on 2026-10-03T13:14:25Z.
+5. Readiness/preflight and reversible local preparation COMPLETE; PR #5 OPEN,
+   STOPPED FOR REVIEW. Hosted launch remains blocked.
+   Hosted implementation/configuration/migration/deployment remain pending.
 
-User authorized PR #3 merge and ONLY Step 4 continuation on 2026-10-03.
-Branch feat/step4-owner-staff-scanner starts from current main 8984f9e. Latest
-verified application implementation: dd0a3ecec0259e22b36a469d62c674418134b951.
-The final evidence publication head and exact-head checks are recorded in PR #4
-by its description after publication, avoiding a self-referential report hash.
-Verify Git/PR/checks live on every resume. All earlier branches remain.
-No Step 4 merge, Step 5 or deployment authorization.
+## Authorized scope and current state
 
-## Verified results
+Read the entire Desktop Silent Rave - Step 5 continuation.md. It supersedes
+historical pre-merge Step 4 report language. Live GitHub verification confirmed
+PR #4 merged and post-merge main CI 37125499610 successful on Linux and Windows.
+Main/origin/main are 4e5e68b. Initial working tree was clean; no applicable
+AGENTS.md found in repository/ancestors. All earlier branches retained.
 
-- Full LOCAL regression: 175 pass/0 fail, runner exit0 and owned cleanup: 112 baseline +33 Phase4 +15 customer +13 Step4 +2 failing-kick HTTP cases, before delayed-sync fix.
-- Frozen-source focused acceptance after that fix: 14 pass/0 fail, 109 expectations, exit0 and cleanup. All original 162 cases/assertions remain. Final full suite is 176 cases across 24 files.
-- Final implementation CI37122520636 at dd0a3ec PASSED Windows AND Linux: 176/0 each, locked installs, lint, both types, scanner assets, default production build and cleanup. Complete artifacts AND job logs: reports/step4-ci-final-implementation-\*.
-- Fourth actual Chrome run PASSED all 28 checks; entire fixture command exit0. Owner issue/reject/resubmit/approve/resend/refund/invite/password POST; online scan; real QR-image offline decoding/admission; duplicate rejection; cached offline reload/outbox persistence; blocked logout/stale-tab safeguard; reconnect/repeat sync; attendee search; staff403; desktop/mobile/landscape/reduced-motion/24px root text overflow. No JavaScript errors. Screenshots inspected.
-- Final local ESLint PASSED directly under Bun, same files/config/rules, exit0. Standard Windows Node invocation stalled and its owned process tree was stopped; saved as INCOMPLETE. Both CI standard lint checks passed independently.
-- Default production Turbopack build PASSED, exit0; dummy loopback database URLs, all27 static pages generated. Both final post-build app/tooling types PASSED, exit0.
-- Owned Chrome/app/database/check processes stopped; temporary fixture data removed. No PostgreSQL process remained. Root .env absent/untouched. Old unrelated node processes and historical ignored fixture folders retained.
+Current branch: feat/step5-hosted-readiness, from that verified main.
+PR #5: https://github.com/tochigit/silent-rave/pull/5 (base main).
+Verified local implementation head: 502f8e2655bec81e9635c857a68553ba9ce56166.
+Final documentation publication head/current-head CI are recorded in PR #5's
+description to avoid a self-referential committed hash. Verify them live.
+Scope: local readiness tools/plan, appropriate validation, checkpoint/report,
+focused PR publication, then STOP FOR REVIEW. No merge, hosted writes/migrations,
+permanent owner changes, real mail/push or deployment authorized.
 
-Full report: .docs/STEP4*REPORT.md. Operating guide:
-.docs/07-owner-and-scanner-operations.md. Complete local/CI/browser/build/types/
-lint/failure output and screenshots: reports/step4-*. Previous Step 3 report and
-evidence remain unchanged in .docs/STEP3*REPORT.md and reports/step3-*.
+User says launch resources will be created when requested after preparation;
+ownership/projects/regions/sender verification are not established. User chose
+planning a free external scheduler. Netlify Free is an evaluated candidate after
+the user's question; host choice has not been changed. Vercel Hobby commercial
+use restrictions and daily cron are confirmed launch blockers. No purchase or
+paid upgrade authorized.
 
-Verification commands: bun --no-env-file run test:step4; the same runner with
-explicit tests/step4/local.test.ts, operations.test.ts and push.test.ts paths;
-bun --no-env-file run db:fixture --browser-step4; direct Bun ESLint; both
-TypeScript configs; bun --no-env-file run build; post-build both TypeScript configs.
-Browser fallback uses ignored playwright-core and installed Chrome under Node24,
-an owned profile/CDP port and disposable database. Browser plugin was unavailable.
-Fixtures use Node24/Webpack; production retains default Turbopack. No acceptance
-assertion, production verifier, transaction timeout or test deadline was relaxed.
+## Local preparation and checks
 
-## Decisions and preserved invariants
+- Plan: .docs/08-hosted-readiness.md. Distinguishes code gaps from external setup,
+  storage/session privacy, shared limits, Supabase Data API, hosted migration/
+  recovery, host compatibility, scheduler and physical acceptance.
+- Offline redacted checker/fingerprints: scripts/readiness.ts. Exit 1 is expected
+  while launch is blocked, even with syntactically valid candidate configuration.
+- Disposable database probe: scripts/preflight-db.ts. Existing guarded fixture
+  only; no app/provider; existing transaction limits retained.
+- Final readiness suite: 7 pass/0 fail/50 expectations, exit 0. Covers safe
+  diagnostics, origins, pooler split, secret keys, fixtures and migration inventory.
+  Initial 6-case output retained separately.
+- Database probe PASSED all four checks; exit 0 and owned cleanup complete.
+  Fresh chain/checksums, repeat deploy preserving fixture owner, independent
+  advisory/row/SKIP LOCKED locks, rollback/inventory and lock release.
+  Evidence: reports/step5-win32-db-preflight.txt.
+- Both TypeScript configurations PASSED, exit 0. Changed-tool ESLint under Bun
+  PASSED, exit 0, same repository config/rules. Offline audit returned expected
+  exit 1, configurationValid=false, readyForLaunch=false, four fingerprints.
+- Diff check PASSED. Final process inventory empty; root .env remains absent.
+  PR #5 published. Exact-head CI pending; verify live via its description/checks.
+- Application code, dependency locks and migration SQL unchanged. Reuse verified
+  post-merge baseline CI; do not repeat installs/full local checks for unchanged
+  evidence. Existing CI retains full regression/build checks.
 
-Guest checkout, server pricing, manual bank transfer and OWNER bank confirmation/
-approval remain. Refunds move no money and require password/checked-in acknowledgement.
-Checkout email namespace1, phone namespace2 and sorted-tier locks, expiry/revival/
-counters, original tests and production inclusive five-minute webhook verifier
-are unchanged. Step 3's +/-360s test-fixture margin is already merged.
+Root .env absent/untouched. Owned disposable database stopped and directory
+removed. No app/browser/provider process started. Preserve historical logs,
+branches and unrelated processes. Verify live process state on resume.
 
-Step 4 adds owner management, CASH/COMP idempotent inventory/tickets/email/audit,
-STAFF invites/first password replacement, reconciliation, push capture/dispatch,
-Places proxy/manual fallback, online atomic admission and prepared offline PWA.
-Only public keys reach phones. Admission manifests exclude buyer/payment data;
-generic shell alone is cached and IndexedDB durably stores pending evidence.
-Additive20261003000000_step4_staff_password defaults false for existing accounts.
-Permanent OWNER/password and prior migrations are unchanged.
+## Remaining action and boundary
 
-Multiple connected scanners share atomic server admission. During an outage use
-ONE OFFLINE SCANNER FOR THE WHOLE EVENT. Separate offline phones cannot prevent
-cross-gate duplicate entry or learn fresh refunds/cancellations. Sync detects
-conflicts; earliest corrected evidence sets effective admission and new conflict
-entries preserve the immutable ledger. Prepared scanning expires at event end/day
-grace; queued pre-end scans can reconcile afterward within seven days. Logout,
-prepare and clear guard current saved state; a stale tab cannot silently erase
-another tab's scans. Exported evidence contains private QR tokens. Physical
-bearer checks and trusted staff remain necessary.
-
-Next fullstack, intended Vercel Free/Supabase/Resend and silentrave.space are settled.
-Hosted storage/pooler/migrations/shared limits/origins/cookies/domain, live Resend/
-DNS/webhooks/scheduler, Google Places restrictions/attribution, VAPID push, iOS/PWA/
-physical camera/gates/realtime and deployed smoke remain UNVERIFIED Step 5 work.
-No hosted SQL/reset, permanent account/password change, real mail/push or deployment.
-
-## Review boundary and next action
-
-Next action: USER REVIEW of PR #4. Its final publication head and check run are
-recorded in its description after exact-head verification. Do not merge it,
-start Step 5 or deploy without separate explicit approval. On resume read this
-checkpoint/full report, inspect current Git/PR/CI
-and running processes, and establish the user's authorized next scope first.
-Historical results do not replace live state verification.
+Next action: USER REVIEW of PR #5 and its exact-head checks. Full report:
+.docs/STEP5_REPORT.md. Plan: .docs/08-hosted-readiness.md. STOP FOR REVIEW.
+No approval for merge or further hosted/local implementation. On resume read
+these documents and the Desktop Step 5 handoff; inspect Git/PR/CI/process state.
+After review, suggested next separately authorized local milestone is durable
+storage/shared limits/Data API protection with chosen-host compatibility.

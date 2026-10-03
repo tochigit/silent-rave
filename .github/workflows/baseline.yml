@@ -43,6 +43,7 @@ jobs:
       - run: bun run db:generate
       - run: bun run lint
       - run: bun run typecheck
+      - run: bun --no-env-file run test:readiness
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
