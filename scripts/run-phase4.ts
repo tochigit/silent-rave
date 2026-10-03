@@ -283,7 +283,9 @@ try {
       await fixture.cleanup();
       fixture = undefined;
       fixture = await startFixture((chunk) => output.write(chunk));
-      log("Customer group: fresh owned database; prior fixture cleanup passed.");
+      log(
+        "Customer group: fresh owned database; prior fixture cleanup passed.",
+      );
     }
     log(
       `Test group: ${group.mode}; isolated database; fresh app/test processes.`,

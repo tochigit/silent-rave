@@ -37,7 +37,20 @@ try {
       }
       if (!ready) throw new Error("Browser fixture readiness timeout.");
       await runCommand(
-        [process.execPath, "--no-env-file", "scripts/browser-step3.ts"],
+        [
+          process.execPath,
+          "--no-env-file",
+          "build",
+          "scripts/browser-step3.ts",
+          "--target=node",
+          "--format=esm",
+          "--packages=external",
+          "--outfile=.test-runtime/browser-check/step3-run.mjs",
+        ],
+        fixture.env,
+      );
+      await runCommand(
+        ["node", ".test-runtime/browser-check/step3-run.mjs"],
         fixture.env,
       );
     } finally {
@@ -52,7 +65,14 @@ try {
     }
   } else {
     await runCommand(
-      ["node", "node_modules/next/dist/bin/next", "dev", "--webpack", "--port", "3000"],
+      [
+        "node",
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "--webpack",
+        "--port",
+        "3000",
+      ],
       fixture.env,
     );
   }

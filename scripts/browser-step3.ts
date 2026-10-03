@@ -1,11 +1,11 @@
 import path from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { spawn, execFile } from "node:child_process";
+import { setTimeout as sleep } from "node:timers/promises";
+import { pathToFileURL } from "node:url";
+import { freePort } from "./fixture";
 import { db } from "../src/lib/db";
-import { approveOrder, rejectOrder } from "../src/lib/orders/review";
-import { refundOrder } from "../src/lib/orders/refund";
-import { expireHolds } from "../src/lib/orders/expiry";
-import { initializeCheckout } from "../src/lib/checkout/service";
 import sharp from "sharp";
 
 if (
@@ -20,13 +20,81 @@ if (
 const modulePath = path.resolve(
   ".test-runtime/browser-check/node_modules/playwright-core/index.mjs",
 );
-const { chromium } = await import(modulePath);
-const browser = await chromium.launch({
-  executablePath:
+const { chromium } = await import(pathToFileURL(modulePath).href);
+async function launchOwnedChrome() {
+  const port = await freePort();
+  const profile = path.join(
+    path.dirname(process.env.LOCAL_STORAGE_DIR!),
+    "browser-profile",
+  );
+  await mkdir(profile, { recursive: true });
+  // Bun's Windows debugging pipe did not connect. Use a dedicated loopback CDP
+  // port and an owned profile; no existing user browser or session is attached.
+  const chrome = spawn(
     process.env.BROWSER_EXECUTABLE ??
-    "C:\Program Files\Google\Chrome\Application\chrome.exe",
-  headless: true,
-});
+      "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    [
+      "--headless=new",
+      "--disable-gpu",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-extensions",
+      "--disable-component-update",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      `--remote-debugging-port=${port}`,
+      `--user-data-dir=${profile}`,
+      "about:blank",
+    ],
+    {
+      windowsHide: true,
+      detached: process.platform !== "win32",
+      stdio: "ignore",
+    },
+  );
+  const stopChrome = async () => {
+    if (!chrome.pid || chrome.exitCode !== null) return;
+    if (process.platform === "win32")
+      await new Promise<void>((resolve) =>
+        execFile(
+          "taskkill",
+          ["/PID", String(chrome.pid), "/T", "/F"],
+          { windowsHide: true },
+          () => resolve(),
+        ),
+      );
+    else process.kill(-chrome.pid, "SIGTERM");
+  };
+  try {
+    const deadline = Date.now() + 120000;
+    let ready = false;
+    while (Date.now() < deadline) {
+      if (chrome.exitCode !== null)
+        throw new Error("Owned Chrome exited before readiness.");
+      try {
+        const r = await fetch(`http://127.0.0.1:${port}/json/version`, {
+          signal: AbortSignal.timeout(2000),
+        });
+        if (r.ok) {
+          ready = true;
+          break;
+        }
+      } catch {}
+      await sleep(250);
+    }
+    if (!ready) throw new Error("Owned Chrome loopback readiness timed out.");
+    const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`, {
+      timeout: 30000,
+    });
+    return { browser, stopChrome };
+  } catch (error) {
+    await stopChrome();
+    throw error;
+  }
+}
+const { browser, stopChrome } = await launchOwnedChrome();
+console.log("Owned Chrome connected over loopback CDP.");
 const base = "http://localhost:3000";
 const results: string[] = [];
 const log = (message: string) => {
@@ -49,7 +117,6 @@ page.setDefaultNavigationTimeout(120000);
 const consoleErrors: string[] = [];
 // Keep only fixed error categories, never URLs or token-bearing error text.
 page.on("pageerror", () => consoleErrors.push("browser page error"));
-const owner = await db.staffUser.findFirstOrThrow({ where: { role: "OWNER" } });
 const event = await db.event.findUniqueOrThrow({
   where: { slug: "dev-fixture-silent-rave" },
   include: { ticketTiers: true },
@@ -87,17 +154,80 @@ async function refresh() {
     .click();
 }
 async function fresh() {
-  const f = await initializeCheckout({
-    eventId: event.id,
-    customerName: "Fixture Browser Buyer",
-    customerEmail: `browser-${crypto.randomUUID()}@example.test`,
-    customerPhone: `080${Math.floor(10000000 + Math.random() * 89999999)}`,
-    lineItems: [{ tierId: event.ticketTiers[0].id, quantity: 1 }],
-  });
+  const response = await context.request.post(
+    `${base}/api/checkout/initialize`,
+    {
+      data: {
+        event_id: event.id,
+        customer_name: "Fixture Browser Buyer",
+        customer_email: `browser-${crypto.randomUUID()}@example.test`,
+        customer_phone: `080${Math.floor(10000000 + Math.random() * 89999999)}`,
+        line_items: [{ tier_id: event.ticketTiers[0].id, quantity: 1 }],
+      },
+      headers: { "x-forwarded-for": crypto.randomUUID() },
+    },
+  );
+  if (response.status() !== 201)
+    throw new Error(`Fixture checkout HTTP ${response.status()}`);
+  const body = await response.json();
+  const f = {
+    orderCode: body.order_code as string,
+    statusToken: body.status_token as string,
+  };
   const order = await db.order.findUniqueOrThrow({
     where: { orderCode: f.orderCode },
   });
   return { ...f, order };
+}
+let ownerCookie: string | undefined;
+async function ownerAction(
+  id: string,
+  action: string,
+  data: Record<string, unknown>,
+) {
+  if (!ownerCookie) {
+    const login = await context.request.post(`${base}/api/auth/login`, {
+      headers: { host: "localhost:3000", origin: base },
+      data: {
+        email: process.env.OWNER_EMAIL,
+        password: process.env.OWNER_PASSWORD,
+        intent: "admin",
+      },
+      timeout: 120000,
+    });
+    ownerCookie = login.headers()["set-cookie"]?.split(";")[0];
+    if (login.status() !== 200 || !ownerCookie)
+      throw new Error("Fixture OWNER HTTP login failed.");
+  }
+  const response = await context.request.post(
+    `${base}/api/admin/orders/${id}/${action}`,
+    {
+      headers: {
+        host: "admin.localhost:3000",
+        origin: "http://admin.localhost:3000",
+        cookie: ownerCookie,
+      },
+      data,
+      timeout: 120000,
+    },
+  );
+  check(
+    response.status() === 200,
+    `fixture OWNER ${action} accepted through authenticated HTTP`,
+  );
+}
+async function sweep() {
+  const response = await context.request.post(
+    `${base}/api/internal/expire-holds`,
+    {
+      headers: { "x-cron-secret": process.env.CRON_SECRET! },
+      timeout: 120000,
+    },
+  );
+  check(
+    response.status() === 200,
+    "fixture expiry sweep accepted through guarded HTTP",
+  );
 }
 async function visit(f: Awaited<ReturnType<typeof fresh>>) {
   await page.goto(`${base}/order/${f.orderCode}?t=${f.statusToken}`);
@@ -203,7 +333,7 @@ try {
   await page
     .getByLabel("Type email again", { exact: true })
     .fill("mismatch@example.test");
-  await page.getByLabel("Phone number", { exact: true }).fill("+2348012345999");
+  await page.getByLabel(/^Phone number/).fill("+2348012345999");
   await page.getByRole("button", { name: /Reserve tickets/ }).click();
   await visible("Email addresses must match");
   check(
@@ -261,21 +391,16 @@ try {
       await route.abort("failed");
     } else await route.continue();
   });
-  await page
-    .getByLabel("Receipt image", { exact: true })
-    .setInputFiles(receipt);
-  await page
-    .getByLabel("Transfer reference", { exact: true })
-    .fill("BROWSER-RETRY-FIXTURE");
+  await page.getByLabel(/^Receipt image/).setInputFiles(receipt);
+  await page.getByLabel(/^Transfer reference/).fill("BROWSER-RETRY-FIXTURE");
   await page.getByLabel("Sender name", { exact: true }).fill("Fixture Sender");
   await page
     .getByRole("button", { name: "I have paid — submit receipt", exact: true })
     .click();
   await visible("Connection lost");
   check(
-    (await page
-      .getByLabel("Transfer reference", { exact: true })
-      .inputValue()) === "BROWSER-RETRY-FIXTURE",
+    (await page.getByLabel(/^Transfer reference/).inputValue()) ===
+      "BROWSER-RETRY-FIXTURE",
     "failed upload preserves reference",
   );
   check(
@@ -306,26 +431,22 @@ try {
     (await db.ticketUnit.count({ where: { orderId: order.id } })) === 0,
     "receipt submission creates no tickets",
   );
-  await rejectOrder(order.id, owner.id, {
-    reasonCode: "UNREADABLE",
+  await ownerAction(order.id, "reject", {
+    reason_code: "UNREADABLE",
     message: "Fixture receipt needs another look",
     final: false,
   });
   await refresh();
   await visible("Please resubmit your receipt");
   await visible("3 submissions remaining");
-  await page
-    .getByLabel("Receipt image", { exact: true })
-    .setInputFiles(receipt);
-  await page
-    .getByLabel("Transfer reference", { exact: true })
-    .fill("BROWSER-SECOND-FIXTURE");
+  await page.getByLabel(/^Receipt image/).setInputFiles(receipt);
+  await page.getByLabel(/^Transfer reference/).fill("BROWSER-SECOND-FIXTURE");
   await page.getByLabel("Sender name", { exact: true }).fill("Fixture Sender");
   await page
     .getByRole("button", { name: "I have paid — submit receipt", exact: true })
     .click();
   await visible("Receipt received — review pending");
-  await approveOrder(order.id, owner.id);
+  await ownerAction(order.id, "approve", { confirmed_in_bank: true });
   await refresh();
   await visible("Your tickets are approved");
   const downloadEvent = page.waitForEvent("download");
@@ -339,7 +460,8 @@ try {
   );
   await overflow("mobile approved tickets");
   await verifyPolling();
-  await refundOrder(order.id, owner.id, {
+  await ownerAction(order.id, "refund", {
+    password: process.env.OWNER_PASSWORD,
     restock: false,
     acknowledge_checked_in: false,
   });
@@ -362,16 +484,12 @@ try {
     where: { id: expired.order.id },
     data: { holdExpiresAt: new Date(Date.now() - 60000) },
   });
-  await expireHolds();
+  await sweep();
   await visit(expired);
   await visible("Your ticket reservation has lapsed");
   await visible("If you already paid");
-  await page
-    .getByLabel("Receipt image", { exact: true })
-    .setInputFiles(receipt);
-  await page
-    .getByLabel("Transfer reference", { exact: true })
-    .fill("BROWSER-LATE-FIXTURE");
+  await page.getByLabel(/^Receipt image/).setInputFiles(receipt);
+  await page.getByLabel(/^Transfer reference/).fill("BROWSER-LATE-FIXTURE");
   await page.getByLabel("Sender name", { exact: true }).fill("Fixture Sender");
   await page
     .getByRole("button", { name: "I have paid — submit receipt", exact: true })
@@ -387,8 +505,8 @@ try {
       .count()) === 0,
     "expired pending proof never requests another payment/upload",
   );
-  await rejectOrder(expired.order.id, owner.id, {
-    reasonCode: "CAPACITY_GONE",
+  await ownerAction(expired.order.id, "reject", {
+    reason_code: "CAPACITY_GONE",
     message: "Fixture dismissed final",
     final: true,
   });
@@ -399,7 +517,7 @@ try {
     where: { id: old.order.id },
     data: { holdExpiresAt: new Date(Date.now() - 25 * 3600000) },
   });
-  await expireHolds();
+  await sweep();
   await visit(old);
   await visible("No more receipts can be submitted");
   await page.goto(`${base}/order/${code}?t=wrong`);
@@ -471,7 +589,11 @@ try {
   log(`FAILED: ${message}`);
   process.exitCode = 1;
 } finally {
-  await browser.close();
+  try {
+    await browser.close();
+  } finally {
+    await stopChrome();
+  }
   await db.$disconnect();
   await writeFile(
     "reports/step3-browser-output.txt",

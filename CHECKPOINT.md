@@ -1,33 +1,34 @@
-﻿# Silent Rave checkpoint
+# Silent Rave checkpoint
 
-Updated 2026-10-03, Africa/Lagos. Current specification: .docs v2.1.2.
+Updated 2026-10-03, Africa/Lagos. Specifications: .docs v2.1.2.
 
-1. Baseline: COMPLETE, PR #1 merged at 982eb9f.
-2. Email/PDF/refund backend: COMPLETE, PR #2 merged at 7fcf42d8fb13e5f77ce6f8db8fe613987e591670 (live API verified). Older open-PR wording is historical.
-3. Customer experience: ACTIVE, INCOMPLETE on feat/step3-customer-experience from fetched main 7fcf42d.
+1. Baseline: COMPLETE, PR #1 merged at982eb9f.
+2. Email/PDF/refund backend: COMPLETE, PR #2 merged at7fcf42d8fb13e5f77ce6f8db8fe613987e591670; live API verified.
+3. Customer experience: implementation COMPLETE, final verification ACTIVE on feat/step3-customer-experience. Draft PR #3: https://github.com/tochigit/silent-rave/pull/3.
 4. Owner/staff and REQUIRED offline scanner: NOT STARTED.
 5. Hosted integration/deployment: NOT STARTED.
 
-Only Step 3 authorized. Publish focused PR and STOP FOR REVIEW. No merge, later step or deployment. Retain all branches. Guest checkout/manual transfer/OWNER approval, Next.js, Vercel Free, Supabase, Resend and intended silentrave.space remain settled.
+Only Step3 authorized. Publish focused PR and STOP FOR REVIEW. No merge, later step or deployment. Retain all branches and settled guest/manual-transfer/OWNER-approval/platform decisions.
 
-## Implementation
+## Completed evidence
 
-Public catalog/filter/date/pagination APIs, dynamic CTA, calendar formats, responsive shell/home/detail/cart, guest checkout, browser receipt compression/progress/retry, private status/recovery, content/contact foundation are written. New forward migration adds site_pages and immutable bank detail snapshots. Owner editor is Step 4. No backend lock order or production verifier change.
+- Webhook preflight:4 pass/0 fail/23 expectations, runner exit0 and cleanup. Fixture timestamp margin +/-360s; production five-minute raw-body verifier unchanged.
+- Actual Chrome browser:37 checks passed; whole guarded fixture command exit0. Mobile guest checkout/payment refresh/upload retry/idempotency/no tickets/owner reject/resubmit/approve/PDF before email/refund, expiry/late proofs/privacy/recovery/contact, hidden/resume/backoff/terminal polling, desktop/landscape/large-text/reduced-motion/overflow. Public screenshots inspected. Owned browser/app/database stopped/removed.
+- Default production Turbopack build PASSED, exit0.
+- Final lint PASSED with direct Bun ESLint using unchanged config/rules/files. Standard final invocation stalled, explicitly stopped, retained as INCOMPLETE; its combined command never reached types. Initial standard lint and CI lint passed independently.
+- BOTH final post-build app/tooling types PASSED, exit0.
+- Windows/Linux CI37101263963 at08a81441d4d2a03415dc1665f5ead04e5aa8f1ad and37101859267 at633da0127767499875cff7990da40f6e366777d8 PASSED:162 cases each (all147 original +15 new), lint, both types, default build, owned cleanup. Complete artifacts retained.
 
-## Verification
+See .docs/STEP3_REPORT.md and reports/step3-* for complete commands/results, changes, assumptions, failures and live gaps. Root dependency lockfiles unchanged; temporary Playwright lives only in ignored .test-runtime/browser-check. Browser fallback bundles under Bun and runs under Node24/owned loopback Chrome; plugins were unavailable.
 
-Webhook preflight COMPLETE: 4 pass, 0 fail, 23 expectations, runner exit0 and cleanup passed. Full output reports/step3-webhook-preflight-win32-output.txt. +/-360s fixture margin; production five-minute verifier and acceptance assertions unchanged. Five no-test/incomplete attempts retained; sixth failed 3/1 due cold worker route compilation. Fixture launchers use Node24/Webpack, warm login plus unauthorized worker route before tests, and fail warmup contract errors immediately. Historical Phase4 focused log restored. Full Step3 regression/API run now ACTIVE. Default production build separately pending.
+## Active final check
 
-First full run FAILED:149 pass,11 fail,1 error over160 cases;112 baseline cases passed, Phase4 PDF/API timeouts and two new status timeouts. Captured reports/step3-first-full-run-failed.txt; cleanup passed; failing-kick group correctly not run after failure. 13/15 new cases passed including approved/voided/refunded PDF behavior. Test/transaction limits unchanged. Runner now splits baseline/Phase4/Step3 with fresh owned app/test processes on one owned DB, plus bounded invalid-input route/native-library warmups. Second full run pending.
+Third full LOCAL regression is ACTIVE via bun --no-env-file run test:step3, complete output reports/step3-win32-test-output.txt. First full failed149/11/1error; second failed159/1. All outputs retained; no pass inferred. Customer group now starts with a fresh owned DB after backend fixture cleanup because legacy Phase4 tests leave deliberately altered order/counter rows with60s holds. Both corrected CI platforms already passed. Assertions, production expiry/locking/transaction/test limits remain unchanged.
 
-Prisma generation and local lint passed. Combined types initially failed at app stage because Webpack validators revealed two pre-existing unused route exports; removed only export keywords, preserving helper/body-limit/verifier behavior. Final application AND tooling type checks PASSED (exit 0), output reports/step3-typecheck-final-output.txt. Old tooling4-error and other incomplete attempts retained; never treated as passes. Build/browser/platform checks pending; lint must recheck final harness changes.
+Latest-head CI must be verified after final scripts/evidence are pushed. Finish local regression/cleanup, finalize report/checkpoint, publish evidence and PR description/readiness, verify head/checks and STOP FOR REVIEW.
 
-Browser plugin has no connected browser; desktop native pipe unavailable. Installed temporary playwright-core in ignored .test-runtime/browser-check for installed Chrome fallback. Reproduce browser check with bun --no-env-file run db:fixture --browser-step3 after tests. Capture only; script uses actual UI/backend and saves screenshots/output. No root .env or real recipients used.
+## Live gaps and preserved state
 
-No PostgreSQL process remained after second fixture shutdown; third cleanup passed. Owned database shutdown timeout raised from 120 to 300s after measured 162s fsync; assertions unchanged. Automatic approval review rejected recursive directory deletion; .test-runtime/run-1jNjwR remains ignored/stopped. Historical fixtures retained. Current owned run is identified by reports/phase4-focus-win32-test-output.txt and phase4-server.log; runner owns app/database cleanup.
+Hosted durable storage/Supabase pooler/forward migrations/shared rate limits/Resend/DNS/scheduler/runtime/fonts/origins/domain/real content/deployed smoke remain unverified. No hosted changes, real mail or deployment. New forward content/bank-snapshot migration has an explicit legacy backfill limitation: original past bank edits cannot be reconstructed. Owner content editor remainsStep4; hosted migration needs later review.
 
-## Next
-
-Focused webhook complete. Second full local regression ACTIVE. Draft PR #3 is published: https://github.com/tochigit/silent-rave/pull/3, implementation head 08a81441d4d2a03415dc1665f5ead04e5aa8f1ad. Windows/Linux CI run 37101263963 ACTIVE. Finish regression, final lint/build and browser; save full outputs and final .docs/STEP3_REPORT.md, publish final evidence and verify latest PR head/checks, then stop for review.
-
-Hosted durable storage/pooler/limits/Resend/DNS/scheduler/runtime/real content/deployed smoke remain unverified. No hosted changes, real email or deployment.
+Automatic approval review rejected deletion of stopped owned .test-runtime/run-1jNjwR ('blocked by policy', no further detail). It remains ignored/stopped; historical run-5J8iZl/run-HhIUZP retained. Later successful fixtures remove only their owned processes/data. No unrelated process, branch or historical evidence removed.

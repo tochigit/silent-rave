@@ -1,0 +1,18 @@
+PASS: mobile home: no narrow viewport overflow
+PASS: keyboard starts at skip link
+PASS: skip link focuses main content
+PASS: mobile event: no narrow viewport overflow
+PASS: mismatched email focuses confirmation field
+PASS: mobile payment: no narrow viewport overflow
+PASS: status token is absent from sessionStorage
+PASS: refresh restores the recorded bank details without email
+PASS: failed upload preserves reference
+PASS: failed upload preserves sender
+PASS: upload retry uses the same submission ID and compressed image
+PASS: failed/retried upload created one proof attempt
+PASS: receipt submission creates no tickets
+FAILED: 
+Invalid `prisma.paymentProof.updateMany()` invocation:
+
+
+Transaction API error: Transaction already closed: A query cannot be executed on an expired transaction. The timeout for this transaction was 10000 ms, however 11711 ms passed since the start of the transaction. Consider increasing the interactive transaction timeout or doing less work in the transaction.

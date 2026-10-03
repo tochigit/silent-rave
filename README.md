@@ -23,13 +23,15 @@ bun run typecheck
 bun run build
 ```
 
-The test command creates a new embedded PostgreSQL cluster, applies migrations,
+The test command creates owned embedded PostgreSQL clusters, applies migrations,
 seeds fake owner/catalog data, starts an app on its own loopback port, runs all
 Phase 3b, Phase 4 and Step 3 files, then HTTP tests with failing email kicks, and stops
 only its own processes. Install Python 3.13 and the PDF verification dependencies
 with `python -m pip install -r scripts/requirements-pdf-test.txt` first. Complete
 output is saved to `reports/step3-<platform>-test-output.txt`; downloaded CI
-evidence uses a separate `-ci-test-output.txt` suffix. The baseline-only command
+evidence is saved to `reports/step3-ci-<platform>-test-output.txt`. The customer
+group starts from a fresh database after the backend fixture is cleaned up,
+because legacy tests deliberately alter counters/order states. The baseline-only command
 `bun --no-env-file run test:phase3b` and backend `test:phase4` remain available.
 Node 24 LTS must be on PATH for Next's CSS workers; Bun runs the guarded fixture/tests
 with dotenv disabled and Next receives their explicit local environment.
@@ -57,7 +59,10 @@ is removed when the command stops; it never seeds a real project.
 
 The focused browser fallback is `bun --no-env-file run db:fixture --browser-step3`.
 It uses installed Chrome and `playwright-core` from ignored
-`.test-runtime/browser-check/node_modules` (install only there with npm).
+`.test-runtime/browser-check/node_modules` (install only there with
+`npm install --prefix .test-runtime/browser-check --no-audit --no-fund playwright-core@1.58.2`).
+The fixture bundles the check into an ignored temporary Node script with Bun,
+then runs it under Node 24 with an owned Chrome profile and loopback CDP port.
 `BROWSER_EXECUTABLE` can select another installed Chromium. No dependency locks
 are changed for browser QA. Complete output/screenshots are under `reports/step3-*`.
 Only public cart selection and optional holder names use tab-scoped sessionStorage;

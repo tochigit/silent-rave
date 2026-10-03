@@ -1,0 +1,6 @@
+Command: bun --no-env-file node_modules/prettier/bin/prettier.cjs --write scripts/run-phase4.ts scripts/dev-fixture.ts scripts/browser-step3.ts
+scripts/run-phase4.ts 1173ms
+scripts/dev-fixture.ts 31ms
+scripts/browser-step3.ts 281ms
+
+Exit code: 0

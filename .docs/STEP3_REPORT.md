@@ -1,164 +1,76 @@
 # Step 3 customer experience report
 
-ACTIVE, incomplete. Branch feat/step3-customer-experience, base main 7fcf42d.
-Draft PR #3: https://github.com/tochigit/silent-rave/pull/3.
-Only customer experience authorized. No merge, later step or deployment.
+Updated 2026-10-03, Africa/Lagos. Implementation complete; final local verification and publication evidence are being finalized. Only Step 3 is authorized. PR [#3](https://github.com/tochigit/silent-rave/pull/3) is currently a draft; no merge, later step or deployment.
 
-## Start and preflight
+## Scope and starting evidence
 
-Complete external Step 3 handoff and .docs v2.1.2 read. Fetched main matches
-7fcf42d8fb13e5f77ce6f8db8fe613987e591670; clean tree at start; all branches retained.
-No applicable AGENTS.md found. Old checkpoint/report open-PR statements historical.
+Read the complete external `Silent Rave - Step 3 continuation.md`, `.docs/CHANGELOG.md` first, all current v2.1.2 specifications, tracked checkpoint/README/backend report and supplied HTML/CSS/JS/poster references. No applicable AGENTS.md was found in the repository or ancestors. Started with a clean tree, fetched main/origin at `7fcf42d8fb13e5f77ce6f8db8fe613987e591670`, and independently verified PR #2 was merged. The historical open-PR wording was not treated as current state.
 
-Historical merge-head CI attempt 1: Linux pass; Windows 144 pass/1 fail, future
-webhook timestamp expected 401, received 404; separate app/build skipped.
-Attempt 2 reran Windows unchanged and passed. Rerun did not fix fixture.
-This branch uses +/-360,000ms. No verifier change, sleeps, masked retries or
-weakened assertions. Focused check active; disposable database initializing.
+Created `feat/step3-customer-experience`. Retained `main`, `chore/import-and-verify-baseline` and `feat/phase4-email-tickets-refunds`. Guest checkout, manual transfer, OWNER approval, Next.js, Vercel Free, Supabase, Resend and intended silentrave.space remain settled. No hosted configuration, data, real recipients, permanent owner credentials, dependencies or root lockfiles were changed. Root `.env` remains absent.
 
-## Contract decisions
+## Implemented behavior
 
-- API 03 controls CTA: confirmed published not-ended events, starts_at order,
-  ties on Africa/Lagos calendar day; then unconfirmed fallback.
-- About/Contact owner editable: minimal forward content migration and disposable
-  seeds here; editing UI Step 4.
-- Public description/content escaped text; no untrusted HTML execution.
-- Local fixtures explicitly fake; real event/bank/contact/service data unknown.
+- Responsive dark/mint/purple public shell, home, event listing/detail, cart, guest checkout, private order, recovery and About/Contact pages. Supplied poster is used only by guarded disposable seeds. Empty/error/loading states, keyboard skip/focus, reduced motion, minimum control sizes and wrapping layouts are included.
+- Explicit public event DTOs expose published catalog data without buyer information, finance fields, raw counters or organizer contact email. Draft details return 404. Search, city, stable 12-row pagination and list/month/day views use Africa/Lagos date boundaries and overlapping events. Detail reflects current ticket availability and sale-window/ended/cancelled/unconfirmed states.
+- Buy Tickets follows API 03: earliest confirmed published not-ended event, including in-progress events; ties on the Lagos calendar day lead to the listing; unconfirmed events are the fallback; none leads to the friendly empty listing. Calendar formats share true UTC instants and RFC5545 escaping/folding; unconfirmed dates produce an informational 200 response rather than a fabricated date.
+- Tab-scoped cart contains public ticket selection and optional holder names, up to ten tickets across lines. It can replace a different event with an explicit warning, edit quantities and restore selections. Server prices and availability control checkout. Matching email confirmation, name and phone validation precede guest reservation; checkout opens the private payment page immediately without waiting for email.
+- Checkout records exact bank instructions in an immutable JSON snapshot. Authenticated status returns that allowlisted snapshot, total and hold deadline after refresh, even after an account edit or another account is activated. No active-account fallback is used.
+- Receipt preparation uses native browser decoding/canvas, JPEG compression and a four-MB output cap. HEIC works where the browser can decode it; unsupported browsers receive explicit export-to-JPEG guidance. Upload shows progress, preserves fields after failure and retries the same submission ID and prepared bytes. A receipt creates evidence for OWNER review; it does not create tickets or confirm payment.
+- Private status covers AWAITING_PAYMENT, PROOF_SUBMITTED, NEEDS_RESUBMIT, APPROVED, REJECTED, EXPIRED and REFUNDED, including elapsed holds before a sweep, late grace, expired pending review, remaining attempts and rejection reasons. Approved PDFs download on demand before email. Voided/refunded tickets lose download eligibility.
+- Polling pauses/aborts while hidden, resumes immediately, uses bounded exponential backoff after failures and prevents stale responses/timers. Order polling is eight seconds; availability is ten seconds. Rejected/refunded terminal states stop automatic polling. Manual refresh remains available.
+- Invalid private links return uniform 404 semantics without revealing order/bank data. Private page/API responses prevent caching/referrer leakage and indexing; private pages prohibit external image/font/frame loads. Tokens, email/phone and receipts are not persisted in browser storage. Recovery gives identical generic matching/unmatched messages and retains existing rate limits.
+- About/Contact use opt-in published database content, escaped text and meaningful unpublished states. Contact validates/limits streaming input and requests, resolves its organizer recipient server-side and uses a separate transport with fixed sender/reply/subject. Client-selected recipients, order mutations, order-email kinds and message persistence are excluded. Delivery failure is not reported as success.
 
-## Verification
+## Forward migration and decisions
 
-Local first focused preflight: INCOMPLETE, no tests ran. PostgreSQL initialization
-and cold Prisma/Next startup were unusually slow; Next ready after 211.6s, app
-readiness exceeded the 300s budget. Cleanup succeeded. Complete saved output:
-reports/step3-preflight-first-run-incomplete.txt.
+`20261002010000_step3_content_payment_snapshot` adds `site_pages` (only about/contact slugs, unpublished by default, nullable organizer FK with ON DELETE SET NULL) and nullable `orders.payment_account_snapshot`. It seeds no permanent content. Existing rows are backfilled from their referenced account's migration-time fields; earlier edits cannot be reconstructed. Review outstanding historical orders/account edits before any later hosted migration. Fresh checkouts record the exact returned instructions. Missing snapshots remain explicit and fail closed to another account.
 
-Second focused attempt: INCOMPLETE, explicitly stopped before readiness while
-the application/schema changed. No assertion result claimed. Its PostgreSQL fast
-shutdown exceeded 120s; must verify the owned cluster stopped before cleanup.
-Complete output reports/step3-preflight-second-run-incomplete.txt. Initial local
-TypeScript attempt was stopped while loading and is INCOMPLETE, never a pass.
-Readiness budget increased to 600s for cold Windows compilation only; test
-timeouts/assertions and verifier unchanged. Future checks use a stable code tree.
+The minimal content data foundation belongs to Step 3; its owner editing UI belongs to Step 4. Public content is escaped text rather than executable HTML. API 03 controls CTA selection when shorter prose differs. Calendar placeholders stay hidden for unconfirmed dates. None of these decisions changes the settled manual-payment flow.
 
-Browser plugin bootstrap first timed out; retry initialized but reported no
-browser, discovery returned []. Desktop fallback reported native pipe unavailable.
-Standalone playwright-core installed only in ignored .test-runtime/browser-check
-for the installed Chrome fallback; repository dependency locks untouched.
+Preserved normalized-email advisory lock namespace 1, phone namespace 2, sorted tier locks, existing-order lock order, expiry/review/refund invariants, role/Origin/password gates and production five-minute raw-body webhook verification. Webpack-generated validators exposed two unused pre-existing route exports; only their export keywords were removed (`clientIp`, `WEBHOOK_BODY_LIMIT`). Helper logic and 64-KiB webhook limit are unchanged.
 
-Application TypeScript passed using direct Bun/tsc (exit 0), after Prisma
-generation passed. Tooling TypeScript found four test typing errors: nullable
-expected recipient, reject service object signature, refund acknowledgement.
-Corrected; final both checks still required. Formatting first command had a
-Windows glob miss for `(public)`; second explicit directory pass succeeded.
+No owner/staff dashboards, offline scanner, CASH/COMP, reconciliation, owner push, hosted realtime, deployment, domain purchase or package upgrades were started.
 
-Public implementation and 15 new fixture-backed API/service cases now written.
-Focused webhook run restarted on the stable implementation/schema (three forward
-migrations). No assertion pass claimed until runner exits. Full 147-case
-regression, new cases, lint, build, browser and CI still pending.
+## Verification and complete evidence
 
-Second incomplete run's database later stopped normally at 19:45 WAT; pid file
-absent and no PostgreSQL process remains. Saved complete shutdown log in
-reports/step3-preflight-second-shutdown.txt. Automatic approval review rejected
-recursive deletion of that stopped owned directory; it remains ignored at
-.test-runtime/run-1jNjwR. No unrelated process or historical fixture was removed.
+| Check | Result | Complete evidence |
+| --- | --- | --- |
+| Webhook preflight | PASS: 4 tests, 0 failures, 23 expectations; runner exit 0 and cleanup | `reports/step3-webhook-preflight-win32-output.txt` |
+| Original baseline/Phase4 plus new API suite, local | Final full rerun pending; earlier failures below | `reports/step3-win32-test-output.txt` |
+| Browser, actual Chrome/Next/PostgreSQL | PASS: 37 checks; whole fixture command exit 0; owned Chrome/app/database cleanup verified | `reports/step3-browser-output.txt`, `reports/step3-browser-fixture-output.txt` |
+| Default production build | PASS: `bun run build`, Turbopack, TypeScript/page generation/optimization, exit 0 | `reports/step3-build-output.txt` |
+| Prisma generation | PASS; also replayed all three migrations in owned fixtures | `reports/step3-prisma-output.txt` and fixture outputs |
+| Lint | PASS: initial standard command and final direct Bun ESLint; stalled attempt retained as incomplete | `reports/step3-lint-output.txt`, `reports/step3-lint-final-incomplete.txt`, `reports/step3-lint-final-output.txt` |
+| Application AND tooling types | PASS: combined check and final post-build app/tooling checks | `reports/step3-typecheck-final-output.txt`, `reports/step3-typecheck-post-build-{app,tooling}-output.txt` |
+| Windows/Linux CI | Both PASS: 162 cases each, lint, both types, default build and cleanup | CI runs and artifacts below |
 
-Hosted acceptance stays unverified. Browser must exercise actual customer UI.
+CI run [37101263963](https://github.com/tochigit/silent-rave/actions/runs/37101263963) passed at `08a81441d4d2a03415dc1665f5ead04e5aa8f1ad`. Complete outputs are preserved as `reports/step3-ci-first-{linux,win32}-test-output.txt`. Run [37101859267](https://github.com/tochigit/silent-rave/actions/runs/37101859267) passed after the customer database isolation correction at `633da0127767499875cff7990da40f6e366777d8`; complete outputs are `reports/step3-ci-{linux,win32}-test-output.txt`. Each platform ran 112 baseline + 33 Phase4 + 15 Step3 + 2 failing-kick cases, preserving all 147 original cases/assertions. Latest publication head/checks must still be verified after final evidence changes.
 
-Third focused attempt: INCOMPLETE, no tests ran. Root CSS compilation exposed
-Next propagating Bun's `--no-env-file` from `process.execArgv` to `NODE_OPTIONS`.
-Its Node PostCSS worker rejected the Bun-only flag (exit 9). Complete runner
-output: reports/step3-preflight-third-run-incomplete.txt. Next now runs under
-Node with the explicit fixture environment; Bun fixture/test runners still use
-`--no-env-file`. Applied the same compatibility fix to Phase 3b and interactive
-fixture launchers. Production dependencies/verifier remain pinned/unchanged.
-Owned third app/database cleanup passed. Fourth focused attempt active.
-Owned PostgreSQL shutdown budget now 300s because the second native filesystem
-sync took 162s; this changes neither test assertions nor production timing.
+The 15 new fixture-backed cases cover allowlisted visibility/privacy, unsafe posters, CTA selection/ties/in-progress/fallback, Lagos overlapping dates/search/city/invalid dates/pagination, every tier state, five calendar formats/offsets/unconfirmed dates, editable published content, fixed contact recipient/escaping/limits/failure, immutable bank snapshot, uniform token failures/private headers, proof idempotency/resubmission/final rejection, expired/late/timely-at-cap proofs, approved PDF before email and void/refund behavior.
 
-Fourth focused attempt: INCOMPLETE, readiness timed out before assertions after
-600s of CSS compilation under installed Node 26.5.0; owned app/database cleanup
-passed. Complete output reports/step3-preflight-fourth-run-incomplete.txt.
-Fifth focused run uses already available Node 24.20.0 LTS through task-scoped PATH,
-not a global install or app dependency upgrade. CI explicitly selects Node 24.
-Tailwind source detection is scoped to src rather than reference/evidence files
-([official syntax](https://tailwindcss.com/docs/detecting-classes-in-source-files)).
-No successful check inferred from these infrastructure adjustments.
+Browser fallback was necessary: the Browser plugin reported no connected browser and the desktop native pipe was unavailable. Temporary `playwright-core@1.58.2` lives only in ignored `.test-runtime/browser-check`. Bun bundles the check into an ignored Node script; Node 24 controls installed Chrome `154.0.8037.93` over an owned loopback CDP port/profile. [Playwright documents this connection](https://playwright.dev/docs/api/class-browsertype#browser-type-connect-over-cdp). Real customer interactions use the actual application; fixture OWNER actions use authenticated HTTP/strict Origins, refund password re-entry and guarded expiry. No existing user browser/session is attached.
 
-Fixture initialization now skips initialization-only fsync on its newly created
-disposable cluster (`initdb --no-sync`), avoiding repeated cold Windows sync
-delays. Runtime database fsync and actual transactional/locking checks remain
-enabled. No existing cluster is initialized or reset by this change.
+Verified mobile 375x812 guest checkout, mismatch focus, restored bank instructions/copy, token absence from storage, real compressed receipt retry with identical ID/bytes, one attempt/no tickets, owner rejection/resubmission/approval and actual PDF download before email. Injected browser time verifies hidden pause, resume, disconnect/backoff/recovery and terminal stop. Backdated fixture rows verify late receipt/pending review/final dismissal/out-of-grace states. Invalid-token privacy, generic lookup, empty listing and captured contact delivery passed. Desktop 1440x1000 detail, landscape 812x375, reduced motion and 24px root text have no viewport overflow. Browser pageerror events were zero. Expected failed-upload network errors and development Fast Refresh notices are not hidden.
 
-Fifth focused attempt: INCOMPLETE, stopped before assertions after CSS also
-stalled under Node 24.20.0 (Next ready 18.8s, then root compilation stalled).
-Owned app/database cleanup passed. Complete output saved as
-reports/step3-preflight-fifth-run-incomplete.txt. Fixture launchers now select
-the [supported Next Webpack mode](https://nextjs.org/docs/app/api-reference/cli/next)
-for deterministic API/browser verification; package pins and default production
-build command unchanged. Sixth focused run active. This is infrastructure
-recovery, with no skipped assertions or production verifier change.
+Public-only screenshots were inspected: [mobile home](../reports/step3-mobile-home.png) and [desktop event](../reports/step3-desktop-event.png). They show development fixture content and Next's development indicator; they are not deployed-site evidence. Actual mobile Safari/HEIC conversion and external calendar account integration remain unverified.
 
-Sixth focused attempt: FAILED (3 pass, 1 fail), not an incomplete no-test run.
-Webhook signature/stale/future/raw-body assertions passed (both required 401s).
-The worker HTTP acceptance timed out at its unchanged 30s while Next first
-compiled `/api/internal/process-email-jobs`; full output retained in
-reports/step3-preflight-sixth-run-failed.txt. Owned app/database cleanup passed.
-Setup now warms that worker route using missing credentials and requires 401,
-which claims no jobs and sends no mail. The test is neither skipped nor retried
-inside its assertion. Seventh focused run active; current date 2026-10-03 WAT.
+## Failure history and recovery
 
-Seventh focused preflight PASSED: 4 pass, 0 fail, 23 expectations; 47.45s test
-execution. Runner exit 0 and owned app/database cleanup passed. Complete output
-reports/step3-webhook-preflight-win32-output.txt. Earlier tracked Phase 4 focused
-log restored from main; all Step 3 failures/incomplete attempts retained separately.
-This validates the +/-360s fixture margin with the production five-minute
-verifier and original acceptance assertions unchanged.
+All complete earlier logs are retained; incomplete/stopped checks are never passes.
 
-First full local run FAILED: 149 pass, 11 fail, 1 unhandled error; 160 cases,
-729.81s. The 112-case Phase3b group passed. Existing Phase4 PDF/refund/resend
-cases timed out; one refund transaction expired at 12,273ms against unchanged
-10,000ms. Python PDF inspection was killed after the unchanged 60s test timeout,
-producing the between-test error. Two new status cases timed out at 30s; the
-other 13 new cases passed, including calendar/content/contact and approved PDF/
-void/refund behavior. Failing-kick second app was correctly NOT run after failure.
-Complete output reports/step3-first-full-run-failed.txt. Owned cleanup passed.
-No local full-regression pass claimed. Investigating setup/runtime pressure;
-assertion, transaction and production verifier timeouts remain unchanged.
+1. Preflight first attempt: readiness exceeded 300s before assertions; cleanup passed. Second was stopped before assertions while implementation changed; shutdown exceeded 120s, then was independently verified stopped at 19:45 WAT. Third found Bun's `--no-env-file` propagated into Node PostCSS options (exit 9), before assertions; cleanup passed. Fourth (Node26) timed out at 600s of CSS compilation; fifth (Node24) was stopped during CSS compilation; cleanup passed. These are `reports/step3-preflight-{first,second,third,fourth,fifth}-run-incomplete.txt` plus the second shutdown log.
+2. Supported fixture Webpack mode under Node24 resolved the compilation path. Sixth preflight was an actual 3-pass/1-fail run: the first worker HTTP compilation exceeded its unchanged 30s test deadline. Its complete log is `reports/step3-preflight-sixth-run-failed.txt`. An unauthorized 401 worker warmup sends/claims nothing. Seventh then passed 4/4; production verifier and both stale/future 401 assertions remain unchanged. Only fixture timestamps moved from +/-301s to +/-360s; no sleep, assertion retry or verifier relaxation was introduced.
+3. First full local run: 149 pass/11 fail/1 error across160 cases; all112 baseline passed. Cold PDF/API timeouts, a 12,273ms transaction against the original10,000ms limit and two new status timeouts failed the run. Final failing-kick cases correctly did not run. Complete `reports/step3-first-full-run-failed.txt`; cleanup passed.
+4. Fresh app/test processes, bounded invalid-input route warmups and native verifier imports recovered the PDF/API checks. Second full local run:159 pass/1 fail across160 cases, final kick skipped. All112 baseline and33 Phase4 passed;14/15 new passed. A Phase4 test deliberately changes an approved order to PROOF_SUBMITTED without restoring reserved counters, with a60s fixture hold. The slower local run let that hold expire, so the customer's real global sweep hit the leftover inconsistent row. Complete `reports/step3-second-full-run-failed.txt`; cleanup passed. Customer tests now use a fresh owned database after backend cleanup. No existing assertion, hold value, production sweep, counter constraint or transaction/test timeout was changed. Both corrected CI platforms passed162/162.
+5. Browser attempts1-3 failed before assertions: incorrectly escaped Windows executable path, Bun debugging-pipe timeout, then Bun CDP websocket timeout. Node-bundled automation connected successfully. Attempt4 passed initial checks then an exact phone-label selector missed helper text; label-prefix selectors were corrected, including receipt/reference hints. Attempt5 passed receipt retry/idempotency then direct fixture service rejection exceeded10s (11,711ms). Attempt6 used authenticated server HTTP controllers and passed37 checks. Complete `reports/step3-browser-{first,second,third}-launch-failed.txt`, `step3-browser-{fourth,fifth}-run-failed.txt` and their assertion logs remain.
+6. Initial tooling types found four test typing errors, fixed without assertion changes. Webpack's validators then rejected the two unused route exports; failure preserved in `reports/step3-typecheck-webpack-exports-failed.txt`. Both checks subsequently passed. Initial formatting had a Windows public-directory glob miss, then explicit formatting succeeded; complete format/type outputs remain. Final standard lint stalled and was explicitly stopped; its output is incomplete, and the combined command never reached types. Direct Bun ESLint uses the same files/configuration/rules for the final rerun.
 
-Local lint PASSED (exit0), complete UTF-8 output reports/step3-lint-output.txt.
-Typecheck then FAILED at application stage: Webpack generated route validators
-rejected two pre-existing unused named exports (`clientIp`, `WEBHOOK_BODY_LIMIT`).
-Removed only their `export` keywords after confirming no consumers; helper code,
-64 KiB body cap and production signature verifier are unchanged. Tooling stage
-was not reached in that combined command. Failure preserved in
-reports/step3-typecheck-webpack-exports-failed.txt; both final checks pending.
+Fixture setup uses explicit isolated env, Node24/Next Webpack, native Python imports and bounded controller warmups. Readiness600s and shutdown300s address measured local startup/fsync delays, rather than increasing acceptance or transaction limits. `initdb --no-sync` applies only when initializing a newly owned disposable cluster; runtime fsync remains enabled. `CHECKPOINT_DISABLE=1` disables Prisma telemetry/update checks. Local Python3.14 and CI Python3.13 are recorded separately. No package pins changed. Production build retains its default Turbopack command.
 
-Runner now restarts only its owned app/test processes between baseline, Phase4
-and Step3 groups, preserving one disposable database and all original cases.
-Setup preloads Python's actual verifier libraries (`pymupdf`, `zxingcpp`) and
-compiles the affected routes. OWNER controller warmups use the freshly seeded
-fixture account and invalid bodies (400), with no order transitions or sends.
-Missing-token PDF/status warmups require uniform404; customer-page warmup200
-carries no token. Failed warmup contracts fail immediately. Production gates,
-SQL lock order, runtime database fsync and assertion/transaction limits unchanged.
-Only installed Python3.14 is available locally; CI explicitly uses3.13. The next
-run must verify the native imports rather than infer a PDF pass from setup.
+Automatic approval review rejected recursive deletion of the stopped owned `.test-runtime/run-1jNjwR` directory with reason 'blocked by policy'; no further reason was provided. It remains ignored/stopped. Historical `run-5J8iZl` and `run-HhIUZP` were retained. Successful later fixtures cleaned only their own app/browser/database processes and temporary directories. The historical tracked Phase4 focused output was restored rather than overwritten.
 
-Both final type checks PASSED, combined exit 0; full output
-reports/step3-typecheck-final-output.txt. Windows AND Linux CI run 37101263963
-PASSED at implementation head 08a81441d4d2a03415dc1665f5ead04e5aa8f1ad:
-162 tests each (112 + 33 + 15 + 2), lint, both types, production build and cleanup.
-Complete artifacts retained in reports/step3-ci-{linux,win32}-test-output.txt.
+## Remaining live gaps and review boundary
 
-Second full local run FAILED:159 pass/1 fail across160 cases, final kick group
-not run. All112 baseline and33 Phase4 cases passed, including native PDF
-inspection;14/15 new cases passed. Full output
-reports/step3-second-full-run-failed.txt; owned cleanup passed. The real global
-expiry sweep encountered a Phase4 test's deliberately inconsistent leftover
-order: APPROVED was changed to PROOF_SUBMITTED without restoring reserved,
-and its fixture hold is only60s. A longer local run allows that hold to expire;
-the shorter CI run did not. Customer group now receives a fresh owned database
-after the previous group is stopped/cleaned. No global expiry logic, counter
-constraint, existing assertions, timeouts or fixture hold values changed.
-The entire suite and latest-head CI must rerun after this harness correction.
-Browser fixture verification ACTIVE; production build and final lint pending.
+Hosted private durable storage, Supabase pooler/transactions/locks/forward migrations, shared rate limiting (currently per-process memory), Resend/DNS/DKIM/SPF/attachments/webhooks, minute scheduler, host origins/runtime/font availability, domain, real event/bank/contact content and deployed smoke tests remain unverified. CI and local browser checks do not prove those integrations. No hosted SQL, reset, permanent administrator/password change, real email or deployment occurred.
+
+Finish the outstanding local verification and final evidence publication, verify PR #3's latest head and both platform checks, then STOP FOR REVIEW. Merge only after explicit approval for PR #3. Step4/Step5 require separate authorization; do not auto-continue after review or merge.
