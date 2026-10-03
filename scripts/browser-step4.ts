@@ -132,7 +132,10 @@ try {
   await page.goto(adminBase + "/admin/orders");
   await page.getByRole("heading", { name: "Orders", exact: true }).waitFor();
   await page.getByText("Issue CASH / COMP tickets", { exact: true }).click();
-  await page.getByLabel("Event", { exact: true }).last().selectOption(event.id);
+  await page
+    .getByLabel(/^Event/)
+    .last()
+    .selectOption(event.id);
   await page
     .getByLabel("Reason", { exact: true })
     .fill("Browser fixture guest list");
@@ -142,10 +145,11 @@ try {
   await page
     .getByLabel("Buyer email", { exact: true })
     .fill("browser-step4@example.test");
-  await page.getByLabel("Source", { exact: true }).last().selectOption("COMP");
   await page
-    .getByLabel("Tier", { exact: true })
-    .selectOption(event.ticketTiers[0].id);
+    .getByLabel(/^Source/)
+    .last()
+    .selectOption("COMP");
+  await page.getByLabel(/^Tier/).selectOption(event.ticketTiers[0].id);
   await page
     .getByRole("button", { name: "Issue tickets", exact: true })
     .click();
@@ -352,13 +356,24 @@ try {
     .fill("temporary-browser-fixture");
   await page.getByRole("button", { name: "Log in", exact: true }).click();
   await page.getByRole("heading", { name: "Set your own password" }).waitFor();
+  await page.waitForLoadState("networkidle");
   await page
     .getByLabel("Current temporary password")
     .fill("temporary-browser-fixture");
   await page
     .getByLabel("New password", { exact: true })
     .fill("new-browser-fixture-password");
+  const passwordResponse = page.waitForResponse(
+    (response: any) =>
+      new URL(response.url()).pathname === "/api/auth/password" &&
+      response.request().method() === "POST",
+    { timeout: 120000 },
+  );
   await page.getByRole("button", { name: "Save new password" }).click();
+  check(
+    (await passwordResponse).status() === 200,
+    "staff password replacement commits through POST",
+  );
   await page.getByRole("link", { name: "Open door scanner" }).click();
   await page.getByLabel("Event", { exact: true }).selectOption(event.id);
   await page.getByRole("button", { name: "Prepare for event" }).click();
@@ -388,6 +403,12 @@ try {
   await page.reload();
   await page.getByRole("heading", { name: "Check in guests" }).waitFor();
   check(true, "prepared PWA shell reloads without internet");
+  const staleTab = await context.newPage();
+  await staleTab.goto(staffBase + "/scanner.html");
+  await staleTab
+    .locator("#status")
+    .filter({ hasText: "0 pending scans" })
+    .waitFor();
   await page
     .locator("#manual-form")
     .evaluate(
@@ -448,7 +469,21 @@ try {
     ),
     "mobile scanner has no horizontal overflow",
   );
+  await context.route("**/api/staff/check-in/batch", (route: any) =>
+    route.abort(),
+  );
   await context.setOffline(false);
+  await staleTab.getByRole("button", { name: "Log out", exact: true }).click();
+  await staleTab
+    .locator("#result")
+    .filter({ hasText: /Sync or export/ })
+    .waitFor();
+  check(
+    true,
+    "stale second tab cannot log out and erase another tab's pending scans",
+  );
+  await staleTab.close();
+  await context.unroute("**/api/staff/check-in/batch");
   await page.getByRole("button", { name: "Sync now", exact: true }).click();
   await page
     .locator("#status")
@@ -494,6 +529,9 @@ try {
   check(denied.status() === 403, "staff browser cannot read owner orders");
   check(errors.length === 0, "no browser JavaScript errors");
 } catch (error) {
+  await page
+    .screenshot({ path: "reports/step4-browser-failed.png", fullPage: true })
+    .catch(() => {});
   console.log("FAILED: " + (error as Error).message);
   results.push("FAILED: " + (error as Error).message);
   process.exitCode = 1;

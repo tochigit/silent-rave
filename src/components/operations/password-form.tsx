@@ -1,10 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 export function PasswordForm() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   return (
     <form
+      method="post"
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
@@ -54,7 +57,9 @@ export function PasswordForm() {
       <p>
         Use at least 12 characters. Changing it signs out your other sessions.
       </p>
-      <button disabled={busy}>{busy ? "Saving…" : "Save new password"}</button>
+      <button disabled={busy || !ready}>
+        {busy ? "Saving…" : "Save new password"}
+      </button>
       <p role="alert">{message}</p>
     </form>
   );

@@ -175,14 +175,20 @@ async function prepare() {
     );
     if (manifest.cancelled) throw new Error("This event is cancelled.");
     const userId = currentUser!;
-    await mutate((old) => ({
-      userId,
-      deviceId: old?.deviceId ?? crypto.randomUUID(),
-      manifest,
-      syncedAt: new Date().toISOString(),
-      offset: new Date(manifest.server_time).getTime() - Date.now(),
-      outbox: [],
-    }));
+    await mutate((old) => {
+      if (old?.outbox.length)
+        throw new Error(
+          "New pending scans appeared. Sync them before preparing again.",
+        );
+      return {
+        userId,
+        deviceId: old?.deviceId ?? crypto.randomUUID(),
+        manifest,
+        syncedAt: new Date().toISOString(),
+        offset: new Date(manifest.server_time).getTime() - Date.now(),
+        outbox: [],
+      };
+    });
     if (!navigator.serviceWorker)
       throw new Error(
         "This browser cannot cache the offline scanner. Use a supported browser before relying on offline reload.",
@@ -516,7 +522,8 @@ $("search").oninput = (e) => {
   );
   render();
 };
-$("export").onclick = () => {
+$("export").onclick = async () => {
+  state = await readState();
   if (!state?.outbox.length) {
     show("No pending scans to export.");
     return;
@@ -539,6 +546,8 @@ $("export").onclick = () => {
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 };
 $("clear").onclick = async () => {
+  state = await readState();
+  const before = state;
   if (
     !confirm(
       state?.outbox.length
@@ -548,10 +557,30 @@ $("clear").onclick = async () => {
   )
     return;
   stopCamera();
-  await mutate(() => undefined);
-  show("Device preparation cleared.");
+  try {
+    await mutate((old) => {
+      if (
+        old?.userId !== before?.userId ||
+        old?.manifest.event_id !== before?.manifest.event_id ||
+        old?.outbox.some(
+          (s) =>
+            !before?.outbox.some(
+              (previous) => previous.client_scan_id === s.client_scan_id,
+            ),
+        )
+      )
+        throw new Error(
+          "Pending scans changed. Export the current scans and confirm clear again.",
+        );
+      return undefined;
+    });
+    show("Device preparation cleared.");
+  } catch (error) {
+    show((error as Error).message, "error");
+  }
 };
 $("logout").onclick = async () => {
+  state = await readState();
   if (state?.outbox.length) {
     show(
       "Sync or export and explicitly clear pending scans before logging out.",
@@ -559,17 +588,31 @@ $("logout").onclick = async () => {
     );
     return;
   }
+  let loggedOut = false;
+  busy = true;
+  stopCamera();
   try {
     const response = await fetch("/api/auth/logout", { method: "POST" });
     if (!response.ok) throw new Error();
-    stopCamera();
-    await mutate(() => undefined);
+    loggedOut = true;
+    authBlocked = true;
+    await mutate((old) => {
+      if (old?.outbox.length)
+        throw new Error(
+          "Pending scans appeared during logout. Sign in again to sync them; they remain saved.",
+        );
+      return undefined;
+    });
     location.assign("/staff/login");
-  } catch {
+  } catch (error) {
     show(
-      "Connect to complete logout. Your session and preparation are still present.",
+      loggedOut
+        ? (error as Error).message
+        : "Connect to complete logout. Your session and preparation are still present.",
       "error",
     );
+  } finally {
+    busy = false;
   }
 };
 addEventListener("online", () => {

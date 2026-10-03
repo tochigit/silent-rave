@@ -25,9 +25,8 @@ export function LoginForm({ intent }: { intent: "admin" | "staff" }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password, intent }),
       });
-      const data: { ok?: boolean; error?: string; redirectTo?: string } = await response
-        .json()
-        .catch(() => ({}));
+      const data: { ok?: boolean; error?: string; redirectTo?: string } =
+        await response.json().catch(() => ({}));
 
       if (!response.ok || !data.ok) {
         setError(data.error ?? "Login failed");
@@ -46,7 +45,7 @@ export function LoginForm({ intent }: { intent: "admin" | "staff" }) {
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form method="post" onSubmit={onSubmit}>
       <label htmlFor="login-email">Email</label>
       <input
         id="login-email"
