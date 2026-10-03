@@ -312,6 +312,24 @@ try {
     ),
     "desktop owner dashboard has no horizontal overflow",
   );
+  await page.setViewportSize({ width: 375, height: 812 });
+  check(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    "mobile owner dashboard has no horizontal overflow",
+  );
+  await page.screenshot({
+    path: "reports/step4-mobile-owner.png",
+    fullPage: true,
+  });
+  await page.keyboard.press("Tab");
+  check(
+    await page
+      .getByRole("link", { name: "Skip to owner workspace" })
+      .evaluate((el: HTMLElement) => el === document.activeElement),
+    "owner workspace has a keyboard skip link",
+  );
   await page.goto(adminBase + "/admin/staff");
   await page.getByRole("button", { name: "Create staff" }).click();
   await page.getByLabel("Staff name").fill("Browser Door Staff");

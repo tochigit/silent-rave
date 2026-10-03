@@ -332,6 +332,9 @@ export function OwnerPanel({ section = ["payments"] }: { section?: string[] }) {
   }
   return (
     <div className="operations-site">
+      <a className="op-skip" href="#owner-main">
+        Skip to owner workspace
+      </a>
       <header className="op-header">
         <a href="/admin" className="brand">
           SILENT RAVE <small>Owner</small>
@@ -349,9 +352,22 @@ export function OwnerPanel({ section = ["payments"] }: { section?: string[] }) {
               {label}
             </a>
           ))}
-          <a href="/staff">Open staff tools</a>
+          <a
+            href="/staff"
+            onClick={(event) => {
+              event.preventDefault();
+              const target = new URL(window.location.href);
+              target.hostname = `staff.${target.hostname.replace(/^admin\./, "")}`;
+              target.pathname = "/staff";
+              target.search = "";
+              target.hash = "";
+              window.location.assign(target.href);
+            }}
+          >
+            Open staff tools
+          </a>
         </nav>
-        <main>
+        <main id="owner-main" tabIndex={-1}>
           <p className="eyebrow">Owner operations</p>
           <h1>
             {id && resource === "orders"

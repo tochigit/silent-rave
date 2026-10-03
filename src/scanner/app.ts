@@ -328,7 +328,11 @@ async function admitOffline(token: string) {
   if (decision)
     show(
       `OFFLINE · ${decision.result.toUpperCase()} · ${decision.message}`,
-      ["valid", "unlisted"].includes(decision.result) ? "valid" : "error",
+      decision.result === "unlisted"
+        ? "warning"
+        : decision.result === "valid"
+          ? "valid"
+          : "error",
     );
 }
 async function scanToken(token: string) {

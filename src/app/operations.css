@@ -10,6 +10,18 @@
 .operations-site * {
   box-sizing: border-box;
 }
+.op-skip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-150%);
+  padding: 12px;
+  background: #101218;
+  z-index: 10;
+}
+.op-skip:focus {
+  transform: none;
+}
 .op-header {
   padding: 24px;
   display: flex;
