@@ -59,3 +59,7 @@ server.log
 # local private object storage (dev driver)
 .storage-local/
 .test-runtime/
+public/scanner.js
+public/scanner-sw.js
+public/scanner-icon-192.png
+public/scanner-icon-512.png

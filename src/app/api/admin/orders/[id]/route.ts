@@ -43,6 +43,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       createdAt: true,
       event: { select: { id: true, title: true, status: true } },
       paymentAccount: { select: { bankName: true, accountNumber: true, accountName: true } },
+      paymentAccountSnapshot: true,
       lineItems: {
         select: {
           quantity: true,
@@ -125,7 +126,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       approved_by: order.approvedBy,
       created_at: order.createdAt.toISOString(),
       event: order.event,
-      payment_account: order.paymentAccount,
+      payment_account: order.paymentAccountSnapshot,
       line_items: order.lineItems.map((item) => ({
         tier_id: item.tier.id,
         tier_name: item.tier.name,

@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default function StaffLoginPage() {
   return (
-    <main>
+    <main className="operations-site"><section className="op-card">
       <h1>Staff login</h1>
       <LoginForm intent="staff" />
-    </main>
+    </section></main>
   );
 }

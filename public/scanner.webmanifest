@@ -1,0 +1,23 @@
+{
+    "name":  "Silent Rave Door Scanner",
+    "short_name":  "Rave Scanner",
+    "start_url":  "/scanner.html",
+    "scope":  "/",
+    "display":  "standalone",
+    "background_color":  "#101218",
+    "theme_color":  "#101218",
+    "icons":  [
+                  {
+                      "purpose":  "any",
+                      "type":  "image/png",
+                      "sizes":  "192x192",
+                      "src":  "/scanner-icon-192.png"
+                  },
+                  {
+                      "purpose":  "any maskable",
+                      "type":  "image/png",
+                      "sizes":  "512x512",
+                      "src":  "/scanner-icon-512.png"
+                  }
+              ]
+}

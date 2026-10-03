@@ -117,6 +117,9 @@ async function withSessionRefresh(
   response: NextResponse,
   validated: ValidatedSession
 ): Promise<NextResponse> {
+  response.headers.set("Cache-Control", "private, no-store");
+  response.headers.set("Referrer-Policy", "no-referrer");
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
   const expiresAt = await extendSessionIfNeeded(validated.session);
   if (expiresAt) {
     response.cookies.set(

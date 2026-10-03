@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     data: { lastLoginAt: new Date() },
   });
 
-  const redirectTo =
+  const redirectTo = user.mustChangePassword ? "/staff/password" :
     intent === "staff"
       ? "/staff"
       : intent === "admin"

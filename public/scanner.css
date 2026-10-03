@@ -1,0 +1,143 @@
+:root {
+  color-scheme: dark;
+  --bg: #101218;
+  --panel: #1a1d25;
+  --ink: #f7f8fa;
+  --muted: #c2c7d2;
+  --mint: #91e7d3;
+  --purple: #c3b3fc;
+  --warning: #ffd38a;
+  --error: #ffb6b6;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    16px/1.6 system-ui,
+    sans-serif;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid #343946;
+}
+.brand {
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  color: var(--mint);
+}
+main {
+  max-width: 820px;
+  margin: auto;
+  padding: 24px 16px 48px;
+}
+section,
+aside {
+  padding: 20px;
+  margin: 20px 0;
+  background: var(--panel);
+  border: 1px solid #343946;
+  border-radius: 16px;
+}
+aside {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+h1 {
+  font-size: 2.2rem;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.25rem;
+}
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 650;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  min-height: 44px;
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 100%;
+  border: 1px solid #545b6b;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  background: var(--bg);
+  color: var(--ink);
+}
+button {
+  background: var(--mint);
+  color: #101218;
+  font-weight: 750;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+a {
+  color: var(--mint);
+}
+video {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  margin: 12px 0;
+}
+#status,
+#result {
+  padding: 16px;
+  border: 1px solid #545b6b;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+#result[data-kind="valid"] {
+  border: 3px solid var(--mint);
+  color: var(--mint);
+}
+#result[data-kind="error"] {
+  border: 3px solid var(--error);
+  color: var(--error);
+}
+li {
+  padding: 10px 0;
+  border-bottom: 1px solid #343946;
+}
+ul {
+  padding-left: 20px;
+}
+summary {
+  cursor: pointer;
+  padding: 12px 0;
+}
+textarea {
+  min-height: 100px;
+}
+:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
+}
+[hidden] {
+  display: none !important;
+}

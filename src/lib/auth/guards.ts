@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { StaffRole } from "@prisma/client";
 import { getSessionUserFromRequest } from "./session";
+import { db } from "@/lib/db";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // API route guard (06-auth-and-roles.md — "Every API endpoint that touches
@@ -47,5 +48,7 @@ export async function guardApi(
       response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
     };
   }
+  const account = await db.staffUser.findUnique({ where: { id: validated.user.id }, select: { mustChangePassword: true } });
+  if (account?.mustChangePassword) return { ok: false, response: NextResponse.json({ error: "Change your temporary password before continuing.", code: "PASSWORD_CHANGE_REQUIRED" }, { status: 403 }) };
   return { ok: true, user: validated.user };
 }

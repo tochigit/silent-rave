@@ -7,10 +7,12 @@ try {
   console.log(
     "Starting isolated fixture app on localhost:3000; Ctrl+C stops it.",
   );
-  if (process.argv.includes("--browser-step3")) {
+  if (process.argv.includes("--browser-step3") || process.argv.includes("--browser-step4")) {
+    const step = process.argv.includes("--browser-step4") ? "step4" : "step3";
+    await runCommand([process.execPath, "--no-env-file", "scripts/build-scanner.ts"], fixture.env);
     const server = spawn(
       "node",
-      ["node_modules/next/dist/bin/next", "dev", "--webpack", "--port", "3000"],
+      ["node_modules/next/dist/bin/next", "dev", "--webpack", "--hostname", "127.0.0.1", "--port", "3000"],
       {
         env: fixture.env,
         windowsHide: true,
@@ -41,16 +43,16 @@ try {
           process.execPath,
           "--no-env-file",
           "build",
-          "scripts/browser-step3.ts",
+          `scripts/browser-${step}.ts`,
           "--target=node",
           "--format=esm",
           "--packages=external",
-          "--outfile=.test-runtime/browser-check/step3-run.mjs",
+          `--outfile=.test-runtime/browser-check/${step}-run.mjs`,
         ],
         fixture.env,
       );
       await runCommand(
-        ["node", ".test-runtime/browser-check/step3-run.mjs"],
+        ["node", `.test-runtime/browser-check/${step}-run.mjs`],
         fixture.env,
       );
     } finally {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./operations.css";
 
 // Customer fonts and assets are first-party; token pages load no remote resources.
 export const metadata: Metadata = {

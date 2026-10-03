@@ -104,6 +104,7 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     EMAIL_TRANSPORT: "capture", RESEND_API_KEY: "", RESEND_WEBHOOK_SECRET: "whsec_" + randomBytes(32).toString("base64"),
     EMAIL_FROM: "tickets@example.test", EMAIL_REPLY_TO: "help@example.test", PUBLIC_BASE_URL: "http://localhost:3000",
     EMAIL_PAYLOAD_SECRET: randomBytes(32).toString("base64url"), EMAIL_KICK_ENABLED: "0",
+    PUSH_ADAPTER: "capture", PUSH_CAPTURE_DIR: path.join(runDir, "push-capture"), VAPID_PUBLIC_KEY: "", VAPID_PRIVATE_KEY: "", VAPID_SUBJECT: "", GOOGLE_PLACES_API_KEY: "",
     OWNER_EMAIL: "owner@silentrave.ng", OWNER_PASSWORD: "silentrave-dev-owner", OWNER_NAME: "Fixture Owner",
     INITIALIZE_IP_RATE_LIMIT_PER_HOUR: "10",
   });

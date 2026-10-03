@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 
 export default function AdminLoginPage() {
   return (
-    <main>
+    <main className="operations-site"><section className="op-card">
       <h1>Admin login</h1>
       <LoginForm intent="admin" />
-    </main>
+    </section></main>
   );
 }

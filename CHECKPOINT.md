@@ -4,11 +4,11 @@ Updated 2026-10-03, Africa/Lagos. Specifications: .docs v2.1.2.
 
 1. Baseline: COMPLETE; PR #1 merged at 982eb9f.
 2. Email/PDF/refund backend: COMPLETE; PR #2 merged at 7fcf42d8fb13e5f77ce6f8db8fe613987e591670, live API verified.
-3. Customer experience: COMPLETE; STOP FOR REVIEW. Branch feat/step3-customer-experience, PR #3: https://github.com/tochigit/silent-rave/pull/3.
-4. Owner/staff and REQUIRED offline scanner: NOT STARTED.
+3. Customer experience: COMPLETE; PR #3 merged at 8984f9eccff51ff96088155e47e9afeef0c4d633 after current exact-head checks passed.
+4. Owner/staff and REQUIRED offline scanner: IN PROGRESS on feat/step4-owner-staff-scanner from current main 8984f9e. User authorized merge and continuation on 2026-10-03. See .docs/STEP4_REPORT.md.
 5. Hosted integration/deployment: NOT STARTED.
 
-Only Step 3 was authorized. No merge, later step or deployment. All original branches and settled guest/manual-transfer/OWNER-approval/platform decisions are retained. Main/base stays 7fcf42d; no root dependency lockfile change.
+Step 4 is now authorized. All original branches and settled guest/manual-transfer/OWNER-approval/platform decisions are retained. No Step 5 or deployment. Step 3 validation below describes its completed baseline; Step 4 validation is pending.
 
 ## Verified results
 
@@ -38,4 +38,4 @@ Automatic approval review rejected deletion of stopped owned .test-runtime/run-1
 
 ## Next authorized action
 
-Review PR #3. Merge only after explicit approval for PR #3. Do not start Step 4/Step 5 or deploy without separate authorization. Resume by reading this checkpoint/report and inspecting current Git, PR head/checks and live state; historical pass records are not current-state proof.
+Complete Step 4, regression/API/browser checks, a durable report and focused PR, then stop for review. Do not merge the Step 4 PR, begin Step 5 or deploy without separate approval. Resume by reading this checkpoint and .docs/STEP4_REPORT.md and inspecting current Git, PR/checks and running processes. Historical passes are not current-state proof.
