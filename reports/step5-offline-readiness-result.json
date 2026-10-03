@@ -1,0 +1,14 @@
+{
+    "actual_exit":  1,
+    "expected_exit":  1,
+    "mode":  "OFFLINE_ONLY",
+    "configurationValid":  false,
+    "readyForLaunch":  false,
+    "migration_count":  4,
+    "blocked_config_checks":  13,
+    "code_blockers":  [
+                          "Supabase storage adapter is a stub; preserve OWNER plus signature authorization for proof reads.",
+                          "Process-local rate limits must become shared before serverless launch.",
+                          "Supabase Data API exposure/grants/RLS require a reviewed protection plan."
+                      ]
+}

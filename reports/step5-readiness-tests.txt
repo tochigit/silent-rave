@@ -1,0 +1,21 @@
+bun : $ bun --no-env-file test tests/step5/readiness.test.ts
+At line:2 char:1
++ bun --no-env-file run test:readiness *> 'reports\step5-readiness-test ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ bun --no-env-...adiness.test.ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+bun test v1.3.14 (0d9b296a)
+
+tests\step5\readiness.test.ts:
+(pass) valid candidate syntax remains blocked by code and live launch prerequisites [314.10ms]
+(pass) rejects unsafe origins, parent domains and preview-host buyer links [99.06ms]
+(pass) requires TLS, bounded runtime connections and migration-safe pooler split [13.35ms]
+(pass) malformed and public secrets cannot leak through diagnostics [71.46ms]
+(pass) refuses fixture deployment and incomplete push while allowing manual fallback [4.31ms]
+(pass) migration fingerprints cover the unchanged chronological forward chain [556.76ms]
+
+ 6 pass
+ 0 fail
+ 42 expect() calls
+Ran 6 tests across 1 file. [13.22s]
