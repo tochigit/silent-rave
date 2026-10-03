@@ -1,0 +1,970 @@
+2026-10-03T12:18:02.3857809Z Current runner version: '2.337.0'
+2026-10-03T12:18:02.3882811Z ##[group]Runner Image Provisioner
+2026-10-03T12:18:02.3883659Z Hosted Compute Agent
+2026-10-03T12:18:02.3884297Z Version: 20260901.588
+2026-10-03T12:18:02.3884926Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-03T12:18:02.3885624Z Build Date: 2026-09-01T19:56:44Z
+2026-10-03T12:18:02.3886272Z Worker ID: {198c9d68-3313-4ec2-8486-c8af879be44a}
+2026-10-03T12:18:02.3886952Z Azure Region: westcentralus
+2026-10-03T12:18:02.3887523Z ##[endgroup]
+2026-10-03T12:18:02.3889131Z ##[group]Operating System
+2026-10-03T12:18:02.3889709Z Ubuntu
+2026-10-03T12:18:02.3890280Z 24.04.5
+2026-10-03T12:18:02.3890761Z LTS
+2026-10-03T12:18:02.3891270Z ##[endgroup]
+2026-10-03T12:18:02.3891804Z ##[group]Runner Image
+2026-10-03T12:18:02.3892338Z Image: ubuntu-24.04
+2026-10-03T12:18:02.3892895Z Version: 20260927.320.1
+2026-10-03T12:18:02.3894050Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-03T12:18:02.3895532Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-03T12:18:02.3896458Z ##[endgroup]
+2026-10-03T12:18:02.3897576Z ##[group]GITHUB_TOKEN Permissions
+2026-10-03T12:18:02.3899777Z Contents: read
+2026-10-03T12:18:02.3900426Z Metadata: read
+2026-10-03T12:18:02.3900949Z ##[endgroup]
+2026-10-03T12:18:02.3902849Z Secret source: Actions
+2026-10-03T12:18:02.3903746Z Cache mode: write
+2026-10-03T12:18:02.3904389Z Prepare workflow directory
+2026-10-03T12:18:02.4309614Z Prepare all required actions
+2026-10-03T12:18:02.4356829Z Getting action download info
+2026-10-03T12:18:02.7334281Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-03T12:18:02.8219498Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-03T12:18:02.9447317Z Download action repository 'oven-sh/setup-bun@v2' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+2026-10-03T12:18:03.4632331Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-10-03T12:18:03.5857127Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-03T12:18:03.8681665Z Complete job name: Verify (linux)
+2026-10-03T12:18:03.9402043Z ##[group]Run actions/checkout@v4
+2026-10-03T12:18:03.9402883Z with:
+2026-10-03T12:18:03.9403464Z   repository: tochigit/silent-rave
+2026-10-03T12:18:03.9407549Z   token: ***
+2026-10-03T12:18:03.9408262Z   ssh-strict: true
+2026-10-03T12:18:03.9408829Z   ssh-user: git
+2026-10-03T12:18:03.9409333Z   persist-credentials: true
+2026-10-03T12:18:03.9409894Z   clean: true
+2026-10-03T12:18:03.9410389Z   sparse-checkout-cone-mode: true
+2026-10-03T12:18:03.9411307Z   fetch-depth: 1
+2026-10-03T12:18:03.9411889Z   fetch-tags: false
+2026-10-03T12:18:03.9412388Z   show-progress: true
+2026-10-03T12:18:03.9412928Z   lfs: false
+2026-10-03T12:18:03.9413403Z   submodules: false
+2026-10-03T12:18:03.9413947Z   set-safe-directory: true
+2026-10-03T12:18:03.9414546Z   allow-unsafe-pr-checkout: false
+2026-10-03T12:18:03.9415335Z env:
+2026-10-03T12:18:03.9415818Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:03.9416552Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:03.9417739Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:03.9418793Z ##[endgroup]
+2026-10-03T12:18:04.0424960Z Syncing repository: tochigit/silent-rave
+2026-10-03T12:18:04.0427213Z ##[group]Getting Git version info
+2026-10-03T12:18:04.0428338Z Working directory is '/home/runner/work/silent-rave/silent-rave'
+2026-10-03T12:18:04.0429873Z [command]/usr/bin/git version
+2026-10-03T12:18:04.0479678Z git version 2.55.0
+2026-10-03T12:18:04.0500203Z ##[endgroup]
+2026-10-03T12:18:04.0515307Z Temporarily overriding HOME='/home/runner/work/_temp/01cf6df4-c744-4dc1-8afc-21df8cccab77' before making global git config changes
+2026-10-03T12:18:04.0516813Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-03T12:18:04.0521649Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/silent-rave/silent-rave
+2026-10-03T12:18:04.0589255Z Deleting the contents of '/home/runner/work/silent-rave/silent-rave'
+2026-10-03T12:18:04.0593102Z ##[group]Initializing the repository
+2026-10-03T12:18:04.0597446Z [command]/usr/bin/git init /home/runner/work/silent-rave/silent-rave
+2026-10-03T12:18:04.0700642Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-03T12:18:04.0702387Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-03T12:18:04.0704085Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-03T12:18:04.0705263Z hint: call:
+2026-10-03T12:18:04.0705832Z hint:
+2026-10-03T12:18:04.0706523Z hint: 	git config --global init.defaultBranch <name>
+2026-10-03T12:18:04.0707193Z hint:
+2026-10-03T12:18:04.0707815Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-03T12:18:04.0709135Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-03T12:18:04.0709904Z hint:
+2026-10-03T12:18:04.0710439Z hint: 	git branch -m <name>
+2026-10-03T12:18:04.0711123Z hint:
+2026-10-03T12:18:04.0711881Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-03T12:18:04.0712940Z Initialized empty Git repository in /home/runner/work/silent-rave/silent-rave/.git/
+2026-10-03T12:18:04.0715125Z [command]/usr/bin/git remote add origin https://github.com/tochigit/silent-rave
+2026-10-03T12:18:04.0761087Z ##[endgroup]
+2026-10-03T12:18:04.0761942Z ##[group]Disabling automatic garbage collection
+2026-10-03T12:18:04.0765623Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-03T12:18:04.0797121Z ##[endgroup]
+2026-10-03T12:18:04.0798213Z ##[group]Setting up auth
+2026-10-03T12:18:04.0805123Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-03T12:18:04.0836433Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-03T12:18:04.1172302Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-03T12:18:04.1212192Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-03T12:18:04.1414672Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-03T12:18:04.1444384Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-03T12:18:04.1625849Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-03T12:18:04.1663563Z ##[endgroup]
+2026-10-03T12:18:04.1664930Z ##[group]Fetching the repository
+2026-10-03T12:18:04.1673916Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +bc858a73fe487529c2538a60cba80460e637effd:refs/remotes/pull/4/merge
+2026-10-03T12:18:05.2935963Z From https://github.com/tochigit/silent-rave
+2026-10-03T12:18:05.2940431Z  * [new ref]         bc858a73fe487529c2538a60cba80460e637effd -> pull/4/merge
+2026-10-03T12:18:05.2946951Z ##[endgroup]
+2026-10-03T12:18:05.2949548Z ##[group]Determining the checkout info
+2026-10-03T12:18:05.2952414Z ##[endgroup]
+2026-10-03T12:18:05.2953786Z [command]/usr/bin/git sparse-checkout disable
+2026-10-03T12:18:05.3003424Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-03T12:18:05.3041701Z ##[group]Checking out the ref
+2026-10-03T12:18:05.3043978Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/4/merge
+2026-10-03T12:18:05.3419751Z Note: switching to 'refs/remotes/pull/4/merge'.
+2026-10-03T12:18:05.3421657Z
+2026-10-03T12:18:05.3422506Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-03T12:18:05.3424902Z changes and commit them, and you can discard any commits you make in this
+2026-10-03T12:18:05.3427460Z state without impacting any branches by switching back to a branch.
+2026-10-03T12:18:05.3429315Z
+2026-10-03T12:18:05.3430325Z If you want to create a new branch to retain commits you create, you may
+2026-10-03T12:18:05.3432709Z do so (now or later) by using -c with the switch command. Example:
+2026-10-03T12:18:05.3433935Z
+2026-10-03T12:18:05.3434539Z   git switch -c <new-branch-name>
+2026-10-03T12:18:05.3435393Z
+2026-10-03T12:18:05.3436038Z Or undo this operation with:
+2026-10-03T12:18:05.3437047Z
+2026-10-03T12:18:05.3437743Z   git switch -
+2026-10-03T12:18:05.3438732Z
+2026-10-03T12:18:05.3439808Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-03T12:18:05.3441439Z
+2026-10-03T12:18:05.3443240Z HEAD is now at bc858a7 Merge b54f925748e41d3ed93e8e04b69215cc99151aa8 into 8984f9eccff51ff96088155e47e9afeef0c4d633
+2026-10-03T12:18:05.3449797Z ##[endgroup]
+2026-10-03T12:18:05.3464970Z [command]/usr/bin/git log -1 --format=%H
+2026-10-03T12:18:05.3487347Z bc858a73fe487529c2538a60cba80460e637effd
+2026-10-03T12:18:05.3852660Z ##[group]Run actions/setup-node@v4
+2026-10-03T12:18:05.3853900Z with:
+2026-10-03T12:18:05.3854794Z   node-version: 24
+2026-10-03T12:18:05.3855748Z   always-auth: false
+2026-10-03T12:18:05.3856762Z   check-latest: false
+2026-10-03T12:18:05.3866753Z   token: ***
+2026-10-03T12:18:05.3867672Z env:
+2026-10-03T12:18:05.3868966Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:05.3870503Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:05.3872559Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:05.3874160Z ##[endgroup]
+2026-10-03T12:18:05.5280443Z Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64
+2026-10-03T12:18:05.5286345Z (node:2432) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:18:05.5291119Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:18:05.5295283Z ##[group]Environment details
+2026-10-03T12:18:05.9018753Z node: v24.21.0
+2026-10-03T12:18:05.9020536Z npm: 11.19.0
+2026-10-03T12:18:05.9021845Z yarn: 1.22.22
+2026-10-03T12:18:05.9024093Z ##[endgroup]
+2026-10-03T12:18:05.9222358Z ##[group]Run oven-sh/setup-bun@v2
+2026-10-03T12:18:05.9223319Z with:
+2026-10-03T12:18:05.9224201Z   bun-version: 1.3.14
+2026-10-03T12:18:05.9225040Z   no-cache: false
+2026-10-03T12:18:05.9228632Z   token: ***
+2026-10-03T12:18:05.9229470Z env:
+2026-10-03T12:18:05.9230294Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:05.9231332Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:05.9232575Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:05.9233556Z ##[endgroup]
+2026-10-03T12:18:06.2726763Z Cache hit for: bun-fR4r1tsFeXfPQkusQwkKD2kGnsE=
+2026-10-03T12:18:07.3288376Z Received 33843768 of 33843768 (100.0%), 38.3 MBs/sec
+2026-10-03T12:18:07.3289461Z Cache Size: ~32 MB (33843768 B)
+2026-10-03T12:18:07.3324445Z [command]/usr/bin/tar -xf /home/runner/work/_temp/a84bcd7e-1639-4834-96cb-5d29617a5a8e/cache.tzst -P -C /home/runner/work/silent-rave/silent-rave --use-compress-program unzstd
+2026-10-03T12:18:07.4688250Z Cache restored successfully
+2026-10-03T12:18:07.4707546Z [command]/home/runner/.bun/bin/bun --revision
+2026-10-03T12:18:07.4743529Z 1.3.14+0d9b296af
+2026-10-03T12:18:07.4749783Z Using a cached version of Bun: 1.3.14+0d9b296af
+2026-10-03T12:18:07.4866623Z ##[group]Run bun install --frozen-lockfile
+2026-10-03T12:18:07.4867192Z [36;1mbun install --frozen-lockfile[0m
+2026-10-03T12:18:07.5059226Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:07.5059703Z env:
+2026-10-03T12:18:07.5060083Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:07.5060529Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:07.5061282Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:07.5061743Z ##[endgroup]
+2026-10-03T12:18:07.5169427Z bun install v1.3.14 (0d9b296a)
+2026-10-03T12:18:09.6221018Z
+2026-10-03T12:18:09.6221904Z + @tailwindcss/postcss@4.1.18
+2026-10-03T12:18:09.6222779Z + @types/qrcode@1.5.6
+2026-10-03T12:18:09.6223197Z + @types/react@19.2.8
+2026-10-03T12:18:09.6223590Z + @types/react-dom@19.2.3
+2026-10-03T12:18:09.6224030Z + @types/web-push@3.6.4
+2026-10-03T12:18:09.6224426Z + bun-types@1.3.6
+2026-10-03T12:18:09.6224919Z + embedded-postgres@18.4.0-beta.17
+2026-10-03T12:18:09.6225483Z + eslint@9.39.2
+2026-10-03T12:18:09.6225947Z + eslint-config-next@16.1.3
+2026-10-03T12:18:09.6226333Z + tailwindcss@4.1.18
+2026-10-03T12:18:09.6226734Z + tw-animate-css@1.4.0
+2026-10-03T12:18:09.6227210Z + typescript@5.9.3
+2026-10-03T12:18:09.6227644Z + @hookform/resolvers@5.2.2
+2026-10-03T12:18:09.6228347Z + @noble/ed25519@3.0.0
+2026-10-03T12:18:09.6228915Z + @noble/hashes@2.0.1
+2026-10-03T12:18:09.6229338Z + @pdf-lib/fontkit@1.1.1
+2026-10-03T12:18:09.6229685Z + @prisma/client@6.19.2
+2026-10-03T12:18:09.6230107Z + @radix-ui/react-accordion@1.2.12
+2026-10-03T12:18:09.6230522Z + @radix-ui/react-alert-dialog@1.1.15
+2026-10-03T12:18:09.6230963Z + @radix-ui/react-aspect-ratio@1.1.8
+2026-10-03T12:18:09.6231438Z + @radix-ui/react-avatar@1.1.11
+2026-10-03T12:18:09.6231860Z + @radix-ui/react-checkbox@1.3.3
+2026-10-03T12:18:09.6232262Z + @radix-ui/react-collapsible@1.1.12
+2026-10-03T12:18:09.6232693Z + @radix-ui/react-context-menu@2.2.16
+2026-10-03T12:18:09.6233106Z + @radix-ui/react-dialog@1.1.15
+2026-10-03T12:18:09.6233502Z + @radix-ui/react-dropdown-menu@2.1.16
+2026-10-03T12:18:09.6233926Z + @radix-ui/react-hover-card@1.1.15
+2026-10-03T12:18:09.6234332Z + @radix-ui/react-label@2.1.8
+2026-10-03T12:18:09.6234707Z + @radix-ui/react-menubar@1.1.16
+2026-10-03T12:18:09.6235123Z + @radix-ui/react-navigation-menu@1.2.14
+2026-10-03T12:18:09.6235568Z + @radix-ui/react-popover@1.1.15
+2026-10-03T12:18:09.6235962Z + @radix-ui/react-progress@1.1.8
+2026-10-03T12:18:09.6236416Z + @radix-ui/react-radio-group@1.3.8
+2026-10-03T12:18:09.6236867Z + @radix-ui/react-scroll-area@1.2.10
+2026-10-03T12:18:09.6237648Z + @radix-ui/react-select@2.2.6
+2026-10-03T12:18:09.6238172Z + @radix-ui/react-separator@1.1.8
+2026-10-03T12:18:09.6238682Z + @radix-ui/react-slider@1.3.6
+2026-10-03T12:18:09.6239058Z + @radix-ui/react-slot@1.2.4
+2026-10-03T12:18:09.6239459Z + @radix-ui/react-switch@1.2.6
+2026-10-03T12:18:09.6239851Z + @radix-ui/react-tabs@1.1.13
+2026-10-03T12:18:09.6240211Z + @radix-ui/react-toast@1.2.15
+2026-10-03T12:18:09.6240583Z + @radix-ui/react-toggle@1.1.10
+2026-10-03T12:18:09.6241044Z + @radix-ui/react-toggle-group@1.1.11
+2026-10-03T12:18:09.6241410Z + @radix-ui/react-tooltip@1.2.8
+2026-10-03T12:18:09.6241794Z + @react-email/render@2.1.0
+2026-10-03T12:18:09.6242150Z + @tanstack/react-table@8.21.3
+2026-10-03T12:18:09.6242522Z + bcryptjs@3.0.3
+2026-10-03T12:18:09.6242898Z + class-variance-authority@0.7.1
+2026-10-03T12:18:09.6243220Z + clsx@2.1.1
+2026-10-03T12:18:09.6243571Z + cmdk@1.1.1
+2026-10-03T12:18:09.6243852Z + date-fns@4.1.0
+2026-10-03T12:18:09.6244179Z + embla-carousel-react@8.6.0
+2026-10-03T12:18:09.6244559Z + input-otp@1.4.2
+2026-10-03T12:18:09.6244847Z + jsqr@1.4.0
+2026-10-03T12:18:09.6245140Z + lucide-react@0.525.0
+2026-10-03T12:18:09.6245454Z + next@16.1.3
+2026-10-03T12:18:09.6246120Z + next-themes@0.4.6
+2026-10-03T12:18:09.6246463Z + pdf-lib@1.17.1
+2026-10-03T12:18:09.6246761Z + prisma@6.19.2
+2026-10-03T12:18:09.6247104Z + qrcode@1.5.4
+2026-10-03T12:18:09.6247379Z + react@19.2.3
+2026-10-03T12:18:09.6248167Z + react-day-picker@9.13.0
+2026-10-03T12:18:09.6248571Z + react-dom@19.2.3
+2026-10-03T12:18:09.6248909Z + react-hook-form@7.71.1
+2026-10-03T12:18:09.6249276Z + react-resizable-panels@3.0.6
+2026-10-03T12:18:09.6249808Z + recharts@2.15.4
+2026-10-03T12:18:09.6250185Z + sharp@0.34.5
+2026-10-03T12:18:09.6250468Z + sonner@2.0.7
+2026-10-03T12:18:09.6250927Z + svix@2.6.1
+2026-10-03T12:18:09.6251226Z + tailwind-merge@3.4.0
+2026-10-03T12:18:09.6251693Z + tailwindcss-animate@1.0.7
+2026-10-03T12:18:09.6252170Z + vaul@1.1.2
+2026-10-03T12:18:09.6252572Z + web-push@3.6.7
+2026-10-03T12:18:09.6253025Z + zod@4.3.5
+2026-10-03T12:18:09.6253254Z
+2026-10-03T12:18:09.6253558Z 605 packages installed [2.11s]
+2026-10-03T12:18:09.6310862Z ##[group]Run bun run db:generate
+2026-10-03T12:18:09.6311257Z [36;1mbun run db:generate[0m
+2026-10-03T12:18:09.6351638Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:09.6351969Z env:
+2026-10-03T12:18:09.6352345Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:09.6352813Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:09.6353456Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:09.6353881Z ##[endgroup]
+2026-10-03T12:18:09.6432720Z $ prisma generate
+2026-10-03T12:18:11.2128472Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:18:11.6187677Z
+2026-10-03T12:18:11.6189436Z ✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 183ms
+2026-10-03T12:18:11.6190036Z
+2026-10-03T12:18:11.6190531Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-03T12:18:11.6190919Z
+2026-10-03T12:18:11.6191532Z Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+2026-10-03T12:18:11.6191849Z
+2026-10-03T12:18:11.6384766Z ##[group]Run bun run lint
+2026-10-03T12:18:11.6385185Z [36;1mbun run lint[0m
+2026-10-03T12:18:11.6425505Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:11.6425867Z env:
+2026-10-03T12:18:11.6426226Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:11.6426718Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:11.6427287Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:11.6427756Z ##[endgroup]
+2026-10-03T12:18:11.6509887Z $ eslint .
+2026-10-03T12:18:18.8122468Z ##[group]Run bun run typecheck
+2026-10-03T12:18:18.8122934Z [36;1mbun run typecheck[0m
+2026-10-03T12:18:18.8163824Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:18.8164223Z env:
+2026-10-03T12:18:18.8164546Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:18.8165001Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:18.8165594Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:18.8166044Z ##[endgroup]
+2026-10-03T12:18:18.8269405Z $ tsc --noEmit && tsc --noEmit -p tsconfig.tooling.json
+2026-10-03T12:18:29.4086446Z ##[group]Run actions/setup-python@v5
+2026-10-03T12:18:29.4086835Z with:
+2026-10-03T12:18:29.4087118Z   python-version: 3.13
+2026-10-03T12:18:29.4087432Z   check-latest: false
+2026-10-03T12:18:29.4090154Z   token: ***
+2026-10-03T12:18:29.4090478Z   update-environment: true
+2026-10-03T12:18:29.4090861Z   allow-prereleases: false
+2026-10-03T12:18:29.4091192Z   freethreaded: false
+2026-10-03T12:18:29.4091478Z env:
+2026-10-03T12:18:29.4091742Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:29.4092247Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:29.4092810Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:29.4093253Z ##[endgroup]
+2026-10-03T12:18:29.5362635Z ##[group]Installed versions
+2026-10-03T12:18:29.5443959Z (node:2574) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:18:29.5445150Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:18:29.5446210Z Successfully set up CPython (3.13.15)
+2026-10-03T12:18:29.5446838Z ##[endgroup]
+2026-10-03T12:18:29.5589362Z ##[group]Run python -m pip install -r scripts/requirements-pdf-test.txt
+2026-10-03T12:18:29.5589982Z [36;1mpython -m pip install -r scripts/requirements-pdf-test.txt[0m
+2026-10-03T12:18:29.5639796Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:29.5640136Z env:
+2026-10-03T12:18:29.5640436Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:29.5641046Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:29.5641608Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:29.5642128Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:29.5642609Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+2026-10-03T12:18:29.5643097Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:29.5643598Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:29.5644020Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:29.5644583Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+2026-10-03T12:18:29.5644961Z ##[endgroup]
+2026-10-03T12:18:32.0054890Z Collecting PyMuPDF==1.28.2 (from -r scripts/requirements-pdf-test.txt (line 1))
+2026-10-03T12:18:32.1195499Z   Downloading pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl.metadata (26 kB)
+2026-10-03T12:18:32.1666347Z Collecting zxing-cpp==3.1.1 (from -r scripts/requirements-pdf-test.txt (line 2))
+2026-10-03T12:18:32.1858710Z   Downloading zxing_cpp-3.1.1-cp312-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+2026-10-03T12:18:32.2079730Z Downloading pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl (25.8 MB)
+2026-10-03T12:18:32.6235324Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25.8/25.8 MB 70.4 MB/s  0:00:00
+2026-10-03T12:18:32.6426624Z Downloading zxing_cpp-3.1.1-cp312-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (1.1 MB)
+2026-10-03T12:18:32.6535179Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 94.8 MB/s  0:00:00
+2026-10-03T12:18:32.7843085Z Installing collected packages: zxing-cpp, PyMuPDF
+2026-10-03T12:18:33.7221528Z
+2026-10-03T12:18:33.7231990Z Successfully installed PyMuPDF-1.28.2 zxing-cpp-3.1.1
+2026-10-03T12:18:33.7868926Z ##[group]Run bun run scanner:build
+2026-10-03T12:18:33.7869349Z [36;1mbun run scanner:build[0m
+2026-10-03T12:18:33.7909418Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:33.7909811Z env:
+2026-10-03T12:18:33.7910097Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:33.7910638Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:33.7911234Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:33.7911764Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.7912304Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+2026-10-03T12:18:33.7912797Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.7913273Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.7913746Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.7914331Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+2026-10-03T12:18:33.7914741Z ##[endgroup]
+2026-10-03T12:18:33.8002367Z $ bun scripts/build-scanner.ts
+2026-10-03T12:18:33.8989463Z Built first-party scanner assets (10a6f6428eb87646); no private data embedded.
+2026-10-03T12:18:33.9057408Z ##[group]Run bun run test:step4
+2026-10-03T12:18:33.9057868Z [36;1mbun run test:step4[0m
+2026-10-03T12:18:33.9101537Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:18:33.9101938Z env:
+2026-10-03T12:18:33.9102272Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:18:33.9102739Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:33.9103311Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:18:33.9103885Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.9104379Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+2026-10-03T12:18:33.9104884Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.9105338Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.9105846Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:18:33.9106317Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+2026-10-03T12:18:33.9106975Z ##[endgroup]
+2026-10-03T12:18:33.9197940Z $ bun --no-env-file scripts/run-step4.ts
+2026-10-03T12:18:33.9523387Z step4: baseline + Phase 4 + Step 3; real HTTP/PostgreSQL/sharp/PDF; capture/fake transport; injected clock/backdated rows.
+2026-10-03T12:18:33.9849322Z Fixture: isolated loopback PostgreSQL; root .env is untouched.
+2026-10-03T12:18:35.6489191Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:18:36.1218254Z
+2026-10-03T12:18:36.1220089Z ✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 257ms
+2026-10-03T12:18:36.1220622Z
+2026-10-03T12:18:36.1230075Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-03T12:18:36.1230635Z
+2026-10-03T12:18:36.1231524Z Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2026-10-03T12:18:36.1232233Z
+2026-10-03T12:18:36.9037644Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:18:36.9121290Z Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:41497"
+2026-10-03T12:18:36.9705956Z
+2026-10-03T12:18:36.9706722Z 4 migrations found in prisma/migrations
+2026-10-03T12:18:36.9707268Z
+2026-10-03T12:18:37.0289094Z Applying migration `20260930000000_v2_1_baseline`
+2026-10-03T12:18:37.0636100Z Applying migration `20261002000000_phase4_email_state`
+2026-10-03T12:18:37.0675477Z Applying migration `20261002010000_step3_content_payment_snapshot`
+2026-10-03T12:18:37.0714455Z Applying migration `20261003000000_step4_staff_password`
+2026-10-03T12:18:37.0775377Z
+2026-10-03T12:18:37.0778543Z The following migration(s) have been applied:
+2026-10-03T12:18:37.0779042Z
+2026-10-03T12:18:37.0779234Z migrations/
+2026-10-03T12:18:37.0780105Z   └─ 20260930000000_v2_1_baseline/
+2026-10-03T12:18:37.0780738Z     └─ migration.sql
+2026-10-03T12:18:37.0781408Z   └─ 20261002000000_phase4_email_state/
+2026-10-03T12:18:37.0782069Z     └─ migration.sql
+2026-10-03T12:18:37.0782839Z   └─ 20261002010000_step3_content_payment_snapshot/
+2026-10-03T12:18:37.0783532Z     └─ migration.sql
+2026-10-03T12:18:37.0784233Z   └─ 20261003000000_step4_staff_password/
+2026-10-03T12:18:37.0784928Z     └─ migration.sql
+2026-10-03T12:18:37.0785371Z
+2026-10-03T12:18:37.0785977Z All migrations have been successfully applied.
+2026-10-03T12:18:37.5332901Z ✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id e04375ae-9ede-48d6-8292-f07de37111ba
+2026-10-03T12:18:37.6587301Z   Log in at /admin (or admin.localhost).
+2026-10-03T12:18:37.6589805Z ✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+2026-10-03T12:18:37.6674268Z ✔ dev fixture payment account created (active)
+2026-10-03T12:18:37.6715385Z Test group: baseline; isolated database; fresh app/test processes.
+2026-10-03T12:18:45.1438967Z Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+2026-10-03T12:18:45.1466724Z bun test v1.3.14 (0d9b296a)
+2026-10-03T12:18:45.1730568Z
+2026-10-03T12:18:45.1732369Z ##[group]tests/phase3b/review.test.ts:
+2026-10-03T12:18:50.1329984Z (pass) approveOrder — concurrency and idempotency > double-click + two admins racing: ONE transition, sold incremented once, exactly N tickets, ONE TICKETS job [4316.36ms]
+2026-10-03T12:18:50.2842786Z (pass) approveOrder — concurrency and idempotency > approve on a CANCELLED event → EVENT_CANCELLED, nothing changed [149.94ms]
+2026-10-03T12:18:50.4761733Z (pass) approveOrder — concurrency and idempotency > approve requires confirmed_in_bank: true [193.48ms]
+2026-10-03T12:18:51.3842989Z (pass) approveOrder — concurrency and idempotency > approve vs reject racing on the same PROOF_SUBMITTED order: exactly ONE wins, the loser gets a clean INVALID_STATE, inventory consistent [907.88ms]
+2026-10-03T12:18:52.1096971Z (pass) approveOrder — concurrency and idempotency > approve vs sweep racing on an order at its hold cap: consistent final state, inventory never negative, no double release [725.07ms]
+2026-10-03T12:18:52.3005490Z (pass) full lifecycles > initialize → proof → approve: statuses, inventory, emails, audit [190.89ms]
+2026-10-03T12:18:52.7180888Z (pass) full lifecycles > initialize → proof → reject(resubmittable) → resubmit ×3 → fourth rejection exhausted → REJECTED, inventory released once [417.84ms]
+2026-10-03T12:18:52.9619909Z (pass) full lifecycles > OWNER closing a NEEDS_RESUBMIT order → REJECTED and inventory released once (fresh close-<n> email key) [243.53ms]
+2026-10-03T12:18:53.1628306Z (pass) revive rules (04 + CHANGELOG v2.1 item 4) > revive with capacity: EXPIRED + PENDING proof → APPROVED, re-reserves atomically [199.87ms]
+2026-10-03T12:18:53.4860410Z (pass) revive rules (04 + CHANGELOG v2.1 item 4) > revive WITHOUT capacity → CAPACITY_GONE rollback, then dismiss → REJECTED final, releases nothing [324.26ms]
+2026-10-03T12:18:53.7330580Z (pass) revive rules (04 + CHANGELOG v2.1 item 4) > an order that expired from NEEDS_RESUBMIT is NOT revivable (no PENDING proof) [247.08ms]
+2026-10-03T12:18:53.9787748Z (pass) sync_seq trigger (02 v2.1) > changes on INSERT (mint) and UPDATE (check-in, void); monotonic per statement [244.35ms]
+2026-10-03T12:18:54.2325690Z SAMPLE CLOSE AUDIT ROW:
+2026-10-03T12:18:54.2326575Z {
+2026-10-03T12:18:54.2327507Z   "id": "fbe40830-47b4-498b-87aa-091d8f0088a6",
+2026-10-03T12:18:54.2328593Z   "actor_id": "e04375ae-9ede-48d6-8292-f07de37111ba",
+2026-10-03T12:18:54.2329407Z   "action": "ORDER_REJECTED",
+2026-10-03T12:18:54.2330082Z   "entity_type": "order",
+2026-10-03T12:18:54.2330784Z   "entity_id": "3c890492-7449-4cb6-bcdc-86414a77ce22",
+2026-10-03T12:18:54.2331504Z   "metadata": {
+2026-10-03T12:18:54.2332098Z     "to": "REJECTED",
+2026-10-03T12:18:54.2332677Z     "from": "NEEDS_RESUBMIT",
+2026-10-03T12:18:54.2333251Z     "after": {
+2026-10-03T12:18:54.2333981Z       "final": true,
+2026-10-03T12:18:54.2335650Z       "message": "No matching credit found — closing.",
+2026-10-03T12:18:54.2336495Z       "reason_code": "NOT_RECEIVED"
+2026-10-03T12:18:54.2337262Z     },
+2026-10-03T12:18:54.2337800Z     "before": {
+2026-10-03T12:18:54.2338692Z       "final": false,
+2026-10-03T12:18:54.2339498Z       "message": "Blurry receipt — re-upload.",
+2026-10-03T12:18:54.2340235Z       "reason_code": "UNREADABLE"
+2026-10-03T12:18:54.2340950Z     }
+2026-10-03T12:18:54.2341520Z   },
+2026-10-03T12:18:54.2343510Z   "created_at": "2026-10-03T12:18:54.225Z"
+2026-10-03T12:18:54.2345879Z }
+2026-10-03T12:18:54.2348091Z (pass) close/dismiss audit entries — before/after reject snapshots (A7) > closing a NEEDS_RESUBMIT order: the audit records the PREVIOUS rejection and the NEW close reason (before/after) [254.66ms]
+2026-10-03T12:18:54.4464855Z (pass) close/dismiss audit entries — before/after reject snapshots (A7) > dismissing an EXPIRED order with a PENDING (late) proof: before is the null snapshot, after is the dismiss reason [213.81ms]
+2026-10-03T12:18:54.6670675Z (pass) REJECTED email-job dedupe keys (B) > attempt-<n> keys for two different attempts BOTH exist; the SAME key cannot duplicate (unique index backstop) [220.57ms]
+2026-10-03T12:18:54.6695060Z
+2026-10-03T12:18:54.6696778Z ##[endgroup]
+2026-10-03T12:18:54.6697427Z
+2026-10-03T12:18:54.6698407Z ##[group]tests/phase3b/proofs.test.ts:
+2026-10-03T12:18:54.8063374Z (pass) proof — file validation (magic bytes, size, dimensions) > non-image file → 422 [85.12ms]
+2026-10-03T12:18:54.8917848Z (pass) proof — file validation (magic bytes, size, dimensions) > disguised file (renamed .jpg but wrong magic bytes) → 422 [85.41ms]
+2026-10-03T12:18:55.0295487Z (pass) proof — file validation (magic bytes, size, dimensions) > oversized (> 4 MB) valid JPEG → 422 [137.74ms]
+2026-10-03T12:18:55.1221312Z (pass) proof — file validation (magic bytes, size, dimensions) > absurd pixel dimensions → 422 [91.63ms]
+2026-10-03T12:18:55.4275589Z (pass) proof — file validation (magic bytes, size, dimensions) > PNG and WebP accepted; stored re-encoded JPEG strips EXIF [306.44ms]
+2026-10-03T12:18:55.6261370Z (pass) proof — transfer reference & duplicate handling > duplicate LIVE transfer_reference → 409 + system audit PROOF_DUPLICATE_REFERENCE_ATTEMPT, no row [198.23ms]
+2026-10-03T12:18:55.8392588Z (pass) proof — transfer reference & duplicate handling > duplicate image (same sha256, different order) → FLAGGED, not blocked [212.60ms]
+2026-10-03T12:18:55.9458384Z (pass) proof — transfer reference & duplicate handling > idempotent retry with the same client_submission_id creates no second attempt [107.30ms]
+2026-10-03T12:18:56.0660613Z (pass) proof — hold policy (04 'Hold policy (locked)') > no proof in 15 min → sweep sets EXPIRED + releases; second sweep is a no-op [120.26ms]
+2026-10-03T12:18:56.6682142Z (pass) proof — hold policy (04 'Hold policy (locked)') > proof submitted → hold becomes first_proof_at + 48h and does NOT move on resubmission [600.10ms]
+2026-10-03T12:18:56.8071946Z (pass) proof — hold policy (04 'Hold policy (locked)') > wrong/missing status token and unknown code on the proof route are INDISTINGUISHABLE (A3: uniform 404) [140.28ms]
+2026-10-03T12:18:57.7180638Z (pass) proof — LATE proofs (04 'Late proofs') > within grace → recorded PENDING with flags.late, order STAYS EXPIRED, inventory untouched, in queue, revivable [909.98ms]
+2026-10-03T12:18:57.8825370Z (pass) proof — LATE proofs (04 'Late proofs') > outside grace (hold_expires_at + 24h) → 410 [165.91ms]
+2026-10-03T12:18:58.0565733Z (pass) proof — LATE proofs (04 'Late proofs') > a SECOND late proof is rejected [173.86ms]
+2026-10-03T12:18:58.0594604Z
+2026-10-03T12:18:58.0597205Z ##[endgroup]
+2026-10-03T12:18:58.0600842Z
+2026-10-03T12:18:58.0601745Z ##[group]tests/phase3b/lookup.test.ts:
+2026-10-03T12:18:58.9588460Z (pass) lookup — uniform 202 responses, no order data > matching and non-matching code/email give byte-identical 202 bodies [532.02ms]
+2026-10-03T12:18:59.0224278Z (pass) lookup — uniform 202 responses, no order data > malformed body → same generic 202 (no validation oracle) [63.66ms]
+2026-10-03T12:18:59.1960176Z (pass) lookup — uniform 202 responses, no order data > no order data in any response payload [173.47ms]
+2026-10-03T12:18:59.4288532Z (pass) lookup — STATUS_LINK jobs (match only, fresh keys, nothing sent) > job created ONLY on a match, with a fresh key each time [232.79ms]
+2026-10-03T12:18:59.6050304Z (pass) lookup — rate limits (per IP and per order code) > per-code limit triggers at its threshold (3/hour) [176.22ms]
+2026-10-03T12:19:00.1786894Z (pass) lookup — rate limits (per IP and per order code) > per-IP limit triggers at its threshold (10/hour) [573.60ms]
+2026-10-03T12:19:00.1796667Z
+2026-10-03T12:19:00.1798611Z ##[endgroup]
+2026-10-03T12:19:00.1799237Z
+2026-10-03T12:19:00.1799862Z ##[group]tests/phase3b/authz.test.ts:
+2026-10-03T12:19:00.8744223Z (pass) authorization — STAFF and anonymous vs every admin route > anonymous GET /api/admin/payments → 401 [8.59ms]
+2026-10-03T12:19:00.8826084Z (pass) authorization — STAFF and anonymous vs every admin route > STAFF GET /api/admin/payments → 403 [8.27ms]
+2026-10-03T12:19:00.9100482Z (pass) authorization — STAFF and anonymous vs every admin route > OWNER GET /api/admin/payments → 200 [25.57ms]
+2026-10-03T12:19:00.9148543Z (pass) authorization — STAFF and anonymous vs every admin route > anonymous GET /api/admin/orders/__ID__ → 401 [6.74ms]
+2026-10-03T12:19:00.9235446Z (pass) authorization — STAFF and anonymous vs every admin route > STAFF GET /api/admin/orders/__ID__ → 403 [8.60ms]
+2026-10-03T12:19:01.8703564Z (pass) authorization — STAFF and anonymous vs every admin route > OWNER GET /api/admin/orders/__ID__ → 200 [946.67ms]
+2026-10-03T12:19:01.8784860Z (pass) authorization — STAFF and anonymous vs every admin route > anonymous GET /api/admin/payment-accounts → 401 [8.24ms]
+2026-10-03T12:19:01.8870574Z (pass) authorization — STAFF and anonymous vs every admin route > STAFF GET /api/admin/payment-accounts → 403 [8.66ms]
+2026-10-03T12:19:02.2643282Z (pass) authorization — STAFF and anonymous vs every admin route > OWNER GET /api/admin/payment-accounts → 200 [377.20ms]
+2026-10-03T12:19:02.2769321Z (pass) authorization — STAFF and anonymous vs every admin route > anonymous POST approve/reject → 401 (proxy gates before the route) [12.55ms]
+2026-10-03T12:19:02.2966885Z (pass) authorization — STAFF and anonymous vs every admin route > STAFF POST approve/reject/payment-accounts → 403 [19.79ms]
+2026-10-03T12:19:02.2997723Z (pass) authorization — STAFF and anonymous vs every admin route > the order is untouched by every rejected admin call above [3.14ms]
+2026-10-03T12:19:02.9795731Z (pass) payment-accounts — password re-entry + at-most-one-active + audit > create + activate requires the OWNER's password; wrong password → 403 [679.59ms]
+2026-10-03T12:19:04.0502563Z (pass) payment-accounts — password re-entry + at-most-one-active + audit > PATCH edits with password re-entry, audits before/after, keeps one active [1070.71ms]
+2026-10-03T12:19:04.7274989Z (pass) status tokens on order routes > status route: missing/wrong token and unknown code all 404 uniformly [677.27ms]
+2026-10-03T12:19:04.8443813Z A3 timing (ms): unknown code=11.4, wrong token=11.1, missing token=12.9
+2026-10-03T12:19:04.8445438Z (pass) status tokens on order routes > proof route: unknown code, wrong token and missing token return the IDENTICAL status code and body, in comparable time (A3) [116.29ms]
+2026-10-03T12:19:05.3064163Z (pass) signed proof-image URLs (owner-only, expiring) > valid signed URL + OWNER session → 200 image; without session → 401; tampered sig → 403 [459.83ms]
+2026-10-03T12:19:05.3327942Z (pass) signed proof-image URLs (owner-only, expiring) > expired signed URL → 410 even with an OWNER session; non-proof namespace → 403 [29.08ms]
+2026-10-03T12:19:05.3942801Z (pass) signed proof-image URLs (owner-only, expiring) > admin order detail mints short-lived signed URLs but never leaks the raw storage path [61.37ms]
+2026-10-03T12:19:05.4087384Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > POST /api/auth/login with bad Origin → 403; missing Origin → 403 [14.25ms]
+2026-10-03T12:19:05.4534448Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > POST approve with bad Origin → 403 and no state change [45.05ms]
+2026-10-03T12:19:05.5072182Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > POST reject with bad Origin → 403 [53.76ms]
+2026-10-03T12:19:05.6060659Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > POST payment-accounts with bad Origin → 403; PATCH with bad Origin → 403 [98.05ms]
+2026-10-03T12:19:06.2648218Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > POST logout with bad Origin → 403 [658.97ms]
+2026-10-03T12:19:06.3173069Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > same-origin requests still work (regression): login + logout round-trip [52.52ms]
+2026-10-03T12:19:06.3467237Z (pass) Origin checks (06) — every state-changing admin/staff/auth route > GET admin routes do NOT require Origin (06 scopes the check to state-changing methods) [29.42ms]
+2026-10-03T12:19:06.5532552Z (pass) Origin-check STRICT DEFAULT (A2) — ALLOW_DEV_ORIGIN is unset on this server > flag UNSET → strict: the ROOT host's Origin is NOT accepted on the admin surface (was the old dev relaxation) [205.80ms]
+2026-10-03T12:19:06.5838735Z (pass) Origin boot guard (A2) — the startup assertion instrumentation runs > ALLOW_DEV_ORIGIN=1 set while NODE_ENV=production → startup REFUSES [31.27ms]
+2026-10-03T12:19:06.6090972Z (pass) Origin boot guard (A2) — the startup assertion instrumentation runs > flag UNSET in production mode → the guard passes (strict, boots normally) [23.10ms]
+2026-10-03T12:19:06.6353164Z (pass) Origin boot guard (A2) — the startup assertion instrumentation runs > flag set in DEV mode → the guard passes (the opt-in is legal outside production) [24.59ms]
+2026-10-03T12:19:06.6659372Z (pass) internal expire-holds guard > missing or wrong CRON secret → 401; correct secret → 200 [33.17ms]
+2026-10-03T12:19:06.7100912Z (pass) order status endpoint content rules (03) > no PII beyond buyer-entered data; ticket list only when APPROVED; late_proof_received flag [40.49ms]
+2026-10-03T12:19:06.7118609Z
+2026-10-03T12:19:06.7129755Z ##[endgroup]
+2026-10-03T12:19:06.7158494Z
+2026-10-03T12:19:06.7199791Z ##[group]tests/phase3b/checkout.test.ts:
+2026-10-03T12:19:06.9351082Z (pass) initialize — validation list (03) > happy path: 201, order code from the unambiguous alphabet, derived status token, server-side price [119.22ms]
+2026-10-03T12:19:07.0314198Z (pass) initialize — validation list (03) > holder_names length mismatch → 400 [99.39ms]
+2026-10-03T12:19:07.1200289Z (pass) initialize — validation list (03) > quantity over MAX_QTY_PER_ORDER (10) → 400 [92.00ms]
+2026-10-03T12:19:07.2178397Z (pass) initialize — validation list (03) > tier belonging to a different event → 400 (VALIDATION) [98.51ms]
+2026-10-03T12:19:07.2449392Z (pass) initialize — validation list (03) > DRAFT event → 409; unconfirmed date → 409 [27.20ms]
+2026-10-03T12:19:07.3035081Z (pass) initialize — validation list (03) > sales window closed → 409 [58.55ms]
+2026-10-03T12:19:07.4435060Z (pass) initialize — validation list (03) > no active payment account → 503 and nothing reserved [139.70ms]
+2026-10-03T12:19:08.0352765Z (pass) initialize — atomic conditional reservation under concurrency > 8 parallel requests for the last 4 units: exactly 4 succeed, 4 get 409, CHECKs never violated [591.89ms]
+2026-10-03T12:19:08.0985204Z (pass) initialize — atomic conditional reservation under concurrency > single line exceeding availability → 409 with nothing partially reserved [62.92ms]
+2026-10-03T12:19:08.1159876Z (pass) initialize — atomic conditional reservation under concurrency > multi-line order where ONE line fails → 409, the other line rolled back too [17.45ms]
+2026-10-03T12:19:08.3014099Z (pass) initialize — abuse limits (04) > third unresolved order for the same EMAIL is refused (cap 2) [185.78ms]
+2026-10-03T12:19:08.4836553Z (pass) initialize — abuse limits (04) > third unresolved order for the same PHONE is refused (cap 2), across different emails [181.72ms]
+2026-10-03T12:19:08.6674215Z (pass) initialize — abuse limits (04) > resolved orders don't count toward the cap (an APPROVED order frees the email) [184.18ms]
+2026-10-03T12:19:08.9075618Z (pass) initialize — abuse limits (04) > two different emails from the SAME IP are NOT blocked by any unresolved cap (IP is rate-only) [240.07ms]
+2026-10-03T12:19:09.5571475Z (pass) initialize — abuse limits (04) > per-IP RATE limit triggers at its threshold (default 10/hour) [649.59ms]
+2026-10-03T12:19:09.5581818Z
+2026-10-03T12:19:09.5584386Z ##[endgroup]
+2026-10-03T12:19:09.5584796Z
+2026-10-03T12:19:09.5585350Z ##[group]tests/phase3b/closeout.test.ts:
+2026-10-03T12:19:09.6208958Z (pass) A1 — initialize rejects ended events (03 v2.1.1: ends_at > now()) > ENDED event (PUBLISHED, date-confirmed, open sales window) → 409, nothing reserved [57.30ms]
+2026-10-03T12:19:09.6392477Z (pass) A1 — initialize rejects ended events (03 v2.1.1: ends_at > now()) > event IN PROGRESS (starts_at past, ends_at future) → still purchasable (201) [18.41ms]
+2026-10-03T12:19:09.6985305Z (pass) A6 — same-email CONCURRENT checkout cannot exceed the 2-unresolved cap > 5 PARALLEL initialize (same email, different tiers): exactly 2 succeed, 3 get 429, caps never exceeded [59.27ms]
+2026-10-03T12:19:09.8745516Z (pass) A4 — lookup rate limiting counts nonexistent codes; limited responses are identical > a NONEXISTENT code fills its own per-code bucket: 4th lookup of a fake code → 429 [175.98ms]
+2026-10-03T12:19:10.3008616Z (pass) A4 — lookup rate limiting counts nonexistent codes; limited responses are identical > after the threshold, an EXISTING code and a NONEXISTENT code get the IDENTICAL limited response [426.13ms]
+2026-10-03T12:19:10.3282837Z (pass) A5 — db:fixture refuses unsafe environments (guards run before ANY destructive step) > NODE_ENV=production → refuses (exit 1) before doing anything [27.37ms]
+2026-10-03T12:19:10.3640776Z (pass) A5 — db:fixture refuses unsafe environments (guards run before ANY destructive step) > DATABASE_URL pointing at a non-embedded Postgres → refuses (exit 1) before doing anything [35.52ms]
+2026-10-03T12:19:10.9016509Z (pass) B — proof vs sweep racing on a hold-boundary order (no orphan PENDING proofs) > lapsed hold, proof upload and sweep in parallel: EXPIRED + released exactly once + ONE late-flagged PENDING proof [537.75ms]
+2026-10-03T12:19:10.9036320Z
+2026-10-03T12:19:10.9037860Z ##[endgroup]
+2026-10-03T12:19:10.9038290Z
+2026-10-03T12:19:10.9039052Z ##[group]tests/phase3b/baseline-regressions.test.ts:
+2026-10-03T12:19:11.3466418Z (pass) Imported baseline regressions > MAX_QTY_PER_ORDER applies to the whole order across multiple lines [55.43ms]
+2026-10-03T12:19:11.5911925Z (pass) Imported baseline regressions > revive respects another buyer's reservation and returns CAPACITY_GONE without side effects [244.40ms]
+2026-10-03T12:19:11.6395180Z (pass) Imported baseline regressions > a sweep locks tiers globally across orders, avoiding a cycle with a multi-tier writer [47.77ms]
+2026-10-03T12:19:11.6420409Z
+2026-10-03T12:19:11.6446516Z ##[endgroup]
+2026-10-03T12:19:11.6467181Z
+2026-10-03T12:19:11.6469312Z ##[group]tests/phase3b/unit-tokens.test.ts:
+2026-10-03T12:19:11.6480571Z (pass) QR token module (Ed25519, 05) > valid token verifies and round-trips ticket_id + event_id [0.43ms]
+2026-10-03T12:19:11.6482408Z (pass) QR token module (Ed25519, 05) > tampered payload → bad_signature (signature covers the payload) [0.48ms]
+2026-10-03T12:19:11.6484778Z (pass) QR token module (Ed25519, 05) > tampered signature → bad_signature [0.19ms]
+2026-10-03T12:19:11.6486044Z (pass) QR token module (Ed25519, 05) > truncated signature → malformed [0.14ms]
+2026-10-03T12:19:11.6488235Z (pass) QR token module (Ed25519, 05) > wrong kid → unknown_kid (before any signature math) [0.08ms]
+2026-10-03T12:19:11.6489693Z (pass) QR token module (Ed25519, 05) > wrong version → bad_version [0.09ms]
+2026-10-03T12:19:11.6490923Z (pass) QR token module (Ed25519, 05) > truncated / garbage input → malformed, never throws [0.07ms]
+2026-10-03T12:19:11.6492865Z (pass) QR token module (Ed25519, 05) > wrong event: signature is valid but event_id inside the payload differs — the caller's event check catches it (05 verification order) [0.18ms]
+2026-10-03T12:19:11.6494140Z (pass) QR token module (Ed25519, 05) > multiple public keys: old kid keeps verifying after rotation (extra keys via TICKET_SIGNING_PUBLIC_KEYS_JSON) [0.81ms]
+2026-10-03T12:19:11.6495081Z (pass) Derived status token (02 v2.1) > derived token verifies; recomputation is deterministic [0.49ms]
+2026-10-03T12:19:11.6495838Z (pass) Derived status token (02 v2.1) > wrong token (one char changed) fails [0.06ms]
+2026-10-03T12:19:11.6496481Z (pass) Derived status token (02 v2.1) > right token, wrong order id fails [0.04ms]
+2026-10-03T12:19:11.6497347Z (pass) Derived status token (02 v2.1) > right token, wrong version fails (bumping the version invalidates old links) [0.07ms]
+2026-10-03T12:19:11.6498386Z (pass) Derived status token (02 v2.1) > malformed/truncated tokens fail without throwing [0.09ms]
+2026-10-03T12:19:11.6500725Z (pass) Derived status token (02 v2.1) > comparison is constant-time by construction: the derived HMAC is always 32 bytes, compared with timingSafeEqual (32 vs 32); non-32-byte inputs are rejected on length, which is not secret [0.08ms]
+2026-10-03T12:19:11.6502540Z (pass) Local storage signed URLs > sign → verify round-trips [0.15ms]
+2026-10-03T12:19:11.6503673Z (pass) Local storage signed URLs > expired signature → expired (checked against wall clock) [0.05ms]
+2026-10-03T12:19:11.6505314Z (pass) Local storage signed URLs > tampered signature → bad_signature (constant-time compare on the digest) [0.07ms]
+2026-10-03T12:19:11.6506593Z (pass) Local storage signed URLs > signature for a different key/path → bad_signature [0.04ms]
+2026-10-03T12:19:11.6507152Z
+2026-10-03T12:19:11.6507670Z ##[endgroup]
+2026-10-03T12:19:11.6507905Z
+2026-10-03T12:19:11.6508343Z  112 pass
+2026-10-03T12:19:11.6508779Z  0 fail
+2026-10-03T12:19:11.6509122Z  65 expect() calls
+2026-10-03T12:19:11.6509554Z Ran 112 tests across 8 files. [26.50s]
+2026-10-03T12:19:12.0584907Z Test group: phase4; isolated database; fresh app/test processes.
+2026-10-03T12:19:12.2041799Z PDF verifier native imports ready.
+2026-10-03T12:19:22.5659669Z Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+2026-10-03T12:19:22.5698092Z bun test v1.3.14 (0d9b296a)
+2026-10-03T12:19:22.5920628Z
+2026-10-03T12:19:22.5922440Z ##[group]tests/phase4/transport.test.ts:
+2026-10-03T12:19:22.6196914Z (pass) direct transport sends stable idempotency header, job tag, base64 attachments and timeout [0.46ms]
+2026-10-03T12:19:22.6201994Z (pass) transport classifies 500/422/429/quota/concurrent-key; errors never retain provider messages [0.61ms]
+2026-10-03T12:19:22.6223842Z (pass) Retry-After supports seconds/date and capture returns same id for same payload [2.11ms]
+2026-10-03T12:19:22.6224633Z
+2026-10-03T12:19:22.6225404Z ##[endgroup]
+2026-10-03T12:19:22.6225724Z
+2026-10-03T12:19:22.6226493Z ##[group]tests/phase4/worker.test.ts:
+2026-10-03T12:19:22.7560712Z (pass) worker success QUEUED -> SENT, stores message id, attempts=1; only order recipient [96.10ms]
+2026-10-03T12:19:22.8031104Z (pass) worker transient 500 queues 1m backoff; MAX_EMAIL_ATTEMPTS fails [47.23ms]
+2026-10-03T12:19:22.8265201Z (pass) permanent 422 fails immediately; last_error excludes URLs/tokens/addresses [23.35ms]
+2026-10-03T12:19:22.8555318Z (pass) 429 Retry-After honoured; quota pauses batch and shared gate [29.05ms]
+2026-10-03T12:19:22.8928721Z (pass) crash after acceptance retries SAME key and payload, one effective send [37.17ms]
+2026-10-03T12:19:22.9434474Z (pass) two concurrent workers send each job once; shared spacing persists across invocations [50.65ms]
+2026-10-03T12:19:22.9842096Z (pass) stuck expired claim reclaimed; live lease skipped; refunded ticket job never sends [40.78ms]
+2026-10-03T12:19:22.9967393Z (pass) expired ownership after slow preparation blocks provider; no late batch lease send [12.56ms]
+2026-10-03T12:19:23.0444029Z (pass) ambiguous outcomes after retention stop; immutable payload guards token rotation [47.57ms]
+2026-10-03T12:19:23.0675501Z (pass) webhook winning during send retains BOUNCED while message id is persisted [23.14ms]
+2026-10-03T12:19:23.1226053Z (pass) immutable retry payload refuses changed order recipient and ciphertext tampering [54.27ms]
+2026-10-03T12:19:23.1234920Z
+2026-10-03T12:19:23.1263439Z ##[endgroup]
+2026-10-03T12:19:23.1264208Z
+2026-10-03T12:19:23.1265166Z ##[group]tests/phase4/templates.test.ts:
+2026-10-03T12:19:24.3263750Z (pass) all React Email kinds render HTML/text, valid status links, no bank details/buyer subjects [714.51ms]
+2026-10-03T12:19:24.3264819Z
+2026-10-03T12:19:24.3265361Z ##[endgroup]
+2026-10-03T12:19:24.3265572Z
+2026-10-03T12:19:24.3266022Z ##[group]tests/phase4/directions.test.ts:
+2026-10-03T12:19:24.3287729Z (pass) directions prefers place id, then coordinates, then safe URL, then null [0.16ms]
+2026-10-03T12:19:24.3288993Z
+2026-10-03T12:19:24.3290372Z ##[endgroup]
+2026-10-03T12:19:24.3290821Z
+2026-10-03T12:19:24.3291443Z ##[group]tests/phase4/kick.test.ts:
+2026-10-03T12:19:24.3311705Z (pass) best-effort kick swallows worker failure; fixture flag disables automatic sends [0.33ms]
+2026-10-03T12:19:24.3312256Z
+2026-10-03T12:19:24.3314012Z ##[endgroup]
+2026-10-03T12:19:24.3314406Z
+2026-10-03T12:19:24.3317848Z ##[group]tests/phase4/routes.test.ts:
+2026-10-03T12:19:26.9482785Z (pass) PDF authz: unknown order/ticket, wrong order/token and missing token are identical 404; headers/status links [2045.68ms]
+2026-10-03T12:19:28.3423059Z (pass) refund voids all units and bumps sync_seq; restock/audit; repeat/concurrent refund restocks once [1393.64ms]
+2026-10-03T12:19:29.8159520Z (pass) refund restock=false preserves sold; undercount clamp never negative; non-approved 409 [1474.93ms]
+2026-10-03T12:19:30.5550012Z (pass) checked-in refund needs acknowledgement, then succeeds with audit [739.05ms]
+2026-10-03T12:19:31.0621317Z (pass) refund/resend OWNER matrix: STAFF 403, anonymous 401, bad Origin 403; password re-entry [507.04ms]
+2026-10-03T12:19:31.3478545Z (pass) resends fresh keys/order recipient/audits; sixth in sliding hour rate-limited; rejects recipient input [285.73ms]
+2026-10-03T12:19:31.4876023Z (pass) concurrent resend limit across requests admits exactly five [139.00ms]
+2026-10-03T12:19:31.6150190Z (pass) owner email-jobs filters/pagination and order-detail jobs contain no links/tokens/private payload [127.31ms]
+2026-10-03T12:19:31.6158736Z
+2026-10-03T12:19:31.6159997Z ##[endgroup]
+2026-10-03T12:19:31.6162481Z
+2026-10-03T12:19:31.6165812Z ##[group]tests/phase4/pdf.test.ts:
+2026-10-03T12:19:32.0360860Z (pass) PDF embedded diacritics/text/Lagos offset and exact stored QR decode, >=40mm active symbol [419.73ms]
+2026-10-03T12:19:32.6296286Z (pass) PDF cached second request; venue/directions/date edits regenerate; never stale [593.48ms]
+2026-10-03T12:19:32.6297103Z
+2026-10-03T12:19:32.6298185Z ##[endgroup]
+2026-10-03T12:19:32.6298765Z
+2026-10-03T12:19:32.6300201Z ##[group]tests/phase4/config.test.ts:
+2026-10-03T12:19:32.6334412Z (pass) config is fail-closed; capture cannot run in production; origins have no credentials/path [2.34ms]
+2026-10-03T12:19:32.6336386Z (pass) backoff schedule has bounded jitter and errors contain no provider content [0.14ms]
+2026-10-03T12:19:32.6337186Z
+2026-10-03T12:19:32.6338169Z ##[endgroup]
+2026-10-03T12:19:32.6338505Z
+2026-10-03T12:19:32.6338969Z ##[group]tests/phase4/webhook.test.ts:
+2026-10-03T12:19:33.0982512Z (pass) webhook valid signature/tag-before-message-id, replay no-op, bounce wins over delivery [445.36ms]
+2026-10-03T12:19:33.1493711Z (pass) webhook missing/invalid/stale/future signatures rejected; malformed JSON and oversized body [51.07ms]
+2026-10-03T12:19:33.1826710Z (pass) webhook raw-body tampering fails; array job_id tag matches before stored id [33.30ms]
+2026-10-03T12:19:34.1214855Z (pass) process endpoint wrong/missing CRON_SECRET 401; correct drains capture job [938.70ms]
+2026-10-03T12:19:34.1238728Z
+2026-10-03T12:19:34.1240082Z ##[endgroup]
+2026-10-03T12:19:34.1240309Z
+2026-10-03T12:19:34.1240522Z  33 pass
+2026-10-03T12:19:34.1240901Z  0 fail
+2026-10-03T12:19:34.1241285Z  277 expect() calls
+2026-10-03T12:19:34.1241765Z Ran 33 tests across 9 files. [11.55s]
+2026-10-03T12:19:34.8369853Z Fixture: isolated loopback PostgreSQL; root .env is untouched.
+2026-10-03T12:19:36.2232943Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:19:36.6317350Z
+2026-10-03T12:19:36.6319238Z ✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 207ms
+2026-10-03T12:19:36.6319999Z
+2026-10-03T12:19:36.6321056Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-03T12:19:36.6321816Z
+2026-10-03T12:19:36.6322883Z Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2026-10-03T12:19:36.6323680Z
+2026-10-03T12:19:37.4050016Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:19:37.4116418Z Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:40119"
+2026-10-03T12:19:37.4699805Z
+2026-10-03T12:19:37.4700894Z 4 migrations found in prisma/migrations
+2026-10-03T12:19:37.4701363Z
+2026-10-03T12:19:37.5270954Z Applying migration `20260930000000_v2_1_baseline`
+2026-10-03T12:19:37.5644044Z Applying migration `20261002000000_phase4_email_state`
+2026-10-03T12:19:37.5680774Z Applying migration `20261002010000_step3_content_payment_snapshot`
+2026-10-03T12:19:37.5717264Z Applying migration `20261003000000_step4_staff_password`
+2026-10-03T12:19:37.5769004Z
+2026-10-03T12:19:37.5774282Z The following migration(s) have been applied:
+2026-10-03T12:19:37.5774714Z
+2026-10-03T12:19:37.5774946Z migrations/
+2026-10-03T12:19:37.5775697Z   └─ 20260930000000_v2_1_baseline/
+2026-10-03T12:19:37.5776432Z     └─ migration.sql
+2026-10-03T12:19:37.5776887Z   └─ 20261002000000_phase4_email_state/
+2026-10-03T12:19:37.5777326Z     └─ migration.sql
+2026-10-03T12:19:37.5777875Z   └─ 20261002010000_step3_content_payment_snapshot/
+2026-10-03T12:19:37.5778574Z     └─ migration.sql
+2026-10-03T12:19:37.5779007Z   └─ 20261003000000_step4_staff_password/
+2026-10-03T12:19:37.5780058Z     └─ migration.sql
+2026-10-03T12:19:37.5780472Z
+2026-10-03T12:19:37.5780949Z All migrations have been successfully applied.
+2026-10-03T12:19:38.0338445Z ✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 8559ca0a-ed69-40f9-80fd-358b0d6b871a
+2026-10-03T12:19:38.0339665Z   Log in at /admin (or admin.localhost).
+2026-10-03T12:19:38.1564048Z ✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+2026-10-03T12:19:38.1643314Z ✔ dev fixture payment account created (active)
+2026-10-03T12:19:38.1686924Z Customer group: fresh owned database; prior fixture cleanup passed.
+2026-10-03T12:19:38.1687699Z Test group: customer; isolated database; fresh app/test processes.
+2026-10-03T12:19:45.9378638Z Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+2026-10-03T12:19:45.9410617Z bun test v1.3.14 (0d9b296a)
+2026-10-03T12:19:45.9640438Z
+2026-10-03T12:19:45.9641935Z ##[group]tests/step3/catalog.test.ts:
+2026-10-03T12:19:48.3831746Z (pass) public list/detail allowlist excludes drafts, private counters, finance, buyers and unsafe poster URLs [2230.75ms]
+2026-10-03T12:19:48.7683844Z (pass) CTA none, single, Lagos-day tie, in-progress and unconfirmed fallback [385.56ms]
+2026-10-03T12:19:48.8366399Z (pass) month/day use Lagos midnight, spanning events, search/city and invalid dates [68.24ms]
+2026-10-03T12:19:48.9086039Z (pass) stable pagination covers all published events without duplicates [71.91ms]
+2026-10-03T12:19:48.9314729Z (pass) tier state covers unconfirmed, cancelled, ended, coming-soon, closed and sold-out [22.92ms]
+2026-10-03T12:19:49.6311943Z (pass) all calendar formats use true UTC instants; unconfirmed date returns 200 empty state [699.06ms]
+2026-10-03T12:19:49.6346478Z
+2026-10-03T12:19:49.6347414Z ##[endgroup]
+2026-10-03T12:19:49.6347601Z
+2026-10-03T12:19:49.6348276Z ##[group]tests/step3/status.test.ts:
+2026-10-03T12:19:50.5260153Z (pass) private refreshed status includes exact recorded bank snapshot after edits and activating another bank [885.87ms]
+2026-10-03T12:19:50.8335429Z (pass) status uniform 404 and page/API private/no-referrer headers [306.77ms]
+2026-10-03T12:19:52.2774976Z (pass) pending/resubmittable/final rejection status, remaining attempts and idempotent retry [1445.24ms]
+2026-10-03T12:19:53.4667811Z (pass) expired grace without proof, late PENDING proof, out-of-grace and timely proof at cap [1187.75ms]
+2026-10-03T12:19:54.4592751Z (pass) approved on-demand PDF works before email; refund/voided tickets lose download eligibility [993.94ms]
+2026-10-03T12:19:54.4596693Z
+2026-10-03T12:19:54.4598191Z ##[endgroup]
+2026-10-03T12:19:54.4598722Z
+2026-10-03T12:19:54.4599389Z ##[group]tests/step3/content.test.ts:
+2026-10-03T12:19:55.5272161Z (pass) public content reflects database edits, publication and exact allowlist [1059.95ms]
+2026-10-03T12:19:55.5348730Z (pass) contact resolves organizer recipient, escapes input, fixed subject, separate transport without order jobs [7.85ms]
+2026-10-03T12:19:56.0174529Z (pass) contact HTTP capture, strict validation/body cap and rate limit [482.91ms]
+2026-10-03T12:19:56.0293942Z (pass) missing organizer/contact configuration fails closed; fake provider failure is not a success [12.06ms]
+2026-10-03T12:19:56.0308651Z
+2026-10-03T12:19:56.0310234Z ##[endgroup]
+2026-10-03T12:19:56.0310600Z
+2026-10-03T12:19:56.0310812Z  15 pass
+2026-10-03T12:19:56.0311274Z  0 fail
+2026-10-03T12:19:56.0311826Z  168 expect() calls
+2026-10-03T12:19:56.0312428Z Ran 15 tests across 3 files. [10.09s]
+2026-10-03T12:19:56.6058791Z Fixture: isolated loopback PostgreSQL; root .env is untouched.
+2026-10-03T12:19:58.0125430Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:19:58.4717209Z
+2026-10-03T12:19:58.4719000Z ✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 258ms
+2026-10-03T12:19:58.4719774Z
+2026-10-03T12:19:58.4720554Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-03T12:19:58.4721373Z
+2026-10-03T12:19:58.4722956Z Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2026-10-03T12:19:58.4723666Z
+2026-10-03T12:19:59.2382608Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:19:59.2462672Z Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:37099"
+2026-10-03T12:19:59.3023505Z
+2026-10-03T12:19:59.3024456Z 4 migrations found in prisma/migrations
+2026-10-03T12:19:59.3024897Z
+2026-10-03T12:19:59.3590675Z Applying migration `20260930000000_v2_1_baseline`
+2026-10-03T12:19:59.3959299Z Applying migration `20261002000000_phase4_email_state`
+2026-10-03T12:19:59.3995556Z Applying migration `20261002010000_step3_content_payment_snapshot`
+2026-10-03T12:19:59.4037320Z Applying migration `20261003000000_step4_staff_password`
+2026-10-03T12:19:59.4087624Z
+2026-10-03T12:19:59.4094726Z The following migration(s) have been applied:
+2026-10-03T12:19:59.4095234Z
+2026-10-03T12:19:59.4096148Z migrations/
+2026-10-03T12:19:59.4097215Z   └─ 20260930000000_v2_1_baseline/
+2026-10-03T12:19:59.4098149Z     └─ migration.sql
+2026-10-03T12:19:59.4098872Z   └─ 20261002000000_phase4_email_state/
+2026-10-03T12:19:59.4099499Z     └─ migration.sql
+2026-10-03T12:19:59.4100188Z   └─ 20261002010000_step3_content_payment_snapshot/
+2026-10-03T12:19:59.4101132Z     └─ migration.sql
+2026-10-03T12:19:59.4101720Z   └─ 20261003000000_step4_staff_password/
+2026-10-03T12:19:59.4102378Z     └─ migration.sql
+2026-10-03T12:19:59.4102814Z
+2026-10-03T12:19:59.4103363Z All migrations have been successfully applied.
+2026-10-03T12:19:59.8646342Z ✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id f7b48c32-c5c3-4b97-9bd9-49045597c9f6
+2026-10-03T12:19:59.8785166Z   Log in at /admin (or admin.localhost).
+2026-10-03T12:19:59.9895546Z ✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+2026-10-03T12:19:59.9974352Z ✔ dev fixture payment account created (active)
+2026-10-03T12:20:00.0020175Z Customer group: fresh owned database; prior fixture cleanup passed.
+2026-10-03T12:20:00.0021136Z Test group: operations; isolated database; fresh app/test processes.
+2026-10-03T12:20:07.3968513Z Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+2026-10-03T12:20:10.4269551Z bun test v1.3.14 (0d9b296a)
+2026-10-03T12:20:10.4491302Z
+2026-10-03T12:20:10.4509598Z ##[group]tests/step4/push.test.ts:
+2026-10-03T12:20:11.2414581Z (pass) OWNER push subscriptions reject arbitrary URLs and never expose private VAPID keys [258.53ms]
+2026-10-03T12:20:11.7486692Z (pass) STAFF cannot register owner notifications and Places fails closed without configuration [508.08ms]
+2026-10-03T12:20:11.7509763Z
+2026-10-03T12:20:11.7512063Z ##[endgroup]
+2026-10-03T12:20:11.7512466Z
+2026-10-03T12:20:11.7513140Z ##[group]tests/step4/operations.test.ts:
+2026-10-03T12:20:12.5065241Z (pass) new surfaces require sessions, OWNER role and matching mutation Origin [109.46ms]
+2026-10-03T12:20:12.7107693Z (pass) CASH server price, COMP zero price, idempotent issue, changed retry and rollback capacity [207.08ms]
+2026-10-03T12:20:12.9338698Z (pass) online simultaneous phones admit once; replay is idempotent; malformed/wrong event recorded [222.56ms]
+2026-10-03T12:20:13.1238280Z (pass) offline reversed device arrival selects earliest scan, flags conflict, keeps ledger immutable and retries safe [191.15ms]
+2026-10-03T12:20:14.7770421Z (pass) manifest overlap and attendee allowlist, refunds and cancelled events invalidate admission [1652.24ms]
+2026-10-03T12:20:15.0059762Z (pass) offline evidence reconciles after event end but post-end scans cannot admit [229.10ms]
+2026-10-03T12:20:16.6049900Z (pass) staff invitation requires first password reset; reset strips other sessions; deactivation revokes access [1597.95ms]
+2026-10-03T12:20:17.7109628Z (pass) event draft/banner/publish gates, protected inventory edits and referenced deletes [1107.32ms]
+2026-10-03T12:20:18.5713736Z (pass) content editor, CSV formula neutralization and totals, append-only audit surface [860.93ms]
+2026-10-03T12:20:18.5738652Z
+2026-10-03T12:20:18.5750643Z ##[endgroup]
+2026-10-03T12:20:18.5750887Z
+2026-10-03T12:20:18.5753661Z ##[group]tests/step4/local.test.ts:
+2026-10-03T12:20:18.6041887Z (pass) browser verifier matches Node Ed25519, and rejects tamper/version/malformed/key [20.69ms]
+2026-10-03T12:20:18.6151045Z (pass) offline event/void/local duplicate/pending/unlisted/expiry decisions [11.42ms]
+2026-10-03T12:20:18.6159535Z (pass) out-of-order overlap deltas never un-check-in or un-void a ticket or regress cursor [0.42ms]
+2026-10-03T12:20:18.6160256Z
+2026-10-03T12:20:18.6160776Z ##[endgroup]
+2026-10-03T12:20:18.6160996Z
+2026-10-03T12:20:18.6161157Z  14 pass
+2026-10-03T12:20:18.6161482Z  0 fail
+2026-10-03T12:20:18.6161852Z  109 expect() calls
+2026-10-03T12:20:18.6162338Z Ran 14 tests across 3 files. [8.19s]
+2026-10-03T12:20:18.9958993Z Phase 4 kick-failure HTTP acceptance: kicks enabled; invalid worker sender; no real sends.
+2026-10-03T12:20:28.3950672Z Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+2026-10-03T12:20:28.3976611Z bun test v1.3.14 (0d9b296a)
+2026-10-03T12:20:28.4300156Z
+2026-10-03T12:20:28.4301049Z ##[group]tests/phase4-kick-failure.test.ts:
+2026-10-03T12:20:30.9602792Z (pass) real HTTP approve/reject succeed with kicks enabled and worker configuration failure [2460.48ms]
+2026-10-03T12:20:31.4223375Z (pass) missing configured CRON_SECRET/webhook secret fail closed over real HTTP [461.88ms]
+2026-10-03T12:20:31.4224280Z
+2026-10-03T12:20:31.4225405Z ##[endgroup]
+2026-10-03T12:20:31.4225676Z
+2026-10-03T12:20:31.4225865Z  2 pass
+2026-10-03T12:20:31.4226193Z  0 fail
+2026-10-03T12:20:31.4226517Z  12 expect() calls
+2026-10-03T12:20:31.4227028Z Ran 2 tests across 1 file. [3.02s]
+2026-10-03T12:20:31.4320239Z Phase 4 + Phase 3b runner exit: 0
+2026-10-03T12:20:31.7010381Z Cleanup complete: owned app and database stopped; temporary fixture removed.
+2026-10-03T12:20:31.7115942Z ##[group]Run bun run build
+2026-10-03T12:20:31.7116382Z [36;1mbun run build[0m
+2026-10-03T12:20:31.7159579Z shell: /usr/bin/bash -e {0}
+2026-10-03T12:20:31.7159852Z env:
+2026-10-03T12:20:31.7160070Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:20:31.7160453Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:20:31.7160917Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:20:31.7161334Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:20:31.7161737Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+2026-10-03T12:20:31.7162140Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:20:31.7162506Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:20:31.7162869Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:20:31.7163238Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+2026-10-03T12:20:31.7163598Z ##[endgroup]
+2026-10-03T12:20:31.7299282Z $ bun run scanner:build && prisma generate && next build
+2026-10-03T12:20:31.7300610Z $ bun scripts/build-scanner.ts
+2026-10-03T12:20:31.8639895Z Built first-party scanner assets (10a6f6428eb87646); no private data embedded.
+2026-10-03T12:20:32.7015337Z Prisma schema loaded from prisma/schema.prisma
+2026-10-03T12:20:33.0785547Z ┌─────────────────────────────────────────────────────────┐
+2026-10-03T12:20:33.0785966Z
+2026-10-03T12:20:33.0786551Z ✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 227ms
+2026-10-03T12:20:33.0786986Z
+2026-10-03T12:20:33.0787434Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-03T12:20:33.0787844Z
+2026-10-03T12:20:33.0788661Z Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+2026-10-03T12:20:33.0789233Z
+2026-10-03T12:20:33.0789720Z │  Update available 6.19.2 -> 8.0.0-rc.19                 │
+2026-10-03T12:20:33.0790677Z │                                                         │
+2026-10-03T12:20:33.0791274Z │  This is a major update - please follow the guide at    │
+2026-10-03T12:20:33.0791934Z │  https://pris.ly/d/major-version-upgrade                │
+2026-10-03T12:20:33.0792500Z │                                                         │
+2026-10-03T12:20:33.0793037Z │  Run the following to update                            │
+2026-10-03T12:20:33.0793628Z │    npm i --save-dev prisma@latest                       │
+2026-10-03T12:20:33.0794275Z │    npm i @prisma/client@latest                          │
+2026-10-03T12:20:33.0794884Z └─────────────────────────────────────────────────────────┘
+2026-10-03T12:20:33.7230600Z ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2026-10-03T12:20:33.7301508Z ▲ Next.js 16.1.3 (Turbopack)
+2026-10-03T12:20:33.7323265Z
+2026-10-03T12:20:33.7668480Z   Creating an optimized production build ...
+2026-10-03T12:20:53.7609706Z ✓ Compiled successfully in 19.6s
+2026-10-03T12:20:53.7705947Z   Running TypeScript ...
+2026-10-03T12:21:00.5217920Z   Collecting page data using 3 workers ...
+2026-10-03T12:21:01.1915256Z   Generating static pages using 3 workers (0/27) ...
+2026-10-03T12:21:01.2145990Z   Generating static pages using 3 workers (6/27)
+2026-10-03T12:21:01.2329105Z   Generating static pages using 3 workers (13/27)
+2026-10-03T12:21:01.3539641Z   Generating static pages using 3 workers (20/27)
+2026-10-03T12:21:01.3903694Z ✓ Generating static pages using 3 workers (27/27) in 198.8ms
+2026-10-03T12:21:01.3949672Z   Finalizing page optimization ...
+2026-10-03T12:21:02.4172363Z
+2026-10-03T12:21:02.4192076Z Route (app)
+2026-10-03T12:21:02.4192697Z ┌ ƒ /
+2026-10-03T12:21:02.4193032Z ├ ○ /_not-found
+2026-10-03T12:21:02.4193359Z ├ ƒ /about
+2026-10-03T12:21:02.4193642Z ├ ƒ /admin
+2026-10-03T12:21:02.4194017Z ├ ƒ /admin/[...section]
+2026-10-03T12:21:02.4194390Z ├ ○ /admin/login
+2026-10-03T12:21:02.4195111Z ├ ƒ /api/admin/[...path]
+2026-10-03T12:21:02.4195591Z ├ ƒ /api/admin/email-jobs
+2026-10-03T12:21:02.4195991Z ├ ƒ /api/admin/orders/[id]
+2026-10-03T12:21:02.4196461Z ├ ƒ /api/admin/orders/[id]/approve
+2026-10-03T12:21:02.4196946Z ├ ƒ /api/admin/orders/[id]/refund
+2026-10-03T12:21:02.4197416Z ├ ƒ /api/admin/orders/[id]/reject
+2026-10-03T12:21:02.4197923Z ├ ƒ /api/admin/orders/[id]/resend-tickets
+2026-10-03T12:21:02.4198575Z ├ ƒ /api/admin/orders/issue
+2026-10-03T12:21:02.4198896Z ├ ƒ /api/admin/payment-accounts
+2026-10-03T12:21:02.4199234Z ├ ƒ /api/admin/payment-accounts/[id]
+2026-10-03T12:21:02.4199541Z ├ ƒ /api/admin/payments
+2026-10-03T12:21:02.4199820Z ├ ƒ /api/admin/storage/object
+2026-10-03T12:21:02.4200091Z ├ ƒ /api/auth/login
+2026-10-03T12:21:02.4200487Z ├ ƒ /api/auth/logout
+2026-10-03T12:21:02.4200747Z ├ ƒ /api/auth/password
+2026-10-03T12:21:02.4201009Z ├ ƒ /api/banners/[name]
+2026-10-03T12:21:02.4201281Z ├ ƒ /api/checkout/initialize
+2026-10-03T12:21:02.4201540Z ├ ƒ /api/contact
+2026-10-03T12:21:02.4201781Z ├ ƒ /api/events
+2026-10-03T12:21:02.4202035Z ├ ƒ /api/events/[slug]
+2026-10-03T12:21:02.4202354Z ├ ƒ /api/events/[slug]/calendar/[format]
+2026-10-03T12:21:02.4202672Z ├ ƒ /api/events/next-upcoming
+2026-10-03T12:21:02.4202974Z ├ ƒ /api/internal/expire-holds
+2026-10-03T12:21:02.4203447Z ├ ƒ /api/internal/process-email-jobs
+2026-10-03T12:21:02.4203913Z ├ ƒ /api/orders/[code]/proof
+2026-10-03T12:21:02.4204198Z ├ ƒ /api/orders/[code]/status
+2026-10-03T12:21:02.4204539Z ├ ƒ /api/orders/[code]/tickets/[ticketId]/pdf
+2026-10-03T12:21:02.4204859Z ├ ƒ /api/orders/lookup
+2026-10-03T12:21:02.4205118Z ├ ƒ /api/pages/[slug]
+2026-10-03T12:21:02.4205375Z ├ ƒ /api/staff/[...path]
+2026-10-03T12:21:02.4205731Z ├ ƒ /api/webhooks/resend
+2026-10-03T12:21:02.4207138Z ├ ○ /cart
+2026-10-03T12:21:02.4207412Z ├ ○ /checkout
+2026-10-03T12:21:02.4207637Z ├ ƒ /contact
+2026-10-03T12:21:02.4207867Z ├ ƒ /event/[slug]
+2026-10-03T12:21:02.4208309Z ├ ○ /events
+2026-10-03T12:21:02.4208613Z ├ ○ /lookup
+2026-10-03T12:21:02.4208980Z ├ ƒ /order/[code]
+2026-10-03T12:21:02.4209768Z ├ ƒ /staff
+2026-10-03T12:21:02.4210242Z ├ ○ /staff/login
+2026-10-03T12:21:02.4210843Z └ ƒ /staff/password
+2026-10-03T12:21:02.4211134Z
+2026-10-03T12:21:02.4211144Z
+2026-10-03T12:21:02.4211454Z ƒ Proxy (Middleware)
+2026-10-03T12:21:02.4211706Z
+2026-10-03T12:21:02.4212052Z ○  (Static)   prerendered as static content
+2026-10-03T12:21:02.4212635Z ƒ  (Dynamic)  server-rendered on demand
+2026-10-03T12:21:02.4212916Z
+2026-10-03T12:21:02.4675382Z ##[group]Run actions/upload-artifact@v4
+2026-10-03T12:21:02.4675669Z with:
+2026-10-03T12:21:02.4675892Z   name: step4-test-evidence-linux
+2026-10-03T12:21:02.4676183Z   path: reports/step4-linux-test-output.txt
+2026-10-03T12:21:02.4676487Z   if-no-files-found: warn
+2026-10-03T12:21:02.4676729Z   compression-level: 6
+2026-10-03T12:21:02.4676954Z   overwrite: false
+2026-10-03T12:21:02.4677179Z   include-hidden-files: false
+2026-10-03T12:21:02.4677414Z env:
+2026-10-03T12:21:02.4677625Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-03T12:21:02.4678141Z   DATABASE_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:21:02.4678772Z   DIRECT_URL: postgresql://postgres@127.0.0.1:5432/silentrave_validation
+2026-10-03T12:21:02.4679314Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:21:02.4679720Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+2026-10-03T12:21:02.4680163Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:21:02.4680529Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:21:02.4680885Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+2026-10-03T12:21:02.4681256Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+2026-10-03T12:21:02.4681560Z ##[endgroup]
+2026-10-03T12:21:02.6254806Z (node:5411) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:21:02.6256075Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:21:02.6304077Z With the provided path, there will be 1 file uploaded
+2026-10-03T12:21:02.6309448Z Artifact name is valid!
+2026-10-03T12:21:02.6310125Z Root directory input is valid!
+2026-10-03T12:21:02.9353952Z Beginning upload of artifact content to blob storage
+2026-10-03T12:21:02.9544245Z (node:5411) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-03T12:21:03.1672991Z Uploaded bytes 9670
+2026-10-03T12:21:03.2238939Z Finished uploading artifact content to blob storage!
+2026-10-03T12:21:03.2239888Z SHA256 digest of uploaded artifact zip is 5407c30276df16e60fe5fb2a42de52a19e315c02c0c7be11d30a956f704f3039
+2026-10-03T12:21:03.2241193Z Finalizing artifact upload
+2026-10-03T12:21:03.4612043Z Artifact step4-test-evidence-linux.zip successfully finalized. Artifact ID 11274071420
+2026-10-03T12:21:03.4613355Z Artifact step4-test-evidence-linux has been successfully uploaded! Final size is 9670 bytes. Artifact ID is 11274071420
+2026-10-03T12:21:03.4618976Z Artifact download URL: https://github.com/tochigit/silent-rave/actions/runs/37122414789/artifacts/11274071420
+2026-10-03T12:21:03.4757036Z Post job cleanup.
+2026-10-03T12:21:03.5871502Z (node:5423) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:21:03.5872770Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:21:03.5985078Z Post job cleanup.
+2026-10-03T12:21:03.7606039Z Post job cleanup.
+2026-10-03T12:21:03.8745038Z (node:5439) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-03T12:21:03.8745894Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-03T12:21:03.8890276Z Post job cleanup.
+2026-10-03T12:21:03.9731172Z [command]/usr/bin/git version
+2026-10-03T12:21:03.9773668Z git version 2.55.0
+2026-10-03T12:21:03.9812351Z Temporarily overriding HOME='/home/runner/work/_temp/2df7fb83-54cd-4cdb-885a-120e6663ba08' before making global git config changes
+2026-10-03T12:21:03.9813686Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-03T12:21:03.9818614Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/silent-rave/silent-rave
+2026-10-03T12:21:03.9855467Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-03T12:21:03.9886552Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-03T12:21:04.0089439Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-03T12:21:04.0115663Z http.https://github.com/.extraheader
+2026-10-03T12:21:04.0128194Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-03T12:21:04.0160361Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-03T12:21:04.0366811Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-03T12:21:04.0399669Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-03T12:21:04.0750990Z Cleaning up orphan processes
+2026-10-03T12:21:04.1000204Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

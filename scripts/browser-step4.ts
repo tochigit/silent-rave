@@ -129,6 +129,17 @@ try {
     timeout: 180000,
   });
   check(owner.ok(), "fixture owner login");
+  // Compile sensitive controllers with invalid bodies before UI acceptance;
+  // neither request can issue tickets or change a password.
+  for (const path of ["/api/admin/orders/issue", "/api/auth/password"]) {
+    const warm = await context.request.post(adminBase + path, {
+      headers: { origin: adminBase },
+      data: {},
+      timeout: 180000,
+    });
+    if (warm.status() !== 400)
+      throw new Error("Browser controller warmup failed.");
+  }
   await page.goto(adminBase + "/admin/orders");
   await page.getByRole("heading", { name: "Orders", exact: true }).waitFor();
   await page.getByText("Issue CASH / COMP tickets", { exact: true }).click();

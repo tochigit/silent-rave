@@ -1,41 +1,82 @@
-# Silent Rave checkpoint
+﻿# Silent Rave checkpoint
 
 Updated 2026-10-03, Africa/Lagos. Specifications: .docs v2.1.2.
 
-1. Baseline: COMPLETE; PR #1 merged at 982eb9f.
-2. Email/PDF/refund backend: COMPLETE; PR #2 merged at 7fcf42d8fb13e5f77ce6f8db8fe613987e591670, live API verified.
-3. Customer experience: COMPLETE; PR #3 merged at 8984f9eccff51ff96088155e47e9afeef0c4d633 after current exact-head checks passed.
-4. Owner/staff and REQUIRED offline scanner: IN PROGRESS on feat/step4-owner-staff-scanner from current main 8984f9e. Draft PR #4: https://github.com/tochigit/silent-rave/pull/4. User authorized merge and continuation on 2026-10-03. See .docs/STEP4_REPORT.md. Validation remains incomplete.
-5. Hosted integration/deployment: NOT STARTED.
+1. Baseline COMPLETE; PR #1 merged at 982eb9f.
+2. Email/PDF/refund backend COMPLETE; PR #2 merged at 7fcf42d8fb13e5f77ce6f8db8fe613987e591670.
+3. Customer experience COMPLETE; approved PR #3 squash-merged at 8984f9eccff51ff96088155e47e9afeef0c4d633 after exact-head checks.
+4. Owner/staff and REQUIRED offline-capable scanner COMPLETE; STOPPED FOR REVIEW. PR #4: https://github.com/tochigit/silent-rave/pull/4.
+5. Hosted integration/deployment NOT STARTED.
 
-Step 4 is now authorized. All original branches and settled guest/manual-transfer/OWNER-approval/platform decisions are retained. No Step 5 or deployment. Step 3 validation below describes its completed baseline; Step 4 validation is pending.
+User authorized PR #3 merge and ONLY Step 4 continuation on 2026-10-03.
+Branch feat/step4-owner-staff-scanner starts from current main 8984f9e. Latest
+verified application implementation: dd0a3ecec0259e22b36a469d62c674418134b951.
+The final evidence publication head and exact-head checks are recorded in PR #4
+by its description after publication, avoiding a self-referential report hash.
+Verify Git/PR/checks live on every resume. All earlier branches remain.
+No Step 4 merge, Step 5 or deployment authorization.
 
 ## Verified results
 
-- Webhook preflight: 4 pass/0 fail/23 expectations; runner exit0 and cleanup. Fixture timestamp margin +/-360s; production five-minute raw-body verifier unchanged.
-- Third full LOCAL regression: 162 pass/0 fail across 21 files (112 baseline +33 Phase4 +15 Step 3 +2 failing-kick cases), runner exit0. All 147 original cases/assertions preserved. Both owned clusters and app processes stopped; temporary fixtures removed; no PostgreSQL process remained.
-- Actual Chrome browser: 37 checks passed; entire guarded fixture command exit0. Mobile guest checkout/payment refresh/upload retry/idempotency/no tickets/owner reject/resubmit/approve/PDF before email/refund, expiry/late proofs/privacy/recovery/contact, hidden/resume/backoff/terminal polling, desktop/landscape/large-text/reduced-motion/overflow. Public screenshots inspected. Owned Chrome/app/database stopped/removed.
-- Default production Turbopack build PASSED, exit0.
-- Final lint PASSED with direct Bun ESLint and unchanged rules/config/files. Standard final invocation stalled, was explicitly stopped and retained as INCOMPLETE; its combined command never reached types. Initial standard lint and CI lint passed independently.
-- BOTH final post-build app/tooling types PASSED, exit0.
-- Windows/Linux implementation CI run 37113017063 at 4cc959f1ff644e19ad592bf802baca4d6ac56a88 PASSED:162 cases each, lint, both types, default build and cleanup. Earlier corrected runs 37101263963/37101859267 also passed. Complete artifacts AND job logs retained.
+- Full LOCAL regression: 175 pass/0 fail, runner exit0 and owned cleanup: 112 baseline +33 Phase4 +15 customer +13 Step4 +2 failing-kick HTTP cases, before delayed-sync fix.
+- Frozen-source focused acceptance after that fix: 14 pass/0 fail, 109 expectations, exit0 and cleanup. All original 162 cases/assertions remain. Final full suite is 176 cases across 24 files.
+- Final implementation CI37122520636 at dd0a3ec PASSED Windows AND Linux: 176/0 each, locked installs, lint, both types, scanner assets, default production build and cleanup. Complete artifacts AND job logs: reports/step4-ci-final-implementation-\*.
+- Fourth actual Chrome run PASSED all 28 checks; entire fixture command exit0. Owner issue/reject/resubmit/approve/resend/refund/invite/password POST; online scan; real QR-image offline decoding/admission; duplicate rejection; cached offline reload/outbox persistence; blocked logout/stale-tab safeguard; reconnect/repeat sync; attendee search; staff403; desktop/mobile/landscape/reduced-motion/24px root text overflow. No JavaScript errors. Screenshots inspected.
+- Final local ESLint PASSED directly under Bun, same files/config/rules, exit0. Standard Windows Node invocation stalled and its owned process tree was stopped; saved as INCOMPLETE. Both CI standard lint checks passed independently.
+- Default production Turbopack build PASSED, exit0; dummy loopback database URLs, all27 static pages generated. Both final post-build app/tooling types PASSED, exit0.
+- Owned Chrome/app/database/check processes stopped; temporary fixture data removed. No PostgreSQL process remained. Root .env absent/untouched. Old unrelated node processes and historical ignored fixture folders retained.
 
-Full report: .docs/STEP3_REPORT.md. Complete local/CI/browser/build/type/lint/failure evidence: reports/step3-*. Final evidence-only publication commits run the same CI; the PR description records the final review head and check run after publication, avoiding a self-referential report commit hash. Verify current PR head/checks again on any later resume.
+Full report: .docs/STEP4*REPORT.md. Operating guide:
+.docs/07-owner-and-scanner-operations.md. Complete local/CI/browser/build/types/
+lint/failure output and screenshots: reports/step4-*. Previous Step 3 report and
+evidence remain unchanged in .docs/STEP3*REPORT.md and reports/step3-*.
 
-## Important implementation and recovery decisions
+Verification commands: bun --no-env-file run test:step4; the same runner with
+explicit tests/step4/local.test.ts, operations.test.ts and push.test.ts paths;
+bun --no-env-file run db:fixture --browser-step4; direct Bun ESLint; both
+TypeScript configs; bun --no-env-file run build; post-build both TypeScript configs.
+Browser fallback uses ignored playwright-core and installed Chrome under Node24,
+an owned profile/CDP port and disposable database. Browser plugin was unavailable.
+Fixtures use Node24/Webpack; production retains default Turbopack. No acceptance
+assertion, production verifier, transaction timeout or test deadline was relaxed.
 
-Forward migration adds opt-in About/Contact content and immutable checkout bank snapshots. Legacy orders can only recover referenced account values at migration time; past edits cannot be reconstructed. Missing snapshots never fall back to another active bank. Owner content editor remains Step 4; hosted migration requires later review.
+## Decisions and preserved invariants
 
-Public DTO allowlists, Lagos filters/CTA ties/calendars, tab-scoped cart, server-priced guest checkout, receipt retry and private status/recovery/contact are complete. Tokens/email/phone/receipts are not stored in browser storage. OWNER approval remains required for tickets. Checkout lock order, expiry/review/refund invariants, role/Origin/password gates, transaction/test limits and production verifier are unchanged.
+Guest checkout, server pricing, manual bank transfer and OWNER bank confirmation/
+approval remain. Refunds move no money and require password/checked-in acknowledgement.
+Checkout email namespace1, phone namespace2 and sorted-tier locks, expiry/revival/
+counters, original tests and production inclusive five-minute webhook verifier
+are unchanged. Step 3's +/-360s test-fixture margin is already merged.
 
-First full run failed 149/11/1 error; second failed 159/1; all complete outputs retained. Customer group now receives a fresh owned DB after backend cleanup because legacy Phase4 tests deliberately alter order/counter rows with 60s holds. Third local run and both corrected CI platforms passed. Fixture Next uses Node24/Webpack with explicit env; Bun handles tests with dotenv disabled. Browser fallback bundles under Bun and runs under Node24 against an owned loopback Chrome profile; plugins were unavailable. Playwright is installed only in ignored .test-runtime/browser-check. Production build remains default Turbopack.
+Step 4 adds owner management, CASH/COMP idempotent inventory/tickets/email/audit,
+STAFF invites/first password replacement, reconciliation, push capture/dispatch,
+Places proxy/manual fallback, online atomic admission and prepared offline PWA.
+Only public keys reach phones. Admission manifests exclude buyer/payment data;
+generic shell alone is cached and IndexedDB durably stores pending evidence.
+Additive20261003000000_step4_staff_password defaults false for existing accounts.
+Permanent OWNER/password and prior migrations are unchanged.
 
-## Live gaps and preserved state
+Multiple connected scanners share atomic server admission. During an outage use
+ONE OFFLINE SCANNER FOR THE WHOLE EVENT. Separate offline phones cannot prevent
+cross-gate duplicate entry or learn fresh refunds/cancellations. Sync detects
+conflicts; earliest corrected evidence sets effective admission and new conflict
+entries preserve the immutable ledger. Prepared scanning expires at event end/day
+grace; queued pre-end scans can reconcile afterward within seven days. Logout,
+prepare and clear guard current saved state; a stale tab cannot silently erase
+another tab's scans. Exported evidence contains private QR tokens. Physical
+bearer checks and trusted staff remain necessary.
 
-Hosted durable storage/Supabase pooler/forward migrations/shared rate limits/Resend/DNS/scheduler/runtime/fonts/origins/domain/real content/deployed smoke remain unverified. Physical Safari/HEIC and external calendar accounts were not verified. No hosted changes, real mail, permanent owner/password edits or deployment. Root .env is absent.
+Next fullstack, intended Vercel Free/Supabase/Resend and silentrave.space are settled.
+Hosted storage/pooler/migrations/shared limits/origins/cookies/domain, live Resend/
+DNS/webhooks/scheduler, Google Places restrictions/attribution, VAPID push, iOS/PWA/
+physical camera/gates/realtime and deployed smoke remain UNVERIFIED Step 5 work.
+No hosted SQL/reset, permanent account/password change, real mail/push or deployment.
 
-Automatic approval review rejected deletion of stopped owned .test-runtime/run-1jNjwR ('blocked by policy', no further detail). It remains ignored/stopped; historical run-5J8iZl/run-HhIUZP retained. Later successful fixtures removed only their owned processes/data. No unrelated process, branch or historical evidence removed.
+## Review boundary and next action
 
-## Next authorized action
-
-Complete Step 4, regression/API/browser checks, a durable report and focused PR, then stop for review. Do not merge the Step 4 PR, begin Step 5 or deploy without separate approval. Resume by reading this checkpoint and .docs/STEP4_REPORT.md and inspecting current Git, PR/checks and running processes. Historical passes are not current-state proof.
+Next action: USER REVIEW of PR #4. Its final publication head and check run are
+recorded in its description after exact-head verification. Do not merge it,
+start Step 5 or deploy without separate explicit approval. On resume read this
+checkpoint/full report, inspect current Git/PR/CI
+and running processes, and establish the user's authorized next scope first.
+Historical results do not replace live state verification.

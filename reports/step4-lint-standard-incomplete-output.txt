@@ -1,0 +1,8 @@
+bun : $ eslint .
+At line:2 char:1
++ bun --no-env-file run lint 2>&1 | Tee-Object -FilePath reports/step4- ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ eslint .:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Exit code: 1

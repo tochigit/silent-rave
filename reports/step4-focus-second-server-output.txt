@@ -1,0 +1,17 @@
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://127.0.0.1:53919
+- Network:       http://127.0.0.1:53919
+
+✓ Starting...
+✓ Ready in 6.3s
+(node:1496) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+○ Compiling / ...
+○ Compiling /api/internal/process-email-jobs ...
+prisma:error
+Invalid `prisma.venue.delete()` invocation:
+
+
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23001", message: "update or delete on table \"venues\" violates RESTRICT setting of foreign key constraint \"events_venue_id_fkey\" on table \"events\"", severity: "ERROR", detail: Some("Key (id)=(dee5147e-e8e7-4a37-a579-02c4406f42a7) is referenced from table \"events\"."), column: None, hint: None }), transient: false })
+[operations] unexpected error PrismaClientUnknownRequestError
