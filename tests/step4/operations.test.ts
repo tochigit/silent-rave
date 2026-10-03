@@ -1,7 +1,7 @@
 import { beforeAll, afterAll, expect, test } from "bun:test";
 import {
   api,
-  json,
+  json as readJson,
   login,
   makeDb,
   OWNER_EMAIL,
@@ -13,6 +13,13 @@ import {
   type Session,
 } from "../phase3b/helpers";
 const db = makeDb();
+async function json(response: Response) {
+  if (!response.headers.get("content-type")?.includes("application/json"))
+    throw new Error(
+      `Expected JSON: HTTP ${response.status} at ${new URL(response.url).pathname}`,
+    );
+  return readJson(response);
+}
 let owner: Session, staff: Session, eventId: string, tierId: string;
 const admin = (path: string, body?: unknown, method?: string) =>
   api("/api/admin/" + path, {
