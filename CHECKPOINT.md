@@ -35,7 +35,12 @@ that failure. Earlier runs 37545909437/37546025639 were canceled/failed, never p
 The missing fixture field is now fixed. Cached PDF reads also avoid needless
 scanner sync-sequence updates. Browser connection attempts timed out; controlled
 owned-Chrome acceptance remains pending, as do the full new regressions.
-Next: finish migration/backfill/native/full Windows/Linux acceptance and browser checks;
+Local backfill/role-denial/repeated-deploy checks and owned cleanup subsequently PASSED.
+CI 37547556300 reached all new cases on Linux after baseline regressions passed,
+but concurrent PDF intent exposed a Prisma empty-upsert read/create race. Intent now
+uses atomic parameterized INSERT ON CONFLICT DO NOTHING; existing real concurrent
+PDF acceptance covers this failure. In-progress local focused tests use current code.
+Next: finish focused/native/full Windows/Linux acceptance and browser checks;
 then exact-head evidence/docs/handoff and ONE completed PR, STOP FOR REVIEW.
 Supabase/Postgres/UI and branch/checkpoint skills read; current public docs/changelog
 reviewed without accessing hosted data. readyForLaunch=false remains intentional.

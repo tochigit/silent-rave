@@ -7,7 +7,9 @@ import { objectContract } from "./keys";
 
 export async function storageIntent(key: string) {
   const contract = objectContract(key);
-  await db.storageObject.upsert({ where: { key }, create: { key, kind: contract.kind, state: "UPLOADING", inputHash: contract.inputHash }, update: {} });
+  // Empty ORM upserts can race their read/create paths. The database owns deduplication.
+  await db.$executeRaw(Prisma.sql`INSERT INTO storage_objects (key, kind, state, input_hash)
+    VALUES (${key}, ${contract.kind}, 'UPLOADING', ${contract.inputHash}) ON CONFLICT (key) DO NOTHING`);
 }
 export async function storageStored(key: string, bytes: Uint8Array) {
   const sha256 = createHash("sha256").update(bytes).digest("hex");

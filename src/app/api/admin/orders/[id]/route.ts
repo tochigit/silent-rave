@@ -107,7 +107,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }))
     );
   })().catch(() => null);
-  if (!proofs) return NextResponse.json({ error: "Proof images temporarily unavailable. Contact the owner to reconcile storage." }, { status: 503, headers: privateHeaders });
+  if (!proofs) return NextResponse.json({ error: "Proof images temporarily unavailable. Retry later." }, { status: 503, headers: privateHeaders });
 
   return NextResponse.json(
     {
