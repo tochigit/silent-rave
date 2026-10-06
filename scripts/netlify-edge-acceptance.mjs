@@ -56,10 +56,11 @@ check((await execute(root + "/api/admin/future.feature")).status === 401, "prote
 decision = "FORBIDDEN";
 check((await execute(root + "/api/admin/events", { headers: { cookie: `sr_session=${"A".repeat(43)}` } })).status === 403, "wrong role denied");
 decision = "ALLOW";
-const response = await execute("https://admin.silent-rave.example.test/future.feature?nonce=fixture", { method: "POST", headers: { cookie: `sr_session=${"A".repeat(43)}`, "x-sr-role": "OWNER", "x-forwarded-for": "attacker", "content-type": "text/plain" }, body: "synthetic-stream-body" });
+const response = await execute("https://admin.silent-rave.example.test/future.feature?nonce=fixture", { method: "POST", headers: { cookie: `sr_session=${"A".repeat(43)}`, "x-sr-role": "OWNER", "x-forwarded-for": "attacker", "x-nf-debug-logging": "1", "x-next-debug-logging": "1", "content-type": "text/plain" }, body: "synthetic-stream-body" });
 check(response.status === 200, "allowed rewrite reaches Node");
 check(transfers.at(-1).url === "https://admin.silent-rave.example.test/admin/future.feature?nonce=fixture", "rewrite and query retained");
 check(transfers.at(-1).body === "synthetic-stream-body" && !new Headers(transfers.at(-1).headers).has("x-sr-role"), "stream preserved and assertions stripped");
+check(!new Headers(transfers.at(-1).headers).has("x-nf-debug-logging") && !new Headers(transfers.at(-1).headers).has("x-next-debug-logging"), "client cannot enable adapter debug logging");
 renewal = new Date(Date.now() + 12 * 3600000).toISOString();
 const renewed = await execute(root + "/api/staff/session", { headers: { cookie: `sr_session=${"A".repeat(43)}` } });
 for (const value of ["HttpOnly", "Secure", "SameSite=lax", "Domain=.silent-rave.example.test", "Path=/"]) check(renewed.headers.get("set-cookie")?.includes(value), `renewal cookie ${value}`);

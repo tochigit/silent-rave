@@ -4,7 +4,7 @@ Current status (2026-10-06): PR #5 is merged and Netlify is selected for local
 preparation; the user says the domain is ready. Hosted runtime/DNS are unverified.
 The historical Step 5 plan below is preserved. The Step 5B Desktop plan governs
 the local milestone sequence; [Step 5C.1 report](./09-netlify-runtime-auth.md)
-records its failed ingress-ordering gate and revised proposal awaiting review.
+records the approved build-plugin revision, implementation and current acceptance.
 
 Prepared 2026-10-03, Africa/Lagos. This milestone prepares local tools and a
 reviewable plan. It does not authorize hosted changes, mail/push, migrations,
