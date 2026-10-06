@@ -49,7 +49,7 @@ async function execute(url, init = {}) {
 }
 const root = "https://silent-rave.example.test";
 for (const path of ["/admin/future.feature", "/%61dmin/future", "/admin/future?_rsc=fixture"]) {
-  const response = await execute(root + path, { headers: { rsc: "1", "next-router-prefetch": "1", "x-sr-role": "OWNER", "x-forwarded-host": "evil.test", "x-sr-context": "forged" } });
+  const response = await execute(root + path, { headers: { rsc: "1", "next-router-prefetch": "1", "x-sr-role": "OWNER", "x-forwarded-host": "evil.test", "x-sr-context": "forged", "x-middleware-subrequest": "middleware:middleware:middleware:middleware:middleware", "x-nf-next-middleware": "skip" } });
   check(response.status === 307 && new URL(response.headers.get("location"), root).pathname === "/admin/login", "protected future path");
 }
 check((await execute(root + "/api/admin/future.feature")).status === 401, "protected future API");

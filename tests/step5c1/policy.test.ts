@@ -8,7 +8,7 @@ import { readTrustedContextNode } from "../../src/lib/hosting/request-context-no
 import ingress from "../../netlify/ingress/request-context";
 import { sessionDecision } from "../../src/lib/auth/proxy-client";
 import { sanitizedBuildEnvironment } from "../../scripts/build-netlify-env";
-import { integrateIngress } from "../../netlify/plugins/ingress/index.mjs";
+import { integrateIngress } from "../../netlify/plugins/ingress/integration.mjs";
 import { auditRoutePolicy } from "../../scripts/route-policy";
 const original = { ...process.env };
 beforeAll(() => Object.assign(process.env, { HOST_PLATFORM: "netlify", NODE_ENV: "production", ROOT_DOMAIN: "silentrave.space",

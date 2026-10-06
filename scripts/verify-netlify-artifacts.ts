@@ -6,7 +6,7 @@ import { strict as assert } from "node:assert";
 import { readTrustedContextNode } from "../src/lib/hosting/request-context-node";
 import { sanitizedBuildEnvironment } from "./build-netlify-env";
 import { buildCanaries } from "./build-canaries";
-import { assertBundledIngress } from "../netlify/plugins/ingress/index.mjs";
+import { assertBundledIngress } from "../netlify/plugins/ingress/integration.mjs";
 const root = process.cwd();
 const fingerprint = await assertBundledIngress(root);
 const trace = JSON.parse(await readFile(".next/server/middleware.js.nft.json", "utf8"));

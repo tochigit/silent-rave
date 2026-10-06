@@ -1,78 +1,55 @@
 # Silent Rave checkpoint
 
-Active continuation (2026-10-06): Step 5C.1 IN PROGRESS on the existing branch
-and PR #6. The user approved the revised build integration and authorized fixing
-further issues within this prompt without additional review pauses. No later
-milestone, hosted setup, migration, DNS, deployment, merge or branch deletion.
-Application adaptation is underway: pure proxy policy, protected Node broker,
-signed ingress/context verifiers, strict Origins/live session renewal and build
-sanitization. Validation is pending; do not claim the previous CI proves this work.
-Inspect current diff before continuing. Root .env remains absent. No hosted data
-was touched. The prior stopped checkpoint below is historical for this run.
+Step 5C.1 IN PROGRESS, 2026-10-06. Resume the existing branch
+`feat/step5c1-netlify-runtime-auth` and draft PR #6:
+https://github.com/tochigit/silent-rave/pull/6
 
-Current status: 2026-10-06, Africa/Lagos. **Step 5C.1 INCOMPLETE: ingress ordering gate failed.**
+The revised pinned OpenNext + ingress build-plugin design is authorized. The user
+authorized fixing further issues within this active prompt without review pauses.
+The PC shut down during validation; preserve current tracked and untracked work.
+Published implementation head at this snapshot:
+`c7c95ad4155c1b02a6d0ce0f327d9023426daa02`. Uncommitted fixes and acceptance
+scripts exist; inspect Git and the entire diff before continuing. Main remains
+`3b69187d017403fb84777f9c3406c68bb3e96a55`; all earlier branches are retained.
 
-Steps 1–4 and Step 5 readiness/preflight are complete and merged. PR #5 merged
-at `3b69187d017403fb84777f9c3406c68bb3e96a55`; live main CI
-[37232720318](https://github.com/tochigit/silent-rave/actions/runs/37232720318)
-passed on that exact SHA. Netlify is selected for preparation. The user says the
-domain is ready; DNS, hosted runtime and launch readiness are unverified.
+Implemented: native-free proxy; secret-gated Node broker; deployment-bound signed
+ingress context; independent live role/password guards; DB-time session renewal;
+strict host/Origin handling; private responses; sanitized offline Netlify build;
+version-checked ingress integration; isolated auth/race and packaging acceptance.
+Completion is pending. The old diagnostic reproduced a user-ingress ordering
+blocker; it is historical evidence, not the current implementation's acceptance.
 
-## Authorized milestone and blocker
+Current failures and fixes:
+- Published CI 37516397726 failed offline build because Netlify treated helper
+  exports as lifecycle events. Uncommitted fix separates integration.mjs helpers
+  from the entry module's onBuild/onPostBuild exports.
+- A local locked install left node_modules/jiti empty after interruption. A
+  forced frozen-lockfile install is restoring dependencies; no app version change.
+- Local focused HTTP suite passed four cases and failed two test assertions.
+  Relative redirect and spoofed local-scheme assertions were corrected; rerun.
+- Latest pure policy suite: 8 pass; local Bun-hosted lint and both TypeScript
+  configurations passed before the newest acceptance scripts. Standard Node lint
+  stalled locally and was stopped; it is incomplete, not a pass.
 
-User authorized the Step 5B plan's first milestone: local Netlify runtime/auth
-compatibility. Its first gate failed before application implementation: Netlify's
-generated Next proxy runs before user-created ingress Edge Functions. The proxy
-therefore cannot receive trusted metadata from the proposed user ingress bridge.
-The plan explicitly requires saving a blocker and a revised proposal at this gate.
+Next: finish actual offline Netlify build with Node 24; execute generated Edge
+handlers in Deno and verify transferred context in Node; execute the final Node
+function ZIP in isolation against disposable loopback Postgres, including native
+Prisma/Sharp, PDF fonts/license/diacritics/date/stored QR, and independent guards.
+Then run all baseline regressions plus runtime/outage cases and obtain successful
+Windows/Linux CI on the final published SHA. Update doc 09, PR and Desktop handoff.
 
-Branch: `feat/step5c1-netlify-runtime-auth`, from verified current main above.
-Draft PR: [#6](https://github.com/tochigit/silent-rave/pull/6), base `main`.
-Initial publication head: `26bf7d18a36a0fb1b9642d5b9ccf3f0ec7b67687`.
-Final documentation head/checks are recorded in the PR description. Verify branch
-HEAD and checks live; the PR description records final publication evidence.
-All earlier branches are preserved; no applicable AGENTS.md found.
+Local tooling: ignored .test-runtime/node24/node.exe is official checksum-verified
+Node 24.21.0; prepend its directory only in the task shell. Default Node is 26.5.0.
+Netlify CLI 27.11.2 is isolated under .test-runtime/netlify-tools; its tracked lock
+is tools/netlify/package-lock.json. Root dotenv is absent. Interrupted owned
+scratch run-Ic8nsc is preserved; use fresh fixtures and preserve unrelated processes.
 
-Changes: current checkpoint, historical-document status notices,
-`.docs/09-netlify-runtime-auth.md`, and the small synthetic diagnostic/JSON evidence
-under `reports/step5c1-*`. Application code, dependency locks, Prisma schema/
-migrations and hosting configuration remain unchanged.
-
-## Passed, failed and unverified
-
-- Live Git/PR #5/main CI verification passed; initial working tree was clean.
-- Published OpenNext 5.16.2 generated a synthetic Node-proxy manifest. Published
-  edge-bundler 16.1.2 merged it ahead of a user TOML ingress declaration.
-  Diagnostic exited 0, reproducing the blocker; compatibility gate FAILED.
-- Prepending ingress to the integration manifest yields the desired order in
-  the same diagnostic. This proves declaration merging only, not build hooks,
-  function bundling/execution, request propagation or hosted runtime.
-- Both downloaded archives match their published npm checksums; diff check passed.
-- Local diagnostic ESLint under Bun stalled and was stopped: INCOMPLETE, no pass
-  claimed. Exact-head CI performs standard lint plus the existing full app checks.
-- Proposed revision: explicitly order an inspected OpenNext adapter and a local
-  ingress build integration. Details and remaining proof are in doc 09.
-- New auth/PDF/native-module/adapter acceptance is NOT RUN: implementation
-  stopped at the required gate. Main CI proves the historical baseline only;
-  any PR CI verifies the unchanged application, not the proposed integration.
-- Supabase MCP connection and both skills were completed before this milestone.
-  No hosted DB query, SQL, migration or configuration was performed.
-- No app/database/server started; diagnostic scratch/provider packages remain
-  ignored under `.test-runtime` with synthetic data. Root .env was not read or
-  written. Verify process inventory on resume; preserve unrelated processes.
-
-## Exact next action
-
-Review `.docs/09-netlify-runtime-auth.md` and explicitly continue **the same
-Step 5C.1** with its changed build integration design. First prove actual plugin
-order, final Edge bundle order and signed metadata propagation through a local
-credential-free Netlify build. Stop again if it cannot be proved. Preserve central
-auth and reject untrusted forwarding headers. Then complete the original auth/
-broker/session/Origin/build contracts and meaningful Windows/Linux acceptance on
-this same branch/PR, update this checkpoint, and stop for review.
-
-No merge or branch deletion, Step 5C.2, hosted setup/SQL/migrations, DNS,
-purchases, deployment or real mail/push is authorized.
+No hosted data/query/SQL/configuration, migration, DNS, deployment or real delivery
+was performed. Supabase MCP authentication and skills were completed earlier.
+Hosted runtime/provider variables and scopes remain unverified. Ready-for-launch
+remains false. No Step 5C.2, merge, branch deletion, owner/password alteration or
+real email/push is authorized. Complete this milestone, publish reviewable proof,
+then stop for review. GitHub REST helper is ignored .test-runtime/github-api.ps1.
 
 ---
 

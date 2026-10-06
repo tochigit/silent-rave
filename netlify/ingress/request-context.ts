@@ -7,6 +7,7 @@ export default async function ingress(request: Request, context: Context) {
   try {
     const headers = new Headers(request.headers);
     for (const key of [...headers.keys()]) if (key.startsWith("x-sr-")) headers.delete(key);
+    for (const key of ["x-middleware-subrequest", "x-middleware-subrequest-id", "x-middleware-invoke", "x-nf-next-middleware"]) headers.delete(key);
     const url = new URL(request.url);
     const envelope: Envelope = { v: 1, hostname: url.hostname, origin: url.origin, clientIp: context.ip,
       method: request.method, originalPathname: url.pathname, deploymentId: context.deploy.id, issuedAt: Date.now() };
