@@ -1,6 +1,32 @@
 # Silent Rave checkpoint
 
-2026-10-06, Africa/Lagos. **Step 5C.1 COMPLETE; STOPPED FOR PR REVIEW.**
+2026-10-06, Africa/Lagos. **Batch A IN PROGRESS: uploads and durable storage.**
+
+Current branch: `feat/step5c-upload-storage`, from verified merged main/origin/main
+`0da2051ca9c617fbe09d50cabcd2e2232045fd9f`. PR #6 is merged; exact post-merge
+CI 37540660015 passed Windows/Linux, confirmed live before this branch was created.
+All earlier branches/fixtures/reports remain preserved. Initial working tree clean;
+no owned Node/Bun/Postgres/pg_ctl processes at preflight; no applicable AGENTS.md.
+
+Read the entire Desktop Consolidated continuation, Step 5B plan, Step 5C1 handoff,
+this checkpoint and doc 09. Consolidated Batch A supersedes the separate 5C.2/5C.3
+PR boundaries. Authorized: local implementation, controlled disposable/fake-provider
+checks, additive migration authoring/replay, progress checkpoints and ONE focused PR.
+Stop for review after publication. No merge or Batch B; no hosted queries/writes,
+bucket setup/import/deletion, DNS/deployment/purchases/real sends/owner changes.
+
+Implemented so far, UNVERIFIED: shared 3 MiB/3.25 MiB constants; bounded multipart
+reader/metadata contract; bounded Sharp sanitation; browser proof/banner preparation
+and retry feedback. Next: integrate routes, HTTP storage and immutable collisions,
+shared application signatures, additive ledger/linkage and dry-run report; meaningful
+fault/privacy/artifact/concurrency/migration/browser checks; full Windows/Linux CI,
+native build, documentation and PR. No check is claimed passed for new code yet.
+Supabase/Postgres/UI and branch/checkpoint skills read; current public docs/changelog
+reviewed without accessing hosted data. readyForLaunch=false remains intentional.
+
+## Historical Step 5C.1 checkpoint (superseded merge/review state)
+
+Step 5C.1 COMPLETE; PR #6 subsequently merged as recorded above.
 Netlify runtime/auth adaptation is implemented and verified in Windows/Linux CI.
 PR #6: https://github.com/tochigit/silent-rave/pull/6
 Branch: `feat/step5c1-netlify-runtime-auth`; base main remains

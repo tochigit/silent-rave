@@ -26,7 +26,7 @@ export const MAX_QTY_PER_ORDER = 10;
 export const LATE_PROOF_GRACE_MS = 24 * 60 * 60 * 1000;
 
 /** Max proof upload size in bytes (4 MB; applies to the ORIGINAL upload). */
-export const MAX_PROOF_FILE_BYTES = 4 * 1024 * 1024;
+export { IMAGE_FILE_BYTES as MAX_PROOF_FILE_BYTES } from "./uploads/limits";
 
 /** "Sane pixel dimensions" (04) — inclusive bounds on width and height. */
 export const PROOF_IMAGE_MAX_DIMENSION = 10000;

@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
-import sharp from "sharp";
 import { db } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
-import { getStorage } from "@/lib/storage";
+import { storeNewImage, storageLinked, storageFailed } from "@/lib/storage/accounting";
+import { sanitizeImage } from "@/lib/uploads/sanitize";
 import { emitServerEvent } from "@/lib/events/emitter";
 import { verifyStatusToken } from "@/lib/orders/status-token";
 import {
@@ -34,7 +34,7 @@ import { OrderServiceError } from "@/lib/orders/errors";
 //      status is EXPIRED with NO proof yet and now() <= hold_expires_at +
 //      LATE_PROOF_GRACE (a late proof); attempts not exhausted (else 403).
 //   2. File validated by MAGIC BYTES (not client MIME): JPEG/PNG/WebP only
-//      (HEIC must be converted client-side); ≤ 4 MB; sane dimensions; then
+//      (HEIC must be converted client-side); ≤ 3 MiB; sane dimensions; then
 //      RE-ENCODED server-side (strips EXIF/GPS and any embedded payload —
 //      sharp, a maintained native image library). file_sha256 is of the
 //      ORIGINAL upload.
@@ -239,7 +239,7 @@ export async function submitProof(input: SubmitProofInput): Promise<SubmitProofR
   if (input.fileBytes.length > MAX_PROOF_FILE_BYTES) {
     throw new OrderServiceError(
       "BAD_FILE",
-      `Proof image must be at most ${MAX_PROOF_FILE_BYTES / (1024 * 1024)} MB.`
+      `Proof image must be at most ${MAX_PROOF_FILE_BYTES / (1024 * 1024)} MiB.`
     );
   }
   const sniffed = sniffImageType(input.fileBytes);
@@ -271,13 +271,7 @@ export async function submitProof(input: SubmitProofInput): Promise<SubmitProofR
   //    orientation EXIF is baked in before being dropped.
   let storedBytes: Buffer;
   try {
-    storedBytes = await sharp(input.fileBytes, {
-      failOn: "error",
-      limitInputPixels: PROOF_IMAGE_MAX_DIMENSION * PROOF_IMAGE_MAX_DIMENSION,
-    })
-      .rotate()
-      .jpeg({ quality: 85 })
-      .toBuffer();
+    storedBytes = await sanitizeImage(input.fileBytes, "proof");
   } catch {
     throw new OrderServiceError("BAD_FILE", "Image could not be decoded.");
   }
@@ -306,14 +300,15 @@ export async function submitProof(input: SubmitProofInput): Promise<SubmitProofR
   // 7. Store privately BEFORE the DB transaction. If the tx then fails, an
   //    orphaned private file remains — harmless (no row references it) and
   //    preferred to doing storage I/O inside the transaction.
-  const storagePath = `proofs/${order.id}/${randomUUID()}.jpg`;
-  await getStorage().putObject(storagePath, storedBytes, "image/jpeg");
+  const storagePath = await storeNewImage(() => `proofs/${order.id}/${randomUUID()}.jpg`, storedBytes, "image/jpeg");
 
   // 8. The transaction — state machine under the order row lock.
   try {
     const result = await db.$transaction(
       async (tx): Promise<SubmitProofResult> => {
         const locked = await lockOrderForProof(tx, order.id);
+        const replay = await tx.paymentProof.findFirst({ where: { orderId: order.id, clientSubmissionId: input.clientSubmissionId } });
+        if (replay) return { status: locked.status, attemptNo: replay.attemptNo, late: Boolean((replay.flags as Record<string, unknown> | null)?.late), idempotentReplay: true };
         const now = new Date();
 
         // Lazy single-order expiry (mirrors expireHolds for THIS order): a
@@ -470,6 +465,7 @@ export async function submitProof(input: SubmitProofInput): Promise<SubmitProofR
     emitServerEvent("order.proof_submitted", order.id);
     return result;
   } catch (error) {
+    await storageFailed(storagePath, error);
     // transfer_reference collision on the partial unique index → 409 + system
     // audit entry. Written AFTER the rollback, outside the transaction.
     // (Postgres 23505 messages name the COLUMN, not the partial index —
@@ -551,6 +547,7 @@ async function insertProofRow(
        ${data.fileSha256}, ${data.mimeType}, ${data.sizeBytes}, ${data.transferReference},
        ${data.senderName}, 'PENDING', ${JSON.stringify(data.flags)}::jsonb)
   `);
+  await storageLinked(tx, data.storagePath, "ORDER", data.orderId);
 }
 
 /**

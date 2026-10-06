@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { UploadError } from "@/lib/uploads/multipart";
+import { StorageUnavailableError, StorageCollisionError } from "@/lib/storage/errors";
 
 export class OperationError extends Error {
   constructor(
@@ -54,6 +56,8 @@ export async function body<T>(
   return parsed.data;
 }
 export function failure(error: unknown) {
+  if (error instanceof UploadError) return reply({ error: error.message }, error.status);
+  if (error instanceof StorageUnavailableError || error instanceof StorageCollisionError) return reply({ error: "Image storage is temporarily unavailable. Keep your image and retry." }, 503);
   if (error instanceof OperationError)
     return reply({ error: error.message }, error.status);
   // PostgreSQL connector versions can surface a Restrict FK violation as an

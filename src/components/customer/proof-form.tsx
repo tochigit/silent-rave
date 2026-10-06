@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { compressProof } from "@/lib/customer/compress-proof";
+import { prepareImage } from "@/lib/uploads/prepare-image";
+import { uploadFailure } from "@/lib/uploads/messages";
 export function ProofForm({
   code,
   token,
@@ -38,7 +39,7 @@ export function ProofForm({
       const compressed =
         prepared.current?.original === file
           ? prepared.current.compressed
-          : await compressProof(file);
+          : await prepareImage(file);
       prepared.current = { original: file, compressed };
       const form = new FormData();
       form.set("proof", compressed);
@@ -64,8 +65,7 @@ export function ProofForm({
           else
             reject(
               new Error(
-                body.error ||
-                  "Receipt was not accepted. Check your status and try again.",
+                uploadFailure(request.status, body.error),
               ),
             );
         };
@@ -119,7 +119,7 @@ export function ProofForm({
             }}
           />
           <small>
-            JPEG, PNG or WebP, compressed under 4 MB. HEIC conversion depends on
+            JPEG, PNG or WebP, prepared under 3 MiB. HEIC conversion depends on
             your browser.
           </small>
         </label>

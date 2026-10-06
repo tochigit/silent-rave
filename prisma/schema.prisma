@@ -580,3 +580,22 @@ model EmailWorkerGate {
   nextSendAt  DateTime @default(dbgenerated("'epoch'::timestamptz")) @map("next_send_at") @db.Timestamptz(3)
   @@map("email_worker_gate")
 }
+
+/// Reconcilable storage intent and byte accounting. No automatic deletion.
+model StorageObject {
+  key String @id
+  kind String
+  state String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  linkedEntityId String? @map("linked_entity_id") @db.Uuid
+  linkedEntityType String? @map("linked_entity_type")
+  storedBytes BigInt? @map("stored_bytes")
+  storedSha256 String? @map("stored_sha256")
+  inputHash String? @map("input_hash")
+  lastError String? @map("last_error")
+  checkedAt DateTime? @map("checked_at") @db.Timestamptz(3)
+  @@index([state, createdAt], map: "storage_objects_state_created_at_idx")
+  @@index([linkedEntityType, linkedEntityId], map: "storage_objects_linked_entity_type_linked_entity_id_idx")
+  @@map("storage_objects")
+}
