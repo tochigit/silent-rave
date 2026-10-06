@@ -4,6 +4,7 @@ import sys
 import zipfile
 import stat
 import shutil
+import os
 
 archive, target = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]).resolve()
 if not target.name.startswith("silent-rave-step5c1-") or not target.is_dir():
@@ -17,7 +18,8 @@ with zipfile.ZipFile(archive) as package:
         if stat.S_ISLNK(entry.external_attr >> 16):
             raw = package.read(entry).decode('utf-8').replace('\\', '/')
             source = (destination.parent / raw).resolve()
-            if not source.is_relative_to(target) and source.is_relative_to(archive.resolve().parents[2]) and '/node_modules/' in raw:
+            lexical_source = pathlib.Path(os.path.abspath(destination.parent / raw))
+            if not source.is_relative_to(target) and lexical_source.is_relative_to(archive.resolve().parents[2]) and '/node_modules/' in raw:
                 # Windows standalone aliases may record an absolute build path.
                 # Resolve only the corresponding files already inside this ZIP.
                 source = (target / 'node_modules' / raw.split('/node_modules/', 1)[1]).resolve()
