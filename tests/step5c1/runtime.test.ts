@@ -37,10 +37,10 @@ test("broker rejects credentials before parsing; bounds and validates JSON; deci
 test("central policy covers future/dotted/encoded/RSC pages and API prefixes, host rewrites and cross-surface attempts", async () => {
   for (const target of ["/admin/future.feature", "/%61dmin/future", "/admin/future?_rsc=fixture"]) {
     const response = await api(target, { headers: { rsc: "1", "next-router-prefetch": "1", "x-forwarded-host": "evil.test" } });
-    expect(response.status).toBe(307); expect(new URL(response.headers.get("location")!).pathname).toBe("/admin/login"); isPrivate(response);
+    expect(response.status).toBe(307); expect(new URL(response.headers.get("location")!, process.env.TEST_BASE_URL).pathname).toBe("/admin/login"); isPrivate(response);
   }
   const rewritten = await api("/future.feature", { host: "admin.localhost:3000" });
-  expect(rewritten.status).toBe(307); expect(rewritten.headers.get("location")).toBe("http://admin.localhost:3000/login"); isPrivate(rewritten);
+  expect(rewritten.status).toBe(307); expect(new URL(rewritten.headers.get("location")!, "http://admin.localhost:3000").href).toBe("http://admin.localhost:3000/login"); isPrivate(rewritten);
   for (const path of ["/api/admin/future.feature", "/api/staff/future.feature"]) { const response = await api(path); expect(response.status).toBe(401); isPrivate(response); }
   const forbidden = await api("/api/admin/events", { cookies: staff.cookies }); expect(forbidden.status).toBe(403); isPrivate(forbidden);
   for (const target of ["/admin/orders", "/api/admin/events"]) {
@@ -51,8 +51,12 @@ test("central policy covers future/dotted/encoded/RSC pages and API prefixes, ho
 }, 90_000);
 test("full Origins reject scheme, port, sibling and forwarded-header spoofing", async () => {
   for (const origin of ["https://localhost:3000", "http://localhost:444", "http://staff.localhost:3000", "http://evil.test"]) {
+    const plain = await api("/api/auth/login", { host: "localhost:3000", origin, body: {} });
+    expect(plain.status).toBe(403); isPrivate(plain);
     const response = await api("/api/auth/login", { host: "localhost:3000", origin, body: {}, headers: { "x-forwarded-host": new URL(origin).host, "x-forwarded-proto": new URL(origin).protocol.slice(0, -1) } });
-    expect(response.status).toBe(403); isPrivate(response);
+    // Next dev may construct an HTTPS request from this spoofed proto; explicit
+    // loopback mode then rejects the context before the Origin guard runs.
+    expect(response.status).toBe(origin.startsWith("https:") ? 421 : 403); isPrivate(response);
   }
   const admin = await api("/api/admin/orders/issue", { cookies: owner.cookies, host: "admin.localhost:3000", origin: "http://staff.localhost:3000", body: {} });
   expect(admin.status).toBe(403); isPrivate(admin);

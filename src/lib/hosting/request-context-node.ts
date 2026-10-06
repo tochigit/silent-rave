@@ -16,7 +16,7 @@ export function readTrustedContextNode(request: Request, env: HostingEnv = proce
   const context = readContextHeaders(request.headers, env);
   const actual = canonicalPath(new URL(request.url).pathname);
   const original = canonicalPath(context.originalPathname);
-  const effective = routePolicy(context.hostname, original).effectivePathname;
+  const effective = routePolicy(context.hostname, original, env.ROOT_DOMAIN).effectivePathname;
   if (context.method !== request.method || (actual !== original && actual !== effective)) throw new Error("Context request mismatch");
   return context;
 }

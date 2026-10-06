@@ -26,9 +26,9 @@ export function sessionCookieOptions(expires: Date) {
   return { httpOnly: true, sameSite: "lax" as const, secure: process.env.NODE_ENV === "production",
     path: "/", domain: root === "localhost" ? undefined : `.${root}`, expires };
 }
-export function routePolicy(hostname: string, pathname: string) {
+export function routePolicy(hostname: string, pathname: string, rootDomain = process.env.ROOT_DOMAIN ?? "localhost") {
   pathname = canonicalPath(pathname);
-  const root = (process.env.ROOT_DOMAIN ?? "localhost").trim().toLowerCase();
+  const root = rootDomain.trim().toLowerCase();
   const hostSurface = hostname === `admin.${root}` ? "admin" : hostname === `staff.${root}` ? "staff" : null;
   const crossSurface = hostSurface === "admin" && (under(pathname, "/staff") || under(pathname, "/api/staff")) ||
     hostSurface === "staff" && (under(pathname, "/admin") || under(pathname, "/api/admin"));

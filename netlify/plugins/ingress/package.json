@@ -1,1 +1,1 @@
-{"name":"silent-rave-ingress","private":true,"type":"module"}
+{"name":"silent-rave-ingress","private":true,"type":"module","main":"index.mjs"}

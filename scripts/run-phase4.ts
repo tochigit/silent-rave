@@ -331,6 +331,12 @@ try {
     await stopApp();
     if (exitCode !== 0) break;
   }
+  if (step5c1 && !focus.length && exitCode === 0) {
+    log("Runtime outage acceptance: unreachable loopback database; no hosted connections.");
+    const unavailable = await startApp({ DATABASE_URL: "postgresql://fixture@127.0.0.1:1/unavailable", DIRECT_URL: "postgresql://fixture@127.0.0.1:1/unavailable" }, "runtime");
+    exitCode = await runTests(["tests/step5c1/unavailable.test.ts"], unavailable);
+    await stopApp();
+  }
   if (!focus.length && exitCode === 0) {
     log(
       "Phase 4 kick-failure HTTP acceptance: kicks enabled; invalid worker sender; no real sends.",
