@@ -8,24 +8,29 @@ const output = createWriteStream(`reports/step5a-${process.platform}-migration-b
 const log = (line: string) => { console.log(line); output.write(line + "\n"); };
 let fixture: Awaited<ReturnType<typeof startFixture>> | undefined;
 let db: PrismaClient | undefined;
+let stage = "fixture";
 try {
   fixture = await startFixture(chunk => output.write(chunk), true);
   db = new PrismaClient({ datasources: { db: { url: fixture.env.DATABASE_URL } } });
   const owner = await db.staffUser.findFirstOrThrow({ where: { role: "OWNER" } });
   const event = await db.event.findFirstOrThrow(); const tier = await db.ticketTier.findFirstOrThrow(); const bank = await db.paymentAccount.findFirstOrThrow();
-  const order = await db.order.create({ data: { orderCode: `SR-${randomUUID().slice(0, 8).toUpperCase()}`, eventId: event.id, customerName: "Legacy fixture", customerEmail: "legacy@example.test", customerPhone: "08012345678", paymentAccountId: bank.id, totalKobo: 100, status: "APPROVED" } });
+  stage = "legacy references";
+  const order = await db.order.create({ data: { orderCode: `SR-${randomUUID().slice(0, 8).toUpperCase()}`, eventId: event.id, customerName: "Legacy fixture", customerEmail: "legacy@example.test", customerPhone: "08012345678", paymentAccountId: bank.id, holdExpiresAt: new Date(Date.now() + 3600_000), totalKobo: 100, status: "APPROVED" } });
   const proof = await db.paymentProof.create({ data: { orderId: order.id, attemptNo: 1, clientSubmissionId: randomUUID(), storagePath: `proofs/${order.id}/legacy-attempt.jpg`, fileSha256: "legacy-unknown", mimeType: "image/jpeg", sizeBytes: 100, transferReference: randomUUID(), senderName: "Fixture" } });
   const ticketId = randomUUID(); const pdf = `tickets/${ticketId}/${"a".repeat(64)}.pdf`;
   await db.$executeRaw`INSERT INTO ticket_units (id, order_id, event_id, tier_id, qr_token, pdf_url) VALUES (${ticketId}::uuid, ${order.id}::uuid, ${event.id}::uuid, ${tier.id}::uuid, 'legacy-fixture-qr', ${pdf})`;
   const banner = `/api/banners/${randomUUID()}.webp`; await db.event.update({ where: { id: event.id }, data: { bannerImageUrl: banner } });
   for (const role of ["anon", "authenticated"]) await db.$executeRawUnsafe(`CREATE ROLE ${role} NOLOGIN`);
+  stage = "forward migration";
   await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "migrate", "deploy"], fixture.env, chunk => output.write(chunk));
   const references = await db.storageObject.findMany();
+  stage = "backfill assertions";
   if (references.length !== 3 || references.some(r => r.state !== "LEGACY_REFERENCED" || r.storedBytes !== null || r.storedSha256 !== null)) throw new Error();
   if (!(references.some(r => r.key === proof.storagePath) && references.some(r => r.key === pdf) && references.some(r => r.key === "banners/" + banner.slice(13)))) throw new Error();
   const after = await db.staffUser.findUniqueOrThrow({ where: { id: owner.id } });
   if (JSON.stringify(owner) !== JSON.stringify(after)) throw new Error();
   log("PASS: existing proof/PDF/banner pointers and owner are unchanged; unknown legacy metadata is explicit.");
+  stage = "role denial";
   const rls = await db.$queryRaw<Array<{ enabled: boolean }>>`SELECT relrowsecurity AS enabled FROM pg_class WHERE oid = 'public.storage_objects'::regclass`;
   if (!rls[0].enabled) throw new Error();
   for (const role of ["anon", "authenticated"]) {
@@ -34,12 +39,14 @@ try {
     if (!denied) throw new Error();
   }
   log("PASS: new accounting table has RLS and denies synthetic anon/authenticated SQL access.");
+  stage = "repeat deployment";
   await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "migrate", "deploy"], fixture.env, chunk => output.write(chunk));
   if (await db.storageObject.count() !== 3) throw new Error();
   log("PASS: repeated forward deployment is a no-op; no provider operations or file imports occurred.");
   process.exitCode = 0;
-} catch {
-  log("FAILED: disposable storage migration/backfill acceptance; no hosted target was used."); process.exitCode = 1;
+} catch (error) {
+  const code = error && typeof error === "object" && "code" in error && /^P\d{4}$/.test(String(error.code)) ? ` (${error.code})` : "";
+  log(`FAILED: disposable storage migration/backfill acceptance at ${stage}${code}; no hosted target was used.`); process.exitCode = 1;
 } finally {
   await db?.$disconnect(); await fixture?.cleanup(); log("Cleanup complete: owned database stopped and fixture removed.");
   await new Promise<void>(resolve => output.end(resolve));

@@ -60,10 +60,13 @@ export class SupabaseStorage implements StorageAdapter {
   }
   private async operation(path: string, method: "POST" | "GET", limit: number, body?: Uint8Array, headers: Record<string, string> = {}): Promise<Reply> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => { controller.abort(); reject(new StorageUnavailableError("TIMEOUT")); }, this.timeoutMs);
+    });
     try {
-      const response = await this.fetcher(`${this.origin}/storage/v1/${path}`, { method, headers: { ...this.headers, ...headers }, body: body ? new Uint8Array(body) : undefined, signal: controller.signal, redirect: "error", credentials: "omit", cache: "no-store" });
-      const bytes = await boundedBytes(response.body, response.ok ? limit : 8192, response.headers.get("content-length"), this.timeoutMs);
+      const response = await Promise.race([this.fetcher(`${this.origin}/storage/v1/${path}`, { method, headers: { ...this.headers, ...headers }, body: body ? new Uint8Array(body) : undefined, signal: controller.signal, redirect: "error", credentials: "omit", cache: "no-store" }), deadline]);
+      const bytes = await Promise.race([boundedBytes(response.body, response.ok ? limit : 8192, response.headers.get("content-length"), this.timeoutMs), deadline]);
       return { status: response.status, contentType: (response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase(), bytes };
     } catch (error) {
       if (error instanceof StorageUnavailableError) throw error;

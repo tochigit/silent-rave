@@ -59,7 +59,9 @@ test("immutable concurrent real PDFs return the same stored winner; missing rege
   await control({ fault: { operation: "authenticated", status: 500, once: true } });
   await expect(getTicketPdf(id)).rejects.toThrow("Storage temporarily unavailable");
   expect((await db.ticketUnit.findUniqueOrThrow({ where: { id } })).pdfUrl).toBe(first.key);
+  const sequence = (await db.ticketUnit.findUniqueOrThrow({ where: { id } })).syncSeq;
   expect((await getTicketPdf(id)).bytes).toEqual(first.bytes);
+  expect((await db.ticketUnit.findUniqueOrThrow({ where: { id } })).syncSeq).toBe(sequence);
   await control({ remove: `sr-private/${first.key}` });
   expect((await getTicketPdf(id)).key).toBe(first.key);
   await db.venue.update({ where: { id: f.venue.id }, data: { name: "Updated venue" } });

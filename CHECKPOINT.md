@@ -24,11 +24,18 @@ New tests cover boundaries, real images/PDF concurrency, provider faults, privac
 retries/accounting and backfill/public-role denial. Final Node ZIP acceptance now
 uses fake Storage HTTP, with application-signed proof reads and linked accounting.
 
+Draft PR #7: https://github.com/tochigit/silent-rave/pull/7 (do not merge).
+Published implementation head before the current fixes: `bb78a8112656b71ee52b28ea8f41cec0194d469e`.
 Local Bun Prisma generation STALLED and was stopped; it is incomplete. Supported
-Node 24 generation subsequently PASSED. Types/checks and draft publication are
-currently pending, never claimed passed. Windows command/module startup is unusually
-slow. Next: finish type/lint/focused checks; resolve failures, publish draft CI if
-needed; migration/backfill/native/full Windows/Linux acceptance and browser checks;
+Node 24 generation, both TypeScript configurations, lint, 7 readiness tests and
+route-policy guard audit PASSED locally. Windows startup is unusually slow.
+CI 37546344560 FAILED on both platforms at the new backfill fixture: synthetic
+ONLINE order lacked its required hold expiry. Native ZIP acceptance passed before
+that failure. Earlier runs 37545909437/37546025639 were canceled/failed, never passes.
+The missing fixture field is now fixed. Cached PDF reads also avoid needless
+scanner sync-sequence updates. Browser connection attempts timed out; controlled
+owned-Chrome acceptance remains pending, as do the full new regressions.
+Next: finish migration/backfill/native/full Windows/Linux acceptance and browser checks;
 then exact-head evidence/docs/handoff and ONE completed PR, STOP FOR REVIEW.
 Supabase/Postgres/UI and branch/checkpoint skills read; current public docs/changelog
 reviewed without accessing hosted data. readyForLaunch=false remains intentional.

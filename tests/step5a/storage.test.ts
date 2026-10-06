@@ -66,6 +66,8 @@ test("only verified object absence is null; auth/throttle/outage/redirect/malfor
     await expect(redirects.getObject(key)).rejects.toBeInstanceOf(StorageUnavailableError);
     const badType = new SupabaseStorage({ ...config(fake), fetch: (async () => new Response(pdf, { headers: { "content-type": "text/html" } })) as unknown as typeof fetch });
     await expect(badType.getObject(key)).rejects.toMatchObject({ code: "TYPE" });
+    const unresponsive = new SupabaseStorage({ ...config(fake), timeoutMs: 80, fetch: (() => new Promise<Response>(() => {})) as unknown as typeof fetch });
+    await expect(unresponsive.getObject(key)).rejects.toMatchObject({ code: "TIMEOUT" });
     await expect(adapter.putObject(key, new Uint8Array(PDF_OBJECT_BYTES + 1), "application/pdf")).rejects.toBeInstanceOf(StorageUnavailableError);
   } finally { fake.server.stop(true); }
 });

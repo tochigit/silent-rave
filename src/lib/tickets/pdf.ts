@@ -99,7 +99,7 @@ export async function getTicketPdf(ticketId: string) {
       await tx.$queryRaw`SELECT id FROM orders WHERE id = (SELECT order_id FROM ticket_units WHERE id = ${ticketId}::uuid) FOR UPDATE`;
       const fresh = await ticketPdfInputs(ticketId, tx);
       if (await pdfCacheKey(fresh.input) !== key) return false;
-      await tx.ticketUnit.update({ where: { id: ticketId }, data: { pdfUrl: key } });
+      if (fresh.storedKey !== key) await tx.ticketUnit.update({ where: { id: ticketId }, data: { pdfUrl: key } });
       await storageLinked(tx, key, "TICKET", ticketId);
       return true;
     }, TX_OPTIONS);

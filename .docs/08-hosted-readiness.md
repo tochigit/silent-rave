@@ -224,8 +224,8 @@ Configure root/admin/staff DNS and HTTPS only after approval; verify cookie
 scope and all hostname rewrites. Vercel's native Node path or Netlify's OpenNext
 adapter must bundle Prisma/sharp/font files/scanner assets and keep private keys
 out of client artifacts. Preserve assets/fonts/NotoSans-Regular.ttf tracing.
-The current upload envelope can reach 5 MiB; provider ceilings apply before
-handler validation. Verify multipart overhead near the 4 MiB file cap and reduce
+Batch A bounds files at 3 MiB and multipart envelopes at 3.25 MiB; provider ceilings apply before
+handler validation. Verify multipart overhead near the 3 MiB file cap and reduce
 the client/server envelope together if needed. Do not assume host ignores it.
 
 Resend needs sender SPF/DKIM verification; review DMARC without overwriting
