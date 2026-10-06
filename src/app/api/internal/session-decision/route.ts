@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { validateSessionToken, extendSessionIfNeeded } from "@/lib/auth/session";
-import { deploymentId, publicOrigins } from "@/lib/hosting/config";
+import { deploymentId, trustedOriginAllowed } from "@/lib/hosting/config";
 import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { privateHeaders, routePolicy, type Decision } from "@/lib/auth/policy";
 export const runtime = "nodejs";
@@ -36,9 +36,11 @@ export async function POST(request: NextRequest) {
     try { body = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
     catch { return reply({ error: "Invalid JSON" }, 400); }
     const input = schema.safeParse(body);
-    if (!input.success || !publicOrigins().includes(input.data.publicOrigin)) return reply({ error: "Invalid decision request" }, 400);
+    if (!input.success || !trustedOriginAllowed(input.data.publicOrigin, input.data.originalPathname)) return reply({ error: "Invalid decision request" }, 400);
     const value = input.data;
-    const policy = routePolicy(new URL(value.publicOrigin).hostname, value.originalPathname);
+    let policy;
+    try { policy = routePolicy(new URL(value.publicOrigin).hostname, value.originalPathname); }
+    catch { return reply({ error: "Invalid route policy" }, 400); }
     if (policy.crossSurface || policy.surface !== value.surface || policy.login || policy.effectivePathname !== value.effectivePathname) return reply({ error: "Invalid route policy" }, 400);
     const validated = await validateSessionToken(value.token);
     let decision: Decision["decision"] = "UNAUTHENTICATED";
