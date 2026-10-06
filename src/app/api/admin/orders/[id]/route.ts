@@ -4,6 +4,7 @@ import { guardApi, ADMIN_API_ROLES } from "@/lib/auth/guards";
 import { getStorage } from "@/lib/storage";
 import { PROOF_SIGNED_URL_TTL_SECONDS } from "@/lib/constants";
 import { emailJobDto, emailJobSelect } from "@/lib/email/dto";
+import { privateHeaders } from "@/lib/auth/policy";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/admin/orders/:id — full review detail (03 v21): buyer info, line
@@ -95,15 +96,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   // Mint short-lived signed URLs per request (60–120 s). The serving route
   // re-checks the OWNER session AND the signature AND the expiry — none of
   // the three alone is enough (04: proof images are OWNER-only).
-  const storage = getStorage();
-  const proofs = await Promise.all(
+  const proofs = await (async () => {
+    const storage = getStorage();
+    return Promise.all(
     order.proofs.map(async (proof) => ({
       ...proof,
       holderNames: undefined,
       storagePath: undefined, // never leak the raw private path to the client
       image_url: await storage.createSignedUrl(proof.storagePath, PROOF_SIGNED_URL_TTL_SECONDS),
     }))
-  );
+    );
+  })().catch(() => null);
+  if (!proofs) return NextResponse.json({ error: "Proof images temporarily unavailable. Contact the owner to reconcile storage." }, { status: 503, headers: privateHeaders });
 
   return NextResponse.json(
     {

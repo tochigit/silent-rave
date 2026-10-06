@@ -87,6 +87,12 @@ test("private remote proof/PDF gates stay application-only; OWNER signature expi
   await db.ticketUnit.update({ where: { id: approved.tickets[0].id }, data: { voidedAt: new Date() } }); expect((await api(newPath)).status).toBe(410);
   await db.ticketUnit.update({ where: { id: approved.tickets[0].id }, data: { voidedAt: null } }); await db.order.update({ where: { id: approved.order.id }, data: { status: "REFUNDED" } }); expect((await api(newPath)).status).toBe(410);
   expect((await api("/api/banners/not-a-proof.jpg")).status).toBe(404);
+  const original = await db.paymentProof.findFirstOrThrow({ where: { orderId: f.order.id } });
+  await db.paymentProof.update({ where: { id: original.id }, data: { storagePath: "legacy-unsupported.jpg" } });
+  const legacy = await api(`/api/admin/orders/${f.order.id}`, { cookies: owner.cookies });
+  expect(legacy.status).toBe(503); expect(legacy.headers.get("cache-control")).toContain("no-store");
+  expect(await legacy.text()).not.toContain("legacy-unsupported.jpg");
+  expect((await db.paymentProof.findUniqueOrThrow({ where: { id: original.id } })).storagePath).toBe("legacy-unsupported.jpg");
 }, 90_000);
 
 test("rollback/crash/replaced/unknown references stay reconcilable; dry-run pagination/privacy/grace never deletes", async () => {
