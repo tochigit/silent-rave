@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
     ],
   },
   outputFileTracingExcludes: {
-    "/*": ["./scripts/**/*", "./tests/**/*", "./reports/**/*", "./.test-runtime/**/*", "./.git/**/*",
+    "*": ["./scripts/**/*", "./tests/**/*", "./reports/**/*", "./.test-runtime/**/*", "./.git/**/*",
       "./.docs/**/*", "./netlify/**/*", "./tools/**/*", "./.env*", "./prisma/.env*"],
   },
   reactStrictMode: false,
