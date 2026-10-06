@@ -18,6 +18,7 @@ This is a living specification intended to be handed to an implementation model 
 | [`06-auth-and-roles.md`](./06-auth-and-roles.md) | Admin vs. staff roles, subdomain routing, session scope, audit logging |
 | [`07-owner-and-scanner-operations.md`](./07-owner-and-scanner-operations.md) | Owner/staff operating guide, offline preparation, conflicts and recovery |
 | [`08-hosted-readiness.md`](./08-hosted-readiness.md) | Step 5 local preflight, provider limits, forward migrations and deployment plan |
+| [`09-netlify-runtime-auth.md`](./09-netlify-runtime-auth.md) | Step 5C.1 ingress ordering blocker, evidence and revised integration proposal |
 | [`CHANGELOG.md`](./CHANGELOG.md) | What changed from v2 to v2.1 and why |
 
 ## Reading order

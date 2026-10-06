@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-06",
+  "scope": "Synthetic local adapter generation and declaration merge; no app build, Edge execution, deployment or database",
+  "adapter": {
+    "version": "5.16.2",
+    "gitHead": "36cf34c6031a8a5b02587fd9d45edecddc6e60d8"
+  },
+  "edgeBundler": {
+    "version": "16.1.2",
+    "gitHead": "56df60307c59031b2ab044446d634b10851459e3"
+  },
+  "generatedManifest": {
+    "version": 1,
+    "functions": [
+      {
+        "function": "___netlify-edge-handler-node-middleware",
+        "name": "Next.js Middleware Handler",
+        "pattern": "^/admin(?:/.*)?$",
+        "generator": "@netlify/plugin-nextjs@5.16.2"
+      },
+      {
+        "function": "___netlify-edge-handler-node-middleware",
+        "name": "Next.js Middleware Handler",
+        "pattern": "^/api/admin(?:/.*)?$",
+        "generator": "@netlify/plugin-nextjs@5.16.2"
+      }
+    ]
+  },
+  "userTomlDeclaration": {
+    "function": "request-context",
+    "path": "/*"
+  },
+  "matchedAdminOrder": [
+    "___netlify-edge-handler-node-middleware",
+    "request-context"
+  ],
+  "proposedInternalManifestOrder": [
+    "request-context",
+    "___netlify-edge-handler-node-middleware"
+  ],
+  "proposalLimit": "Declaration merge only; build hook integration and runtime are UNVERIFIED",
+  "gate": "FAILED: framework proxy precedes user ingress bridge"
+}

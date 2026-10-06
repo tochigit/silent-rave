@@ -1,5 +1,68 @@
 # Silent Rave checkpoint
 
+Current status: 2026-10-06, Africa/Lagos. **Step 5C.1 INCOMPLETE: ingress ordering gate failed.**
+
+Steps 1–4 and Step 5 readiness/preflight are complete and merged. PR #5 merged
+at `3b69187d017403fb84777f9c3406c68bb3e96a55`; live main CI
+[37232720318](https://github.com/tochigit/silent-rave/actions/runs/37232720318)
+passed on that exact SHA. Netlify is selected for preparation. The user says the
+domain is ready; DNS, hosted runtime and launch readiness are unverified.
+
+## Authorized milestone and blocker
+
+User authorized the Step 5B plan's first milestone: local Netlify runtime/auth
+compatibility. Its first gate failed before application implementation: Netlify's
+generated Next proxy runs before user-created ingress Edge Functions. The proxy
+therefore cannot receive trusted metadata from the proposed user ingress bridge.
+The plan explicitly requires saving a blocker and a revised proposal at this gate.
+
+Branch: `feat/step5c1-netlify-runtime-auth`, from verified current main above.
+Publish this incomplete milestone as a DRAFT PR for review. Verify its branch
+HEAD and checks live; the PR description records final publication evidence.
+All earlier branches are preserved; no applicable AGENTS.md found.
+
+Changes: current checkpoint, historical-document status notices,
+`.docs/09-netlify-runtime-auth.md`, and the small synthetic diagnostic/JSON evidence
+under `reports/step5c1-*`. Application code, dependency locks, Prisma schema/
+migrations and hosting configuration remain unchanged.
+
+## Passed, failed and unverified
+
+- Live Git/PR #5/main CI verification passed; initial working tree was clean.
+- Published OpenNext 5.16.2 generated a synthetic Node-proxy manifest. Published
+  edge-bundler 16.1.2 merged it ahead of a user TOML ingress declaration.
+  Diagnostic exited 0, reproducing the blocker; compatibility gate FAILED.
+- Prepending ingress to the integration manifest yields the desired order in
+  the same diagnostic. This proves declaration merging only, not build hooks,
+  function bundling/execution, request propagation or hosted runtime.
+- Proposed revision: explicitly order an inspected OpenNext adapter and a local
+  ingress build integration. Details and remaining proof are in doc 09.
+- New auth/PDF/native-module/adapter acceptance is NOT RUN: implementation
+  stopped at the required gate. Main CI proves the historical baseline only;
+  any PR CI verifies the unchanged application, not the proposed integration.
+- Supabase MCP connection and both skills were completed before this milestone.
+  No hosted DB query, SQL, migration or configuration was performed.
+- No app/database/server started; diagnostic scratch/provider packages remain
+  ignored under `.test-runtime` with synthetic data. Root .env was not read or
+  written. Verify process inventory on resume; preserve unrelated processes.
+
+## Exact next action
+
+Review `.docs/09-netlify-runtime-auth.md` and explicitly continue **the same
+Step 5C.1** with its changed build integration design. First prove actual plugin
+order, final Edge bundle order and signed metadata propagation through a local
+credential-free Netlify build. Stop again if it cannot be proved. Preserve central
+auth and reject untrusted forwarding headers. Then complete the original auth/
+broker/session/Origin/build contracts and meaningful Windows/Linux acceptance on
+this same branch/PR, update this checkpoint, and stop for review.
+
+No merge or branch deletion, Step 5C.2, hosted setup/SQL/migrations, DNS,
+purchases, deployment or real mail/push is authorized.
+
+---
+
+## Historical Step 5 checkpoint (2026-10-03; superseded by current status above)
+
 Updated 2026-10-03, Africa/Lagos. Specifications: .docs v2.1.2.
 
 1. Baseline COMPLETE; PR #1 merged at 982eb9f.
