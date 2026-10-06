@@ -1,6 +1,6 @@
 # Silent Rave checkpoint
 
-2026-10-06, Africa/Lagos. **Batch A IN PROGRESS: uploads and durable storage.**
+2026-10-07, Africa/Lagos. **Batch A IN PROGRESS: uploads and durable storage.**
 
 Current branch: `feat/step5c-upload-storage`, from verified merged main/origin/main
 `0da2051ca9c617fbe09d50cabcd2e2232045fd9f`. PR #6 is merged; exact post-merge
@@ -15,12 +15,21 @@ checks, additive migration authoring/replay, progress checkpoints and ONE focuse
 Stop for review after publication. No merge or Batch B; no hosted queries/writes,
 bucket setup/import/deletion, DNS/deployment/purchases/real sends/owner changes.
 
-Implemented so far, UNVERIFIED: shared 3 MiB/3.25 MiB constants; bounded multipart
-reader/metadata contract; bounded Sharp sanitation; browser proof/banner preparation
-and retry feedback. Next: integrate routes, HTTP storage and immutable collisions,
-shared application signatures, additive ledger/linkage and dry-run report; meaningful
-fault/privacy/artifact/concurrency/migration/browser checks; full Windows/Linux CI,
-native build, documentation and PR. No check is claimed passed for new code yet.
+Implemented, awaiting acceptance: shared 3 MiB/3.25 MiB request/output limits,
+bounded multipart reader, Sharp sanitation, browser preparation/retry feedback,
+Supabase HTTP adapter and typed no-overwrite/collision/failure behavior, shared
+application signatures, immutable first-writer PDFs, additive storage ledger/linkage
+and OWNER dry-run lifecycle report. Doc 10 describes configuration and legacy gates.
+New tests cover boundaries, real images/PDF concurrency, provider faults, privacy,
+retries/accounting and backfill/public-role denial. Final Node ZIP acceptance now
+uses fake Storage HTTP, with application-signed proof reads and linked accounting.
+
+Local Bun Prisma generation STALLED and was stopped; it is incomplete. Supported
+Node 24 generation subsequently PASSED. Types/checks and draft publication are
+currently pending, never claimed passed. Windows command/module startup is unusually
+slow. Next: finish type/lint/focused checks; resolve failures, publish draft CI if
+needed; migration/backfill/native/full Windows/Linux acceptance and browser checks;
+then exact-head evidence/docs/handoff and ONE completed PR, STOP FOR REVIEW.
 Supabase/Postgres/UI and branch/checkpoint skills read; current public docs/changelog
 reviewed without accessing hosted data. readyForLaunch=false remains intentional.
 

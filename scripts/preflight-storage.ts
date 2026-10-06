@@ -16,7 +16,7 @@ try {
   const order = await db.order.create({ data: { orderCode: `SR-${randomUUID().slice(0, 8).toUpperCase()}`, eventId: event.id, customerName: "Legacy fixture", customerEmail: "legacy@example.test", customerPhone: "08012345678", paymentAccountId: bank.id, totalKobo: 100, status: "APPROVED" } });
   const proof = await db.paymentProof.create({ data: { orderId: order.id, attemptNo: 1, clientSubmissionId: randomUUID(), storagePath: `proofs/${order.id}/legacy-attempt.jpg`, fileSha256: "legacy-unknown", mimeType: "image/jpeg", sizeBytes: 100, transferReference: randomUUID(), senderName: "Fixture" } });
   const ticketId = randomUUID(); const pdf = `tickets/${ticketId}/${"a".repeat(64)}.pdf`;
-  await db.ticketUnit.create({ data: { id: ticketId, orderId: order.id, eventId: event.id, tierId: tier.id, unitIndex: 1, qrToken: "legacy-fixture-qr", pdfUrl: pdf } });
+  await db.$executeRaw`INSERT INTO ticket_units (id, order_id, event_id, tier_id, qr_token, pdf_url) VALUES (${ticketId}::uuid, ${order.id}::uuid, ${event.id}::uuid, ${tier.id}::uuid, 'legacy-fixture-qr', ${pdf})`;
   const banner = `/api/banners/${randomUUID()}.webp`; await db.event.update({ where: { id: event.id }, data: { bannerImageUrl: banner } });
   for (const role of ["anon", "authenticated"]) await db.$executeRawUnsafe(`CREATE ROLE ${role} NOLOGIN`);
   await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "migrate", "deploy"], fixture.env, chunk => output.write(chunk));

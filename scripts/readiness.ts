@@ -93,12 +93,12 @@ export function inspectLaunchConfig(env: Env) {
     readyForLaunch: false,
     checks,
     codeBlockers: [
-      "Supabase storage adapter is a stub; preserve OWNER plus signature authorization for proof reads.",
+      "Durable storage code requires separately approved bucket setup, legacy reconciliation and hosted privacy/durability acceptance.",
       "Process-local rate limits must become shared before serverless launch.",
       "Supabase Data API exposure/grants/RLS require a reviewed protection plan.",
     ],
     externalReview: [
-      "Vercel Hobby commercial-use eligibility and one-minute external scheduler.",
+      "Netlify runtime configuration and one-minute external scheduler.",
       "Hosted migration history, pooler lock behavior, storage privacy and recovery.",
       "Sender DNS, provider quotas, hosted runtime, physical devices and deployed smoke.",
     ],

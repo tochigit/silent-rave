@@ -11,6 +11,7 @@ process.chdir(input.functionRoot);
 // This harness has no provider credentials and must never contact a provider.
 const originalFetch = globalThis.fetch;
 const storageObjects = new Map();
+let beforeStorageRead;
 process.env.STORAGE_DRIVER = "supabase";
 process.env.SUPABASE_URL = "https://storage.native-fixture.invalid";
 process.env.SUPABASE_STORAGE_SERVER_KEY = "sb_secret_native_synthetic_fixture";
@@ -34,6 +35,7 @@ globalThis.fetch = async (url, init) => {
     const object = storageObjects.get(key);
     if (!object) return Response.json({ code: "NoSuchKey" }, { status: 404 });
     if (match[1] === "info") return Response.json({ size: object.bytes.length, content_type: object.type, metadata: object.metadata });
+    if (beforeStorageRead) { const action = beforeStorageRead; beforeStorageRead = undefined; await action(); }
     return new Response(object.bytes, { headers: { "content-type": object.type } });
   }
   if (target.origin === "http://127.0.0.1:1") return Promise.resolve(new Response(null, { status: init?.method === "PUT" ? 200 : 404 }));
@@ -101,9 +103,16 @@ try {
   assert(signedProof.startsWith("/api/admin/storage/object?"), "Application URL only");
   const privateImage = await call(signedProof, { headers: owner }); assert.equal(privateImage.status, 200); privateResponse(privateImage);
   assert(Buffer.from(await privateImage.arrayBuffer()).equals(Buffer.from(sanitized)));
+  const ownerRow = await db.staffUser.findFirstOrThrow({ where: { role: "OWNER" } });
+  beforeStorageRead = () => db.staffUser.update({ where: { id: ownerRow.id }, data: { isActive: false } });
+  const revokedDuringRead = await call(signedProof, { headers: owner }); assert.equal(revokedDuringRead.status, 401); privateResponse(revokedDuringRead);
+  await revokedDuringRead.arrayBuffer(); await db.staffUser.update({ where: { id: ownerRow.id }, data: { isActive: true } });
+  const approvedUnit = await db.ticketUnit.findFirstOrThrow({ where: { pdfUrl: { not: null } } });
+  beforeStorageRead = () => db.order.update({ where: { id: approvedUnit.orderId }, data: { statusTokenVersion: { increment: 1 } } });
+  const revokedToken = await call(input.pdfPath, { headers: { "x-status-token": input.pdfToken } }); assert.equal(revokedToken.status, 404); privateResponse(revokedToken); await revokedToken.arrayBuffer();
   await Promise.all(backgrounds);
   await writeFile(input.output, JSON.stringify({ node: process.version, platform: process.platform, finalZipIsolation: true, functionZipFingerprint: input.functionZipFingerprint, packagedPrismaQuery: true, packagedSharpUpload: true, exifRemoved: true,
-    independentLiveGuards: true, secretGatedBroker: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
+    independentLiveGuards: true, secretGatedBroker: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, permissionChangesDuringStorageRead: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
   console.log("Packaged Node handler and native dependency checks passed.");
   await db.$disconnect(); process.exit(0);
 } catch (error) {

@@ -59,11 +59,12 @@ test("refuses fixture deployment and incomplete push while allowing manual fallb
   blocked({ VAPID_PUBLIC_KEY: "only-one-key" }, "push-config-pair");
   expect(inspectLaunchConfig(candidate).configurationValid).toBe(true);
 });
-test("migration fingerprints cover the unchanged chronological forward chain", async () => {
+test("migration fingerprints cover the chronological additive forward chain", async () => {
   const migrations = await migrationFingerprints();
   expect(migrations.map((m) => m.name)).toEqual([
     "20260930000000_v2_1_baseline", "20261002000000_phase4_email_state",
     "20261002010000_step3_content_payment_snapshot", "20261003000000_step4_staff_password",
+    "20261006000000_step5_storage_accounting",
   ]);
   for (const migration of migrations) expect(migration.sha256).toMatch(/^[a-f0-9]{64}$/);
 });
