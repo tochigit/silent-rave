@@ -72,6 +72,8 @@ try {
   fixture = await startFixture((chunk) => {
     output.write(chunk);
   });
+  const unavailableUrl = "postgresql://fixture@127.0.0.1:1/silentrave_test";
+  const outageEnvironment = { DATABASE_URL: unavailableUrl, DIRECT_URL: unavailableUrl, TEST_DATABASE_URL: unavailableUrl };
   const startApp = async (
     overrides: Record<string, string> = {},
     mode: "baseline" | "phase4" | "customer" | "operations" | "runtime" = "phase4",
@@ -326,14 +328,14 @@ try {
         (chunk) => output.write(chunk),
       );
     }
-    const env = await startApp({}, group.mode);
+    const env = await startApp(group.paths.includes("tests/step5c1/unavailable.test.ts") ? outageEnvironment : {}, group.mode);
     exitCode = await runTests(group.paths, env);
     await stopApp();
     if (exitCode !== 0) break;
   }
   if (step5c1 && !focus.length && exitCode === 0) {
     log("Runtime outage acceptance: unreachable loopback database; no hosted connections.");
-    const unavailable = await startApp({ DATABASE_URL: "postgresql://fixture@127.0.0.1:1/unavailable", DIRECT_URL: "postgresql://fixture@127.0.0.1:1/unavailable" }, "runtime");
+    const unavailable = await startApp(outageEnvironment, "runtime");
     exitCode = await runTests(["tests/step5c1/unavailable.test.ts"], unavailable);
     await stopApp();
   }

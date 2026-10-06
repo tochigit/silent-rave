@@ -15,9 +15,14 @@ with zipfile.ZipFile(archive) as package:
         if not destination.is_relative_to(target) or "\\" in entry.filename:
             raise RuntimeError("Unsafe function ZIP entry")
         if stat.S_ISLNK(entry.external_attr >> 16):
-            source = (destination.parent / package.read(entry).decode('utf-8').replace('\\', '/')).resolve()
+            raw = package.read(entry).decode('utf-8').replace('\\', '/')
+            source = (destination.parent / raw).resolve()
+            if not source.is_relative_to(target) and source.is_relative_to(archive.resolve().parents[2]) and '/node_modules/' in raw:
+                # Windows standalone aliases may record an absolute build path.
+                # Resolve only the corresponding files already inside this ZIP.
+                source = (target / 'node_modules' / raw.split('/node_modules/', 1)[1]).resolve()
             if not source.is_relative_to(target):
-                raise RuntimeError("Unsafe function ZIP link")
+                raise RuntimeError(f"Unsafe function ZIP link: {entry.filename} -> {raw}")
             links.append((destination, source))
         else:
             package.extract(entry, target)
