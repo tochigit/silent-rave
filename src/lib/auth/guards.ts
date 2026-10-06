@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { StaffRole } from "@prisma/client";
 import { getSessionUserFromRequest } from "./session";
-import { db } from "@/lib/db";
+import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
+import { privateHeaders } from "./policy";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // API route guard (06-auth-and-roles.md — "Every API endpoint that touches
@@ -35,20 +36,23 @@ export async function guardApi(
   request: NextRequest,
   allowed: StaffRole[]
 ): Promise<ApiGuardResult> {
-  const validated = await getSessionUserFromRequest(request);
+  try { readTrustedContextNode(request); }
+  catch { return { ok: false, response: NextResponse.json({ error: "Untrusted request context" }, { status: 421, headers: privateHeaders }) }; }
+  let validated;
+  try { validated = await getSessionUserFromRequest(request); }
+  catch { return { ok: false, response: NextResponse.json({ error: "Authentication service unavailable" }, { status: 503, headers: privateHeaders }) }; }
   if (!validated) {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Authentication required" }, { status: 401 }),
+      response: NextResponse.json({ error: "Authentication required" }, { status: 401, headers: privateHeaders }),
     };
   }
   if (!allowed.includes(validated.user.role)) {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+      response: NextResponse.json({ error: "Forbidden" }, { status: 403, headers: privateHeaders }),
     };
   }
-  const account = await db.staffUser.findUnique({ where: { id: validated.user.id }, select: { mustChangePassword: true } });
-  if (account?.mustChangePassword) return { ok: false, response: NextResponse.json({ error: "Change your temporary password before continuing.", code: "PASSWORD_CHANGE_REQUIRED" }, { status: 403 }) };
+  if (validated.user.mustChangePassword) return { ok: false, response: NextResponse.json({ error: "Change your temporary password before continuing.", code: "PASSWORD_CHANGE_REQUIRED" }, { status: 403, headers: privateHeaders }) };
   return { ok: true, user: validated.user };
 }

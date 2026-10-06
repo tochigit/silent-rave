@@ -57,7 +57,7 @@ try {
     output.write(chunk);
   });
   const port = await freePort();
-  const env = { ...fixture.env, TEST_BASE_URL: `http://127.0.0.1:${port}` };
+  const env = { ...fixture.env, TEST_BASE_URL: `http://127.0.0.1:${port}`, AUTH_INTERNAL_BASE_URL: `http://127.0.0.1:${port}` };
   const next = path.resolve("node_modules/next/dist/bin/next");
   // Node CSS workers cannot accept Bun-only flags via Next's NODE_OPTIONS.
   server = spawn(
@@ -105,13 +105,15 @@ try {
     await Bun.sleep(250);
   }
   if (!ready) throw new Error("Fixture app readiness timed out.");
+  const brokerWarm = await fetch(env.TEST_BASE_URL + "/api/internal/session-decision", { method: "POST", signal: AbortSignal.timeout(120_000) });
+  if (brokerWarm.status !== 401) throw new Error("Fixture broker warmup failed closed check.");
   const loginWarm = await fetch(env.TEST_BASE_URL + "/api/auth/login", {
     method: "POST",
     headers: {
       host: "localhost:3000",
       origin: "http://localhost:3000",
       "content-type": "application/json",
-      "x-forwarded-for": "127.0.0.254",
+      "x-sr-test-ip": "127.0.0.254",
     },
     body: "{}",
     signal: AbortSignal.timeout(120_000),

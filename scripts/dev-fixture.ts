@@ -14,6 +14,7 @@ try {
     const step = process.argv.includes("--browser-step4") ? "step4" : "step3";
     const port = step === "step4" ? await freePort() : 3000;
     fixture.env.TEST_BASE_URL = `http://localhost:${port}`;
+    fixture.env.AUTH_INTERNAL_BASE_URL = `http://127.0.0.1:${port}`;
     await runCommand(
       [process.execPath, "--no-env-file", "scripts/build-scanner.ts"],
       fixture.env,

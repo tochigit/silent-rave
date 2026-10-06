@@ -43,7 +43,7 @@ export async function api(path: string, options: ApiOptions = {}): Promise<Respo
   if (options.origin !== null && options.origin !== undefined) {
     headers.origin = options.origin;
   }
-  if (options.ip) headers["x-forwarded-for"] = options.ip;
+  if (options.ip) headers["x-sr-test-ip"] = options.ip;
   if (options.cookies) {
     headers.cookie = Object.entries(options.cookies)
       .map(([name, value]) => `${name}=${value}`)

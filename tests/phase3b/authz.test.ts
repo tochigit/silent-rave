@@ -259,7 +259,7 @@ describe("status tokens on order routes", () => {
       form.append("transfer_reference", `A3-${c.label.replace(/\s+/g, "")}${Date.now()}`);
       form.append("sender_name", "S");
       form.append("client_submission_id", `a3-${c.label.replace(/\s+/g, "")}-${Date.now()}`);
-      const headers: Record<string, string> = { "x-forwarded-for": "10.50.1.2" };
+      const headers: Record<string, string> = { "x-sr-test-ip": "10.50.1.2" };
       if (c.token !== undefined) headers["x-status-token"] = c.token; // omitted entirely → missing
       const t0 = performance.now();
       const response = await fetch(`${BASE}/api/orders/${c.code}/proof`, { method: "POST", headers, body: form });

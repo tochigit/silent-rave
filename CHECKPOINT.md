@@ -1,5 +1,15 @@
 # Silent Rave checkpoint
 
+Active continuation (2026-10-06): Step 5C.1 IN PROGRESS on the existing branch
+and PR #6. The user approved the revised build integration and authorized fixing
+further issues within this prompt without additional review pauses. No later
+milestone, hosted setup, migration, DNS, deployment, merge or branch deletion.
+Application adaptation is underway: pure proxy policy, protected Node broker,
+signed ingress/context verifiers, strict Origins/live session renewal and build
+sanitization. Validation is pending; do not claim the previous CI proves this work.
+Inspect current diff before continuing. Root .env remains absent. No hosted data
+was touched. The prior stopped checkpoint below is historical for this run.
+
 Current status: 2026-10-06, Africa/Lagos. **Step 5C.1 INCOMPLETE: ingress ordering gate failed.**
 
 Steps 1–4 and Step 5 readiness/preflight are complete and merged. PR #5 merged

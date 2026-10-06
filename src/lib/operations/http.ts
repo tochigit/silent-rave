@@ -12,11 +12,8 @@ export class OperationError extends Error {
 }
 export const uuid = z.uuid();
 export const text = z.string().trim().min(1).max(200);
-export const privateHeaders = {
-  "Cache-Control": "private, no-store",
-  "Referrer-Policy": "no-referrer",
-  "X-Robots-Tag": "noindex, nofollow",
-};
+import { privateHeaders } from "@/lib/auth/policy";
+export { privateHeaders };
 export function reply(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: privateHeaders });
 }

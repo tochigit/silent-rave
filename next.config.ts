@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   logging: { incomingRequests: false },
   async headers() {
     return [
+      ...["/api/admin/:path*", "/api/staff/:path*", "/api/auth/:path*", "/api/internal/:path*", "/admin/:path*", "/staff/:path*"].map(source => ({ source, headers: [
+        { key: "Cache-Control", value: "private, no-store" }, { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Netlify-CDN-Cache-Control", value: "no-store" }, { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      ] })),
       {
         source: "/api/orders/:path*",
         headers: [
@@ -36,9 +41,8 @@ const nextConfig: NextConfig = {
     ],
   },
   reactStrictMode: false,
-  // Keep Prisma (and its native query engine) external in server bundles —
-  // required for src/proxy.ts (Next 16 proxy runs on the Node.js runtime and
-  // imports the Prisma client to validate sessions centrally).
+  // Native dependencies belong in Node handlers. The proxy uses a fetch-only
+  // decision broker and cannot import these packages.
   // "bcryptjs" is listed because the password hashing currently uses the
   // pure-JS library (see src/lib/auth/password.ts — deliberate sandbox
   // constraint, flagged for a production keep-or-swap decision). If it is

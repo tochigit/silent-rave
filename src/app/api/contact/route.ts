@@ -1,9 +1,9 @@
+import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { type NextRequest, NextResponse } from "next/server";
 import { contactSchema, deliverContact } from "@/lib/content/contact";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 export async function POST(request: NextRequest) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = readTrustedContextNode(request).clientIp;
   const limit = consumeRateLimit("contact-ip", ip, {
     limit: 5,
     windowMs: 3600000,

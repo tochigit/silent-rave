@@ -1,3 +1,4 @@
+import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import {
@@ -110,17 +111,12 @@ export async function POST(request: NextRequest) {
     if (error instanceof OrderServiceError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: error.httpStatus });
     }
-    console.error("[checkout/initialize] unexpected error:", error);
+    console.error("[checkout/initialize] unexpected error");
     return NextResponse.json({ error: "Checkout failed unexpectedly." }, { status: 500 });
   }
 }
 
-/** x-forwarded-for first hop, else "local" (dev server has no remote addr). */
+/** Canonical platform IP (explicit synthetic fixture identity in local tests). */
 function clientIp(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
-    if (first) return first;
-  }
-  return "local";
+  return readTrustedContextNode(request).clientIp;
 }

@@ -8,12 +8,13 @@ await mkdir("reports", { recursive: true });
 const focus = process.argv.slice(2);
 const step3 = process.env.SILENT_RAVE_TEST_STEP3 === "1";
 const step4 = process.env.SILENT_RAVE_TEST_STEP4 === "1";
-const suite = step4 ? "step4" : step3 ? "step3" : "phase4";
+const step5c1 = process.env.SILENT_RAVE_TEST_STEP5C1 === "1";
+const suite = step5c1 ? "step5c1" : step4 ? "step4" : step3 ? "step3" : "phase4";
 if (
   focus.some(
     (p) =>
       !new RegExp(
-        `^tests/${step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
+        `^tests/${step5c1 ? "(?:step5c1|step4|step3|phase4)" : step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
       ).test(p),
   )
 )
@@ -73,13 +74,14 @@ try {
   });
   const startApp = async (
     overrides: Record<string, string> = {},
-    mode: "baseline" | "phase4" | "customer" | "operations" = "phase4",
+    mode: "baseline" | "phase4" | "customer" | "operations" | "runtime" = "phase4",
   ) => {
     const port = await freePort();
     const env: Record<string, string> = {
       ...fixture!.env,
       ...overrides,
       TEST_BASE_URL: `http://127.0.0.1:${port}`,
+      AUTH_INTERNAL_BASE_URL: `http://127.0.0.1:${port}`,
     };
     // Next's CSS workers run Node. Bun's --no-env-file is propagated by Next
     // into NODE_OPTIONS, where Node rejects it. Keep the fixture runner under
@@ -127,6 +129,8 @@ try {
         /* Root readiness probe only; failed warmup contracts below fail immediately. */
       }
       if (probe?.ok) {
+        const brokerWarm = await fetch(env.TEST_BASE_URL + "/api/internal/session-decision", { method: "POST", signal: AbortSignal.timeout(120_000) });
+        if (brokerWarm.status !== 401) throw new Error("Fixture broker warmup failed closed check.");
         // Compile login before the original 30s authz setup hook starts.
         // Empty body is rejected before login/session creation; no credentials.
         const warm = await fetch(env.TEST_BASE_URL + "/api/auth/login", {
@@ -135,7 +139,7 @@ try {
             host: "localhost:3000",
             origin: "http://localhost:3000",
             "content-type": "application/json",
-            "x-forwarded-for": "127.0.0.254",
+            "x-sr-test-ip": "127.0.0.254",
           },
           body: "{}",
           signal: AbortSignal.timeout(120_000),
@@ -144,7 +148,7 @@ try {
           throw new Error("Fixture login warmup failed.");
         // Compile the worker's PDF/email modules before the unchanged 30s
         // acceptance test. Missing credentials fail before any job is claimed.
-        if (mode !== "baseline") {
+        if (mode !== "baseline" && mode !== "runtime") {
           const workerWarm = await fetch(
             env.TEST_BASE_URL + "/api/internal/process-email-jobs",
             { method: "POST", signal: AbortSignal.timeout(120_000) },
@@ -281,7 +285,7 @@ try {
   };
   let exitCode = 0;
   const groups = focus.length
-    ? [{ paths: focus, mode: "phase4" as const }]
+    ? [{ paths: focus, mode: focus.some(p => p.includes("/step5c1/")) ? "runtime" as const : "phase4" as const }]
     : [
         { paths: ["tests/phase3b/"], mode: "baseline" as const },
         { paths: ["tests/phase4/"], mode: "phase4" as const },
@@ -289,9 +293,10 @@ try {
           ? [{ paths: ["tests/step3/"], mode: "customer" as const }]
           : []),
         ...(step4 ? [{ paths: ["tests/step4/"], mode: "operations" as const }] : []),
+        ...(step5c1 ? [{ paths: ["tests/step5c1/runtime.test.ts"], mode: "runtime" as const }] : []),
       ];
   for (const group of groups) {
-    if (group.mode === "customer" || group.mode === "operations") {
+    if (group.mode === "customer" || group.mode === "operations" || group.mode === "runtime") {
       // Legacy tests deliberately alter order/counter rows. Their short holds
       // can lapse during a slow local run; the customer's real global expiry
       // sweep must start from a consistent fresh database, not those leftovers.

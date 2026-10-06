@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const result = await expireHolds();
     return NextResponse.json({ expired: result.expired }, { status: 200 });
   } catch (error) {
-    console.error("[internal/expire-holds] sweep failed:", error);
+    console.error("[internal/expire-holds] sweep failed");
     return NextResponse.json({ error: "Sweep failed." }, { status: 500 });
   }
 }
