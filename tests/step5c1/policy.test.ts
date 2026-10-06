@@ -92,6 +92,7 @@ test("a future API method or protected page without its independent guard fails 
   expect(auditRoutePolicy([{ file: "src/app/(admin)/admin/(protected)/future/page.tsx", source: 'export default function Page() { return null; }' }])).toHaveLength(1);
 });
 test("build integration is ordered, idempotent and rejects unknown adapter manifests", async () => {
+  await mkdir(".test-runtime", { recursive: true });
   const root = await mkdtemp(path.resolve(".test-runtime/ingress-test-"));
   const dir = path.join(root, ".netlify/edge-functions"); await mkdir(dir, { recursive: true });
   const file = path.join(dir, "manifest.json");

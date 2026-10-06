@@ -4,6 +4,8 @@ import { api, login, createStaffUser, OWNER_EMAIL, OWNER_PASSWORD, type Session 
 import { createSession, validateSessionToken, extendSessionIfNeeded } from "@/lib/auth/session";
 import { privateHeaders } from "@/lib/auth/policy";
 import { createHash } from "node:crypto";
+import { NextRequest } from "next/server";
+import { guardApi, ADMIN_API_ROLES, STAFF_API_ROLES } from "@/lib/auth/guards";
 let owner: Session, staff: Session, staffId: string;
 const digest = (token: string) => createHash("sha256").update(token).digest("hex");
 function isPrivate(response: Response) {
@@ -56,7 +58,13 @@ test("full Origins reject scheme, port, sibling and forwarded-header spoofing", 
   expect(admin.status).toBe(403); isPrivate(admin);
 }, 90_000);
 test("live staff state enforces temporary passwords and deactivation in broker and Node handlers", async () => {
+  const direct = () => new NextRequest("http://localhost:3000/api/staff/session", { headers: { cookie: `sr_session=${staff.cookies.sr_session}` } });
+  const allowed = await guardApi(direct(), STAFF_API_ROLES); expect(allowed.ok).toBe(true);
+  const wrongRole = await guardApi(direct(), ADMIN_API_ROLES); expect(wrongRole.ok).toBe(false);
+  if (!wrongRole.ok) { expect(wrongRole.response.status).toBe(403); isPrivate(wrongRole.response); }
   await db.staffUser.update({ where: { id: staffId }, data: { mustChangePassword: true } });
+  const nodeTemporary = await guardApi(direct(), STAFF_API_ROLES); expect(nodeTemporary.ok).toBe(false);
+  if (!nodeTemporary.ok) expect(nodeTemporary.response.status).toBe(403);
   const temporary = await api("/api/staff/session", { cookies: staff.cookies }); expect(temporary.status).toBe(403); isPrivate(temporary);
   expect((await temporary.json()).code).toBe("PASSWORD_CHANGE_REQUIRED");
   const page = await api("/staff/future", { cookies: staff.cookies }); expect(page.status).toBe(307);
@@ -64,6 +72,8 @@ test("live staff state enforces temporary passwords and deactivation in broker a
   // Password and logout stay reachable; invalid body is rejected without changing it.
   const password = await api("/api/auth/password", { cookies: staff.cookies, host: "staff.localhost:3000", origin: "http://staff.localhost:3000", body: {} }); expect(password.status).toBe(400);
   await db.staffUser.update({ where: { id: staffId }, data: { mustChangePassword: false, isActive: false } });
+  const nodeDisabled = await guardApi(direct(), STAFF_API_ROLES); expect(nodeDisabled.ok).toBe(false);
+  if (!nodeDisabled.ok) expect(nodeDisabled.response.status).toBe(401);
   const disabled = await api("/api/staff/session", { cookies: staff.cookies }); expect(disabled.status).toBe(401); isPrivate(disabled);
   await db.staffUser.update({ where: { id: staffId }, data: { isActive: true } });
 }, 90_000);
@@ -103,7 +113,7 @@ test("concurrent renewal never shortens expiry; lock-wait expiry, logout and dea
       if (scenario === "logout") await tx.session.delete({ where: { id: prior.session.id } });
       if (scenario === "deactivation") await tx.staffUser.update({ where: { id: staffId }, data: { isActive: false } });
       locked(); await finish;
-      if (scenario === "expiry") await tx.$queryRaw`SELECT pg_sleep(1.1)`;
+      if (scenario === "expiry") await tx.$queryRaw`SELECT pg_sleep(1.1)::text`;
     }, { timeout: 10_000 });
     await entered;
     const renewal = extendSessionIfNeeded(prior.session); release(); await blocker;
