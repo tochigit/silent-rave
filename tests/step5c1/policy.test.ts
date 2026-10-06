@@ -97,6 +97,8 @@ test("build integration is ordered, idempotent and rejects unknown adapter manif
   const dir = path.join(root, ".netlify/edge-functions"); await mkdir(dir, { recursive: true });
   const file = path.join(dir, "manifest.json");
   const next = { function: "___netlify-edge-handler-node-middleware", generator: "@netlify/plugin-nextjs@5.16.2", pattern: "^/.*$" };
+  const cjsDir = path.join(dir, next.function, "edge-runtime/lib"); await mkdir(cjsDir, { recursive: true });
+  await writeFile(path.join(cjsDir, "cjs.ts"), await readFile("node_modules/@netlify/plugin-nextjs/edge-runtime/lib/cjs.ts", "utf8"));
   await writeFile(file, JSON.stringify({ version: 1, functions: [next] }));
   const first = await integrateIngress(root); const second = await integrateIngress(root);
   expect(second).toEqual(first);

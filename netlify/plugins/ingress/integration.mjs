@@ -4,6 +4,21 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 const repository = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 export const INGRESS = "silent-rave-request-context";
+const originalCjsHash = "a6bf39c7ed3e4da549b446e03cf65b46299adaa85c880daa7a1f1c6eaea2372a";
+export async function correctCjsPaths(file) {
+  const original = await readFile(file, "utf8");
+  const marker = "{ windows: false }";
+  const patched = original.replaceAll(marker, "{ windows: Deno.build.os === 'windows' }");
+  const hash = text => createHash("sha256").update(text).digest("hex");
+  if (hash(original) === originalCjsHash && original.split(marker).length === 3) {
+    await writeFile(file, patched);
+    return hash(patched);
+  }
+  // Only the exact inspected correction is accepted on an idempotent rerun.
+  const restored = original.replaceAll("{ windows: Deno.build.os === 'windows' }", marker);
+  if (hash(restored) !== originalCjsHash) throw new Error("Unknown adapter CJS runtime");
+  return hash(original);
+}
 export async function integrateIngress(base) {
   const dir = resolve(base, ".netlify/edge-functions");
   const file = join(dir, "manifest.json");
@@ -13,6 +28,7 @@ export async function integrateIngress(base) {
   const declarations = manifest.functions.filter(f => f.function !== INGRESS);
   if (!declarations.length || !declarations.every(f => typeof f.pattern === "string" && !f.cache) ||
     new Set(declarations.map(f => f.pattern)).size !== declarations.length) throw new Error("Unsupported middleware declaration");
+  const cjsFingerprint = await correctCjsPaths(join(dir, declarations[0].function, "edge-runtime/lib/cjs.ts"));
   const target = join(dir, INGRESS);
   await mkdir(target, { recursive: true });
   const source = await readFile(join(repository, "netlify/ingress/request-context.ts"), "utf8");
@@ -22,7 +38,7 @@ export async function integrateIngress(base) {
   await copyFile(join(repository, "src/lib/hosting/context-protocol.ts"), join(target, "context-protocol.ts"));
   manifest.functions = [{ function: INGRESS, path: "/*", generator: "silent-rave-ingress@1", name: "Trusted request context" }, ...declarations];
   await writeFile(file, JSON.stringify(manifest, null, 2) + "\n");
-  return { adapter: "5.16.2", fingerprint: createHash("sha256").update(JSON.stringify(manifest)).digest("hex") };
+  return { adapter: "5.16.2", cjsFingerprint, fingerprint: createHash("sha256").update(JSON.stringify(manifest)).digest("hex") };
 }
 export async function onBuild({ constants, utils }) {
   try {

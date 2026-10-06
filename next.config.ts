@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
       "./assets/fonts/OFL.txt",
     ],
   },
+  outputFileTracingExcludes: {
+    "/*": ["./scripts/**/*", "./tests/**/*", "./reports/**/*", "./.test-runtime/**/*", "./.git/**/*",
+      "./.docs/**/*", "./netlify/**/*", "./tools/**/*", "./.env*", "./prisma/.env*"],
+  },
   reactStrictMode: false,
   // Native dependencies belong in Node handlers. The proxy uses a fetch-only
   // decision broker and cannot import these packages.
