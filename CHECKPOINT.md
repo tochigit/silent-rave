@@ -17,7 +17,9 @@ therefore cannot receive trusted metadata from the proposed user ingress bridge.
 The plan explicitly requires saving a blocker and a revised proposal at this gate.
 
 Branch: `feat/step5c1-netlify-runtime-auth`, from verified current main above.
-Publish this incomplete milestone as a DRAFT PR for review. Verify its branch
+Draft PR: [#6](https://github.com/tochigit/silent-rave/pull/6), base `main`.
+Initial publication head: `26bf7d18a36a0fb1b9642d5b9ccf3f0ec7b67687`.
+Final documentation head/checks are recorded in the PR description. Verify branch
 HEAD and checks live; the PR description records final publication evidence.
 All earlier branches are preserved; no applicable AGENTS.md found.
 
@@ -35,6 +37,9 @@ migrations and hosting configuration remain unchanged.
 - Prepending ingress to the integration manifest yields the desired order in
   the same diagnostic. This proves declaration merging only, not build hooks,
   function bundling/execution, request propagation or hosted runtime.
+- Both downloaded archives match their published npm checksums; diff check passed.
+- Local diagnostic ESLint under Bun stalled and was stopped: INCOMPLETE, no pass
+  claimed. Exact-head CI performs standard lint plus the existing full app checks.
 - Proposed revision: explicitly order an inspected OpenNext adapter and a local
   ingress build integration. Details and remaining proof are in doc 09.
 - New auth/PDF/native-module/adapter acceptance is NOT RUN: implementation

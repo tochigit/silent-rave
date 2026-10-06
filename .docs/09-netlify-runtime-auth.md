@@ -11,7 +11,8 @@ Live GitHub confirmed PR #5 merged, main/local HEAD/fetched origin/main at
 `3b69187d017403fb84777f9c3406c68bb3e96a55`, and main run
 [37232720318](https://github.com/tochigit/silent-rave/actions/runs/37232720318)
 successful on that exact SHA. The initial tree was clean; earlier branches were
-preserved. Current branch: `feat/step5c1-netlify-runtime-auth` (base main).
+preserved. Current branch: `feat/step5c1-netlify-runtime-auth` (base main),
+[draft PR #6](https://github.com/tochigit/silent-rave/pull/6).
 
 The authorized first milestone retains Next 16.1.3, Prisma 6.19.2, Sharp, Noto/OFL,
 scanner assets and central proxy authorization. It replaces the proxy's native
@@ -81,6 +82,12 @@ Exit 0 means its assertions reproduced the blocker and proposed declaration orde
 it does **not** mean compatibility passed. No full Netlify build, function bundling/
 execution, hosted connection, DB, mail or deployment occurs. Downloaded packages
 and generated runtime copies stay ignored; only the small script/result are tracked.
+
+Both downloaded archives matched their published npm checksums. The final
+diagnostic ran successfully and diff checks passed. Local ESLint under Bun stalled
+and was stopped; it is incomplete, not a pass. Standard lint and the unchanged
+application regression/build results come from exact-head PR CI; see the PR's
+updated validation evidence. Those checks cannot establish the proposed integration.
 
 ## Revised proposal for review
 
