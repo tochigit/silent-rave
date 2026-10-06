@@ -21,7 +21,7 @@ async function inspect(directory: string) {
     if (entry.isDirectory()) await inspect(file);
     else {
       const bytes = await readFile(file); inspectedFiles++;
-      assert(!canaries.some(canary => bytes.includes(canary)), "Synthetic build secret found in output");
+      assert(!canaries.some(canary => bytes.includes(canary)), `Synthetic build secret found in ${path.relative(root, file)}`);
       assert(!/^\.env(?:\.|$)/.test(entry.name), "Dotenv file in output");
     }
   }

@@ -1,8 +1,9 @@
-import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile, rm, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { createHash, randomBytes } from "node:crypto";
 import path from "node:path";
 import { startFixture, runCommand } from "./fixture";
+import { buildCanaries } from "./build-canaries";
 const fixture = await startFixture();
 const original = { ...process.env };
 const functionRoot = await mkdtemp(path.join(tmpdir(), "silent-rave-step5c1-"));
@@ -22,6 +23,19 @@ try {
   // cannot silently resolve from the development node_modules tree.
   const archive = path.resolve(".netlify/functions/___netlify-server-handler.zip");
   await runCommand(["python", "scripts/extract-netlify-function.py", archive, functionRoot], fixture.env);
+  const canaries = Object.values(buildCanaries).map(value => Buffer.from(value));
+  async function inspectPacked(directory: string) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const packed = path.join(directory, entry.name);
+      if (entry.isDirectory()) await inspectPacked(packed);
+      else {
+        if (entry.isSymbolicLink() || /^\.env(?:\.|$)/.test(entry.name)) throw new Error("Unsafe packaged file");
+        const bytes = await readFile(packed);
+        if (canaries.some(canary => bytes.includes(canary))) throw new Error("Synthetic build secret in final function ZIP");
+      }
+    }
+  }
+  await inspectPacked(functionRoot);
   const fonts: Record<string, string> = {};
   for (const name of ["NotoSans-Regular.ttf", "OFL.txt"]) {
     const source = await readFile(`assets/fonts/${name}`), packed = await readFile(path.join(functionRoot, "assets/fonts", name));
@@ -46,7 +60,7 @@ try {
     !inspection.text.replaceAll("\n", "").includes("Chloé Ọlá") || !inspection.text.includes("04 October 2030 at 00:30")) throw new Error("Packaged PDF font/text/QR contract failed");
   const result = JSON.parse(await readFile(output, "utf8"));
   await mkdir("reports", { recursive: true });
-  await writeFile(output, JSON.stringify({ ...result, embeddedFontDiacritics: true, exactStoredQrDecode: true, lagosDateText: true }, null, 2) + "\n");
+  await writeFile(output, JSON.stringify({ ...result, finalZipCanariesAbsent: true, embeddedFontDiacritics: true, exactStoredQrDecode: true, lagosDateText: true }, null, 2) + "\n");
   console.log("Packaged Node 24 Prisma, Sharp upload/EXIF, font/license, live auth and PDF/QR acceptance passed.");
 } finally {
   for (const key of Object.keys(process.env)) if (!(key in original)) delete process.env[key]; Object.assign(process.env, original);
