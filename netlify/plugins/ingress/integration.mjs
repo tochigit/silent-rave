@@ -8,14 +8,17 @@ const originalCjsHash = "a6bf39c7ed3e4da549b446e03cf65b46299adaa85c880daa7a1f1c6
 export async function correctCjsPaths(file) {
   const original = await readFile(file, "utf8");
   const marker = "{ windows: false }";
-  const patched = original.replaceAll(marker, "{ windows: Deno.build.os === 'windows' }");
+  const corrections = [[marker, "{ windows: Deno.build.os === 'windows' }"],
+    ["let target = args[0]", "let target = toPosixPath(args[0])"],
+    ["if (!isRelative && !target.startsWith('/')) {", "if (!isRelative && !target.startsWith('/') && !/^[A-Za-z]:\\//.test(target)) {"]];
+  const patched = corrections.reduce((text, [before, after]) => text.replaceAll(before, after), original);
   const hash = text => createHash("sha256").update(text).digest("hex");
   if (hash(original) === originalCjsHash && original.split(marker).length === 3) {
     await writeFile(file, patched);
     return hash(patched);
   }
   // Only the exact inspected correction is accepted on an idempotent rerun.
-  const restored = original.replaceAll("{ windows: Deno.build.os === 'windows' }", marker);
+  const restored = corrections.reduce((text, [before, after]) => text.replaceAll(after, before), original);
   if (hash(restored) !== originalCjsHash) throw new Error("Unknown adapter CJS runtime");
   return hash(original);
 }
@@ -44,7 +47,7 @@ export async function integrateIngress(base) {
   const generated = join(dir, declarations[0].function, "server/node-middleware.js");
   const handler = await readFile(generated, "utf8");
   const cwdOriginal = "Deno.cwd = () => ''";
-  const shim = await correctVirtualCwd(join(dir, declarations[0].function, "edge-runtime/shim/node.js"));
+  await correctVirtualCwd(join(dir, declarations[0].function, "edge-runtime/shim/node.js"));
   const cwdCorrected = "Deno.cwd = () => Deno.build.os === 'windows' ? 'C:\\\\' : ''";
   if (!handler.includes(cwdOriginal) && !handler.includes(cwdCorrected)) throw new Error("Unknown generated cwd shim");
   await writeFile(generated, handler.replace(cwdOriginal, cwdCorrected));
