@@ -8,6 +8,13 @@ const input = JSON.parse(await readFile(process.argv[2], "utf8"));
 assert(process.versions.node.startsWith("24."), "Packaged runtime requires Node 24");
 assert(process.env.SILENT_RAVE_ISOLATED_FIXTURE === "1" && new URL(process.env.DATABASE_URL).hostname === "127.0.0.1", "Owned loopback fixture required");
 process.chdir(input.functionRoot);
+// This harness has no provider credentials and must never contact a provider.
+const originalFetch = globalThis.fetch;
+globalThis.fetch = (url, init) => {
+  const target = new URL(url instanceof Request ? url.url : String(url));
+  if (target.hostname !== "127.0.0.1") throw new Error("External fetch forbidden in isolated package acceptance");
+  return originalFetch(url, init);
+};
 const requirePacked = createRequire(path.join(input.functionRoot, "___netlify-server-handler.mjs"));
 for (const name of ["@prisma/client", "sharp"]) assert(requirePacked.resolve(name).startsWith(input.functionRoot + path.sep), "Dependency must come from the final function ZIP");
 const { PrismaClient } = requirePacked("@prisma/client");

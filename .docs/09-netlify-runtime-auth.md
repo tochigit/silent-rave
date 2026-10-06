@@ -1,153 +1,94 @@
 # Step 5C.1 Netlify runtime/auth compatibility
 
-Prepared 2026-10-06, Africa/Lagos. **Incomplete: the first integration gate failed.**
-This is the blocker report and revised proposal required by the Desktop Step 5B
-plan. Netlify remains selected. No application adaptation or hosted setup has
-been performed. Review the design revision before resuming this milestone.
+Status: **IN PROGRESS**, 2026-10-06. The revised build integration is approved and
+implemented on `feat/step5c1-netlify-runtime-auth`, [draft PR #6](https://github.com/tochigit/silent-rave/pull/6).
+Validation remains pending. CHECKPOINT.md records the current failures and fixes.
 
-## Verified baseline
+## Build integration and proof boundary
 
-Live GitHub confirmed PR #5 merged, main/local HEAD/fetched origin/main at
-`3b69187d017403fb84777f9c3406c68bb3e96a55`, and main run
-[37232720318](https://github.com/tochigit/silent-rave/actions/runs/37232720318)
-successful on that exact SHA. The initial tree was clean; earlier branches were
-preserved. Current branch: `feat/step5c1-netlify-runtime-auth` (base main),
-[draft PR #6](https://github.com/tochigit/silent-rave/pull/6).
+The original user Edge declaration ran after generated Next middleware. The
+published-package diagnostic in reports/step5c1-edge-order.json reproduces that
+historical blocker; it is not current acceptance.
+[Declaration order](https://docs.netlify.com/build/edge-functions/declarations/#declaration-processing-order)
 
-The authorized first milestone retains Next 16.1.3, Prisma 6.19.2, Sharp, Noto/OFL,
-scanner assets and central proxy authorization. It replaces the proxy's native
-database imports with a protected Node session-decision broker and independently
-revalidates live sessions/roles in Node page/API guards. Later storage, shared
-limits, scheduler, hosted configuration and deployment are outside this step.
+The revision explicitly orders pinned @netlify/plugin-nextjs 5.16.2 then the local
+ingress plugin. onBuild copies ingress into the generated integration directory
+and prepends its declaration to the same manifest, retaining Next's handlers.
+Unknown versions/declarations and duplicate patterns fail the build. The entry
+module exports only lifecycle events; helpers live in integration.mjs.
+[Build events](https://docs.netlify.com/extend/develop-and-share/develop-build-plugins/#plug-into-events)
 
-## Exact blocker
+onPostBuild validates the final routing emitted by pinned edge-bundler 16.1.2 and
+records a SHA-256 fingerprint. Dynamic paths require ingress, generated Next proxy,
+then independently authorized Node handlers. Adapter upgrades require review and
+repeat acceptance because its manifest contract is part of the trust boundary.
+[Adapter source](https://github.com/opennextjs/opennextjs-netlify/blob/36cf34c6031a8a5b02587fd9d45edecddc6e60d8/src/build/functions/edge.ts)
+[Bundler source](https://github.com/netlify/build/blob/56df60307c59031b2ab044446d634b10851459e3/packages/edge-bundler/node/declaration.ts)
 
-The Step 5B plan places a user Edge Function before generated Next middleware to
-strip client-supplied `x-sr-*` headers and sign platform host/IP metadata. That
-ordering is unavailable through ordinary user declarations. Netlify prioritizes
-framework/integration declarations ahead of user TOML and inline functions.
-[Declaration processing order](https://docs.netlify.com/build/edge-functions/declarations/#declaration-processing-order)
+Acceptance executes generated ingress and the actual adapter proxy in supported
+Deno using final routing. It checks spoofing, future/dotted/encoded/RSC paths,
+rewrites, stream preservation and signed metadata transfer into Node. This is local
+generated-handler execution. Hosted ESZIP execution, request propagation and
+provider runtime variable scopes remain unverified.
 
-The published adapter is now **@netlify/plugin-nextjs 5.16.2**, gitHead
-`36cf34c6031a8a5b02587fd9d45edecddc6e60d8`; Step 5B inspected 5.16.1.
-It emits `___netlify-edge-handler-node-middleware` in its generated Edge manifest.
-[Adapter implementation](https://github.com/opennextjs/opennextjs-netlify/blob/36cf34c6031a8a5b02587fd9d45edecddc6e60d8/src/build/functions/edge.ts)
+## Context, broker and live authorization
 
-Published **@netlify/edge-bundler 16.1.2**, gitHead
-`56df60307c59031b2ab044446d634b10851459e3`, merges integration declarations before
-user declarations. The first user TOML entry or an alphabetic/inline change cannot
-precede the generated proxy.
-[Declaration merger](https://github.com/netlify/build/blob/56df60307c59031b2ab044446d634b10851459e3/packages/edge-bundler/node/declaration.ts)
+Ingress uses the platform Request URL, context.ip and context.deploy.id. It strips
+client x-sr-* and known middleware bypass headers and signs a versioned HMAC
+binding deployment, full origin, method, original path, IP and issue time. It does
+not read the request body. Proxy WebCrypto and Node constant-time HMAC verification
+require separate ingress/broker keys and a 30-second context lifetime.
+[Edge API](https://docs.netlify.com/build/edge-functions/api/)
 
-Actual local diagnostic using both published packages:
+The central proxy contains pure policy and bounded fetch code, with no Prisma,
+Sharp, fonts, bcrypt or native engine. Protected pages/APIs including future routes
+and RSC/prefetch call a fixed deployment-specific Node broker. Unknown hosts,
+invalid context, cross-surface paths and direct function URLs deny. Login exemptions
+are exact. Private responses use browser/CDN no-store, no-referrer and noindex.
+Node page/API guards independently check live activity, role and temporary password.
 
-```text
-Existing proposal, matching /admin:
-  1. ___netlify-edge-handler-node-middleware
-  2. request-context (user TOML declaration)
-```
+The broker checks its key before body parsing or database work. Strict bounded
+input produces only version, deployment, decision and optional approved expiry.
+The proxy disables redirects, credentials and caching and imposes an eight-second
+fetch-and-stream deadline. Malformed, oversized or unavailable replies deny.
 
-The proxy needs signed context before host/authorization decisions. Failing closed
-would deny legitimate requests; accepting forwarded headers would abandon the
-selected trust boundary. The saved plan explicitly requires stopping Step 5C.1
-and producing an exact blocker plus a revised design if this ordering fails.
+Opaque cookies preserve their original token and shared root-domain scope. Session
+creation, validation and renewal use database time. Renewal locks user then session
+and extends only live sessions within three hours of expiry. It never shortens an
+expiry or revives logout, deactivation or expiry during lock waits. Broker live
+state is checked again after renewal. Mutation Origin checks require the complete
+trusted configured origin; forwarding headers do not define identity or origin.
 
-The unchanged proxy also imports Prisma's native engine. Historical local trace
-files contain the Windows .node engine rejected by this adapter in Node middleware.
-That second issue remains for the planned broker extraction; it was not rerun as
-a fresh application build in this checkpoint.
+## Build and runtime configuration
 
-## Reproduction and limits
+Next 16.1.3, Prisma 6.19.2, Sharp 0.34.5, Node 24 and Bun 1.3.14 are retained.
+The build wrapper allowlists OS/tool variables, removes runtime/provider/owner/
+fixture secrets, sets unreachable loopback database placeholders and rejects
+dotenv-containing checkouts without reading them. It generates Prisma/scanner/app
+artifacts and never seeds or migrates. The separate locked tools/netlify CLI runs
+build --offline without login/link/token/deployment. Public synthetic canaries and
+output scans check secret removal; proxy traces must remain native-free.
+[Offline CLI build](https://cli.netlify.com/commands/build/)
 
-Evidence: [ordering snapshot](../reports/step5c1-edge-order.json) and
-[diagnostic source](../reports/step5c1-order-probe.mjs). Local Node was 26.5.0;
-the eventual build/runtime contract is still Node 24 and Bun 1.3.14.
+Runtime requires HOST_PLATFORM=netlify, HTTPS PUBLIC_BASE_URL and ROOT_DOMAIN,
+DEPLOY_ID, immutable AUTH_INTERNAL_BASE_URL for that deployment, PROXY_AUTH_SECRET
+and distinct NETLIFY_INGRESS_SECRET. Missing configuration denies. Edge and Node
+runtime scopes require later hosted setup and smoke tests; TOML build variables
+alone do not supply runtime secrets. Local mode is nonproduction loopback only.
+[Edge variables](https://docs.netlify.com/build/edge-functions/environment-variables/)
 
-Restore the two exact public npm tarballs into these ignored package directories:
+## Pending acceptance and remaining plan
 
-| Package | Tarball | Extract under |
-|---|---|---|
-| OpenNext 5.16.2 | https://registry.npmjs.org/@netlify/plugin-nextjs/-/plugin-nextjs-5.16.2.tgz | `.test-runtime/netlify-adapter-source/` |
-| Edge bundler 16.1.2 | https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-16.1.2.tgz | `.test-runtime/netlify-edge-bundler-source/` |
+Finish lint/types, policy and guard audit, 176 baseline regressions and new isolated
+broker/context/Origin/renewal/race/outage checks. Prove an actual offline build,
+final Edge order, Deno execution and Node context transfer. Execute the final Node
+function ZIP outside repository module resolution against disposable Postgres:
+Prisma query, Sharp proof upload/EXIF removal, live guards/broker, packaged Noto/OFL
+and PDF diacritics/Lagos date/exact stored QR. Preserve public scanner assets.
+Obtain Windows/Linux CI success on the final published SHA and update PR/checkpoint.
 
-Each archive contains a `package/` directory. Run from the repository root:
-
-```powershell
-node reports/step5c1-order-probe.mjs
-```
-
-The diagnostic creates a synthetic Node handler with no native traces, calls the
-actual adapter's `createEdgeHandlers`, then the actual bundler's `mergeDeclarations`.
-Exit 0 means its assertions reproduced the blocker and proposed declaration order;
-it does **not** mean compatibility passed. No full Netlify build, function bundling/
-execution, hosted connection, DB, mail or deployment occurs. Downloaded packages
-and generated runtime copies stay ignored; only the small script/result are tracked.
-
-Both downloaded archives matched their published npm checksums. The final
-diagnostic ran successfully and diff checks passed. Local ESLint under Bun stalled
-and was stopped; it is incomplete, not a pass. Standard lint and the unchanged
-application regression/build results come from exact-head PR CI; see the PR's
-updated validation evidence. Those checks cannot establish the proposed integration.
-
-## Revised proposal for review
-
-Use an explicitly ordered **OpenNext adapter plus local ingress build integration**.
-Declare the adapter and then our integration as build plugins. Pin the inspected
-adapter version in tooling/locks and test updates before accepting them. This
-replaces the automatically managed adapter preference: ordering now depends on
-an inspected integration contract. No Next framework or Prisma engine rewrite.
-
-The local integration's `onBuild` must run after OpenNext emits its Edge manifest
-and before function bundling. It copies ingress into the generated integration
-directory and prepends its declaration to that same manifest. Keep all generated
-Next middleware declarations and runtime source intact. Netlify documents
-`onBuild` before bundling; `onPostBuild` is too late for this transformation.
-[Build plugin events](https://docs.netlify.com/extend/develop-and-share/develop-build-plugins/#plug-into-events)
-
-Desired final integration order on applicable dynamic paths:
-
-```text
-1. request-context (integration-generated ingress)
-2. ___netlify-edge-handler-node-middleware
-3. Node page/API handler with independent live authorization
-```
-
-Prepending ingress to the integration declarations produced this order in the
-local merger diagnostic. Actual plugin lifecycle, bundling, request propagation
-and hosted behavior remain unverified. This is a narrow feasibility result.
-
-The integration must reject missing/unrecognized manifests, unsupported adapter
-versions, duplicate/unexpected middleware entries and inability to prove ingress
-first. Reruns must be idempotent. Record adapter version/final manifest fingerprint
-without secrets. Inspect final packaged routing, not only intermediate files.
-Never create a user bypass header or trust client forwarding headers.
-
-Retain platform Request URL/`context.ip`, reserved-header stripping and versioned
-WebCrypto HMAC binding deployment, method, original path, full origin and IP, with
-30s validity at the first handler and separate ingress/broker keys. Do not buffer
-request bodies or echo metadata. Keep proxy native-free, centrally calling its
-fixed Node broker. Unknown hosts, broker failure and invalid hosted context deny.
-
-Tradeoff: a small build integration is coupled to OpenNext's manifest format;
-adapter upgrades become reviewed changes. Prove this new contract before the
-rest of Step 5C.1. If it fails, save the specific blocker and review an alternative.
-
-## Remaining acceptance and stop boundary
-
-After approval, first run an isolated credential-free Netlify build with the
-explicit plugin order. Prove final Edge execution calls ingress before proxy,
-preserves original URL/method and transfers signed context into Node handlers.
-Test spoofing, invalid metadata, redirects/rewrites and direct function paths.
-Declaration sorting alone is insufficient.
-
-Then complete bounded 8s broker calls, independent live role/password guards,
-conditional DB-time renewal, canonical hosts/full Origins, private responses and
-matcher/future-route coverage. Prove Node Sharp/Prisma/font/PDF/scanner packaging,
-no native proxy imports or bundled secrets, full auth matrix, all 176 regressions
-plus new cases, lint/types and exact-head Windows/Linux CI. Actual hosted behavior
-remains separately unverified.
-
-This checkpoint is documentation plus a synthetic diagnostic: an incomplete
-DRAFT PR. Review before continuing **the same Step 5C.1**. No merge, branch deletion,
-Step 5C.2, hosted configuration/migrations, DNS, purchases, deployment or real
-delivery is authorized.
+Complete ONLY Step 5C.1, then stop for review. No merge, branch deletion, hosted
+setup/query/migration, DNS, purchase, deployment, permanent owner/password change,
+real delivery or Step 5C.2. The remaining Step 5B sequence is upload limits (5C.2),
+durable storage (5C.3), shared limits (5C.4), scheduler/mail budgets (5C.5), then
+database privacy/polling/release preparation (5C.6), each with its own review.

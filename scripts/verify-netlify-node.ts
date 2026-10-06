@@ -15,7 +15,7 @@ try {
   const approved = await approvedOrder(1);
   const pending = await orderFixture(1, false);
   await db.paymentProof.deleteMany({ where: { orderId: pending.order.id } });
-  await db.order.update({ where: { id: pending.order.id }, data: { status: "PENDING", proofAttempts: 0, holdExpiresAt: new Date(Date.now() + 24 * 3600000) } });
+  await db.order.update({ where: { id: pending.order.id }, data: { status: "AWAITING_PAYMENT", proofAttempts: 0, holdExpiresAt: new Date(Date.now() + 24 * 3600000) } });
   const staff = await db.staffUser.create({ data: { name: "Native fixture staff", email: `native-${crypto.randomUUID()}@example.test`, role: "STAFF", passwordHash: "unused-fixture-password-hash" } });
   const ownerSession = await createSession(approved.owner.id), staffSession = await createSession(staff.id);
   // Execute the final ZIP outside the repository so missing traced dependencies
