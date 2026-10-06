@@ -38,6 +38,8 @@ const nextConfig: NextConfig = {
     "/api/**/*": [
       "./assets/fonts/NotoSans-Regular.ttf",
       "./assets/fonts/OFL.txt",
+      // Native shared libraries are loaded by the OS, beyond JavaScript traces.
+      "./node_modules/@img/sharp*/lib/**/*",
     ],
   },
   outputFileTracingExcludes: {
