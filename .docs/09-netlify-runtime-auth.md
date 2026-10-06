@@ -1,8 +1,13 @@
 # Step 5C.1 Netlify runtime/auth compatibility
 
-Status: **IN PROGRESS**, 2026-10-06. The revised build integration is approved and
-implemented on `feat/step5c1-netlify-runtime-auth`, [draft PR #6](https://github.com/tochigit/silent-rave/pull/6).
-Validation remains pending. CHECKPOINT.md records the current failures and fixes.
+Status: **COMPLETE; STOPPED FOR PR REVIEW**, 2026-10-06. The approved build
+integration and runtime adaptation are implemented on
+`feat/step5c1-netlify-runtime-auth`, [PR #6](https://github.com/tochigit/silent-rave/pull/6).
+Both full Windows/Linux jobs and GitGuardian passed on implementation head
+`5ca3b08d782bb944044e4582fe12158b08747789` in
+[CI 37533098994](https://github.com/tochigit/silent-rave/actions/runs/37533098994).
+Final publication checks are recorded in the PR and Desktop handoff. No hosted
+setup, data access, deployment, merge or later milestone was performed.
 
 ## Build integration and proof boundary
 
@@ -14,7 +19,9 @@ historical blocker; it is not current acceptance.
 The revision explicitly orders pinned @netlify/plugin-nextjs 5.16.2 then the local
 ingress plugin. onBuild copies ingress into the generated integration directory
 and prepends its declaration to the same manifest, retaining Next's handlers.
-Unknown versions/declarations and duplicate patterns fail the build. The entry
+Unknown versions/declarations and duplicate patterns fail the build.
+Hash-guarded corrections to the generated CJS loader and virtual cwd restore
+Windows Deno URL/path semantics; Linux behavior is retained. The entry
 module exports only lifecycle events; helpers live in integration.mjs.
 [Build events](https://docs.netlify.com/extend/develop-and-share/develop-build-plugins/#plug-into-events)
 
@@ -77,15 +84,20 @@ runtime scopes require later hosted setup and smoke tests; TOML build variables
 alone do not supply runtime secrets. Local mode is nonproduction loopback only.
 [Edge variables](https://docs.netlify.com/build/edge-functions/environment-variables/)
 
-## Pending acceptance and remaining plan
+## Completed acceptance and remaining plan
 
-Finish lint/types, policy and guard audit, 176 baseline regressions and new isolated
-broker/context/Origin/renewal/race/outage checks. Prove an actual offline build,
-final Edge order, Deno execution and Node context transfer. Execute the final Node
-function ZIP outside repository module resolution against disposable Postgres:
-Prisma query, Sharp proof upload/EXIF removal, live guards/broker, packaged Noto/OFL
-and PDF diacritics/Lagos date/exact stored QR. Preserve public scanner assets.
-Obtain Windows/Linux CI success on the final published SHA and update PR/checkpoint.
+Both systems passed lint/types, 8 policy cases, guard audit, readiness checks,
+scanner generation and all **183 regressions** (176 baseline + 6 runtime + 1 outage).
+Actual offline builds passed final Edge ordering, native-free traces and secret/
+dotenv scans. Generated Deno execution proved spoof rejection, central protection,
+private responses, rewrites/body streaming and signed-context transfer into Node.
+
+Isolated final Node ZIPs loaded real Prisma/Sharp, queried disposable Postgres,
+submitted/sanitized an EXIF image and independently checked live guards/broker.
+Packaged Noto/OFL hashes match; rendered PDFs verified embedded diacritics, Lagos
+date and exact stored QR decoding. The Netlify framework cache/context were
+synthetic. Neither hosted provider execution nor its runtime secret scopes have
+been verified. [Saved evidence](../reports/step5c1-ci-37533098994/)
 
 Complete ONLY Step 5C.1, then stop for review. No merge, branch deletion, hosted
 setup/query/migration, DNS, purchase, deployment, permanent owner/password change,

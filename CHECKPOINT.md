@@ -1,55 +1,87 @@
 # Silent Rave checkpoint
 
-Step 5C.1 IN PROGRESS, 2026-10-06. Resume the existing branch
-`feat/step5c1-netlify-runtime-auth` and draft PR #6:
-https://github.com/tochigit/silent-rave/pull/6
+2026-10-06, Africa/Lagos. **Step 5C.1 COMPLETE; STOPPED FOR PR REVIEW.**
+Netlify runtime/auth adaptation is implemented and verified in Windows/Linux CI.
+PR #6: https://github.com/tochigit/silent-rave/pull/6
+Branch: `feat/step5c1-netlify-runtime-auth`; base main remains
+`3b69187d017403fb84777f9c3406c68bb3e96a55`. All prior branches are preserved.
+No merge, deletion, Step 5C.2 or hosted rollout was performed or authorized.
 
-The revised pinned OpenNext + ingress build-plugin design is authorized. The user
-authorized fixing further issues within this active prompt without review pauses.
-The PC shut down during validation; preserve current tracked and untracked work.
-Published implementation head at this snapshot:
-`c7c95ad4155c1b02a6d0ce0f327d9023426daa02`. Uncommitted fixes and acceptance
-scripts exist; inspect Git and the entire diff before continuing. Main remains
-`3b69187d017403fb84777f9c3406c68bb3e96a55`; all earlier branches are retained.
+## Implementation
 
-Implemented: native-free proxy; secret-gated Node broker; deployment-bound signed
-ingress context; independent live role/password guards; DB-time session renewal;
-strict host/Origin handling; private responses; sanitized offline Netlify build;
-version-checked ingress integration; isolated auth/race and packaging acceptance.
-Completion is pending. The old diagnostic reproduced a user-ingress ordering
-blocker; it is historical evidence, not the current implementation's acceptance.
+Pinned OpenNext 5.16.2 runs before our inspected ingress build plugin. The plugin
+prepends signed ingress to the generated integration manifest before bundling,
+rejects unknown contracts and checks final edge-bundler 16.1.2 routing. Generated
+Next handlers remain intact. Hash-guarded CJS URL/path and virtual-cwd corrections
+allow Windows Deno compilation while retaining Linux behavior. Lifecycle entry
+exports are separate from helpers. Adapter upgrades require repeat acceptance.
 
-Current failures and fixes:
-- Published CI 37516397726 failed offline build because Netlify treated helper
-  exports as lifecycle events. Uncommitted fix separates integration.mjs helpers
-  from the entry module's onBuild/onPostBuild exports.
-- A local locked install left node_modules/jiti empty after interruption. A
-  forced frozen-lockfile install is restoring dependencies; no app version change.
-- Local focused HTTP suite passed four cases and failed two test assertions.
-  Relative redirect and spoofed local-scheme assertions were corrected; rerun.
-- Latest pure policy suite: 8 pass; local Bun-hosted lint and both TypeScript
-  configurations passed before the newest acceptance scripts. Standard Node lint
-  stalled locally and was stopped; it is incomplete, not a pass.
+The proxy is native-free and calls a strict secret-gated Node broker at its own
+immutable deployment. Ingress strips reserved/bypass/debug assertions and signs
+platform origin/IP/deployment/method/path context. Node page/API guards independently
+verify live activity, role and temporary-password state. Renewal uses DB time,
+user-before-session locks, conditional expiry extension and a live postcheck.
+Strict full Origins, future/encoded/dotted/RSC route protection, bounded eight-second
+broker calls and private browser/CDN headers preserve the central auth boundary.
 
-Next: finish actual offline Netlify build with Node 24; execute generated Edge
-handlers in Deno and verify transferred context in Node; execute the final Node
-function ZIP in isolation against disposable loopback Postgres, including native
-Prisma/Sharp, PDF fonts/license/diacritics/date/stored QR, and independent guards.
-Then run all baseline regressions plus runtime/outage cases and obtain successful
-Windows/Linux CI on the final published SHA. Update doc 09, PR and Desktop handoff.
+The build removes runtime/provider/owner/fixture secrets and rejects dotenv files;
+only unreachable loopback database placeholders enter framework compilation.
+Next 16.1.3, Prisma 6.19.2, Sharp 0.34.5, Node 24 and Bun 1.3.14 are retained.
+Trace exclusions keep tooling/fixtures/local storage out; explicit native libraries
+and Noto/OFL stay in Node packages. Scanner assets remain unchanged in behavior.
 
-Local tooling: ignored .test-runtime/node24/node.exe is official checksum-verified
-Node 24.21.0; prepend its directory only in the task shell. Default Node is 26.5.0.
-Netlify CLI 27.11.2 is isolated under .test-runtime/netlify-tools; its tracked lock
-is tools/netlify/package-lock.json. Root dotenv is absent. Interrupted owned
-scratch run-Ic8nsc is preserved; use fresh fixtures and preserve unrelated processes.
+## Acceptance and publication evidence
 
-No hosted data/query/SQL/configuration, migration, DNS, deployment or real delivery
-was performed. Supabase MCP authentication and skills were completed earlier.
-Hosted runtime/provider variables and scopes remain unverified. Ready-for-launch
-remains false. No Step 5C.2, merge, branch deletion, owner/password alteration or
-real email/push is authorized. Complete this milestone, publish reviewable proof,
-then stop for review. GitHub REST helper is ignored .test-runtime/github-api.ps1.
+Implementation head `5ca3b08d782bb944044e4582fe12158b08747789` passed both complete
+jobs and GitGuardian in [CI 37533098994](https://github.com/tochigit/silent-rave/actions/runs/37533098994).
+Saved evidence is under `reports/step5c1-ci-37533098994/{linux,win32}/`.
+The final documentation publication HEAD and exact-head checks are recorded in
+PR #6 and the Desktop handoff; verify them live rather than treating this parent
+implementation run as proof of a later unverified change.
+
+Both systems passed standard lint, both TypeScript configurations, readiness and
+8 policy tests, guard coverage, scanner generation, actual offline Netlify builds,
+final Edge ordering, native-free traces and build-canary/dotenv scans. Generated
+ingress/adapter handlers executed in supported Deno; Node verified their transferred
+HMAC context, rewrite and stream behavior. Isolated final function ZIPs executed
+outside repository module resolution with real native Prisma queries, Sharp proof
+uploads/EXIF stripping, live guards/broker and PDF font/license/diacritics/Lagos date/
+exact stored QR decoding. Framework cache and platform context were synthetic.
+
+Full suites passed **183 cases per OS: all 176 baseline regressions plus six
+runtime/auth/race cases and one database-outage case**. Owned app/database cleanup
+passed. Missing keys, malformed input/replies, forwarding/bypass attempts, unknown
+hosts, role/password/activity transitions and concurrent renewal/expiry/logout/
+deactivation fail closed. Hosted execution of packaged Edge bundles is unverified.
+
+Local Windows lint under Bun, both types, 8 policy tests and guard audit passed;
+a supported-Deno virtual chunk probe passed. The focused real HTTP/Postgres rerun
+passed 6 cases and 249 assertions, including cleanup; its report is saved under
+`reports/step5c1-focus-win32-test-output.txt`. Earlier PC-interrupted/stalled/failed local
+attempts are historical, never passes. Local dependencies were restored with
+locked offline npm and Prisma generation after repeated Bun install/copy failures.
+The checksum-verified ignored Node 24.21.0 tool is optional; global Node 26 was
+unchanged. Interrupted owned scratch `run-Ic8nsc` is preserved; use fresh fixtures.
+
+## Stop boundary and next step
+
+Root dotenv remains absent; no hosted query/SQL/configuration/migration, DNS,
+deployment, real email/push or permanent owner/password change occurred. Original
+migrations were replayed only in disposable loopback fixtures. Supabase MCP and
+skills were authenticated/installed earlier, without hosted data access here.
+Provider variable scopes, immutable deployment origin and hosted runtime still
+need future setup/smoke tests. `readyForLaunch=false` remains intentional.
+
+Review PR #6. Merge only with explicit approval, preserving its branch. Do not
+automatically begin another milestone. Remaining Step 5B sequence: 5C.2 upload
+limits; 5C.3 durable storage; 5C.4 shared limits; 5C.5 scheduler/mail budgets;
+5C.6 database privacy, polling and release preparation. Each has its own branch,
+verification and review. Hosted setup and launch remain separately authorized.
+
+Resume from the full Desktop `Silent Rave - Step 5C1 Netlify continuation.md`,
+current doc 09, Step 5B plan, Git/PR/checks and owned process state. GitHub REST
+helper is ignored `.test-runtime/github-api.ps1`; JSON requests use UTF-8 without
+BOM. Preserve unrelated processes and never output credentials or private transfers.
 
 ---
 
