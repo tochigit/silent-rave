@@ -73,6 +73,15 @@ passed/failed/incomplete results; CI is not hosted durability or physical HEIC p
 `readyForLaunch=false` stays intentional. Publish one focused PR, then stop for
 review; no merge, Batch B, hosted access/configuration, DNS/deployment or real sends.
 
+Dedicated browser acceptance: `bun --no-env-file scripts/run-browser-step5a.ts`,
+using an owned Chrome profile, loopback app/database and fake Storage. Linux CI
+installs pinned Playwright Core 1.58.2 only under ignored `.test-runtime/`, then runs
+this check with its installed Chrome. Dependency locks/application dependencies stay
+unchanged. The full suite's explicit browser skip is reported separately from this
+dedicated result. Checks cover actual canvas output, unsupported HEIC, non-JSON 413,
+saved fields/prepared receipt/retry ID, successful proof/banner uploads, mobile width
+and JavaScript errors. Physical HEIC/camera/device acceptance remains Batch D.
+
 Protocol references verified during implementation:
 [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys),
 [maintained Storage client](https://github.com/supabase/supabase-js/blob/master/packages/core/storage-js/src/packages/StorageFileApi.ts),

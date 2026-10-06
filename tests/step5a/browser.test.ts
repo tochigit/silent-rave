@@ -12,7 +12,7 @@ import { orderFixture } from "../phase4/fixtures";
 import { login } from "../phase3b/helpers";
 import { IMAGE_FILE_BYTES, MULTIPART_BYTES } from "@/lib/uploads/limits";
 
-// Explicit local browser acceptance. CI has no installed user browser; its skip is not a pass.
+// Explicit owned browser acceptance; the full regression skip is followed by a dedicated Linux CI run.
 test.skipIf(process.env.SILENT_RAVE_BROWSER_STEP5A !== "1")("owned Chrome: real canvas preparation, non-JSON 413/saved retry ID, HEIC fallback, mobile/banner feedback", async () => {
   const modulePath = path.resolve(".test-runtime/browser-check/node_modules/playwright-core/index.mjs");
   const { chromium } = await import(pathToFileURL(modulePath).href);
@@ -76,13 +76,15 @@ test.skipIf(process.env.SILENT_RAVE_BROWSER_STEP5A !== "1")("owned Chrome: real 
       bannerPosts++;
       if (bannerPosts === 1) return route.fulfill({ status: 413, contentType: "text/html", body: "upstream size limit" });
       const headers = { ...route.request().headers(), host: "admin.localhost:3000", origin: "http://admin.localhost:3000" };
-      await route.continue({ headers });
+      const response = await route.fetch({ headers, timeout: 120_000 });
+      await route.fulfill({ response });
     });
     await card.getByRole("button", { name: "Upload banner", exact: true }).click();
     await card.getByRole("alert").filter({ hasText: "3 MiB" }).waitFor();
     await card.getByRole("button", { name: "Retry banner upload", exact: true }).click();
     await card.getByRole("status").filter({ hasText: "Banner saved" }).waitFor();
     expect(bannerPosts).toBe(2); expect((await db.event.findUniqueOrThrow({ where: { id: f.event.id } })).bannerImageUrl).toStartWith("/api/banners/");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: "reports/step5a-mobile-banner.png", fullPage: true });
     expect(errors).toEqual([]);
   } finally {

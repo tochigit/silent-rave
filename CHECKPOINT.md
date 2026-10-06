@@ -40,7 +40,12 @@ CI 37547556300 reached all new cases on Linux after baseline regressions passed,
 but concurrent PDF intent exposed a Prisma empty-upsert read/create race. Intent now
 uses atomic parameterized INSERT ON CONFLICT DO NOTHING; existing real concurrent
 PDF acceptance covers this failure. In-progress local focused tests use current code.
-Next: finish focused/native/full Windows/Linux acceptance and browser checks;
+Implementation head `43e5d52a9d1a55187eb8f20a2be67bac29399894` PASSED both complete
+Windows/Linux jobs in CI 37548057323. Both contain all 196 regressions, plus one
+explicit browser skip. Dedicated Linux owned-Chrome acceptance is now added to CI
+and remains pending. Local focused app readiness timed out before tests (incomplete,
+not a pass); owned cleanup is in progress. No application assertion was relaxed.
+Next: complete dedicated browser/current-head CI and evidence/docs/handoff;
 then exact-head evidence/docs/handoff and ONE completed PR, STOP FOR REVIEW.
 Supabase/Postgres/UI and branch/checkpoint skills read; current public docs/changelog
 reviewed without accessing hosted data. readyForLaunch=false remains intentional.
