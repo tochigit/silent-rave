@@ -1,5 +1,5 @@
 import { deploymentId, localMode, trustedOriginAllowed, type HostingEnv } from "./config";
-import { CONTEXT_HEADER, SIGNATURE_HEADER, encoder, hmacKey, parseEnvelope, signatureBytes, type TrustedRequestContext } from "./context-protocol";
+import { CONTEXT_HEADER, SIGNATURE_HEADER, encoder, hmacKey, parseEnvelope, signatureBytes, validIp, type TrustedRequestContext } from "./context-protocol";
 import { canonicalPath } from "../auth/policy";
 export function localContext(request: Request, env: HostingEnv = process.env): TrustedRequestContext {
   if (!localMode(env)) throw new Error("Local context is disabled");
@@ -8,7 +8,7 @@ export function localContext(request: Request, env: HostingEnv = process.env): T
   if (host) { const value = new URL(`http://${host}`); url.host = value.host; }
   if (url.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]", "admin.localhost", "staff.localhost"].includes(url.hostname)) throw new Error("Non-loopback local host");
   const fixtureIp = env.SILENT_RAVE_ISOLATED_FIXTURE === "1" ? request.headers.get("x-sr-test-ip") : null;
-  if (fixtureIp && !/^[0-9a-fA-F:.]{1,64}$/.test(fixtureIp)) throw new Error("Invalid fixture IP");
+  if (fixtureIp && !validIp(fixtureIp)) throw new Error("Invalid fixture IP");
   return { hostname: url.hostname, origin: url.origin, clientIp: fixtureIp || "127.0.0.1", method: request.method,
     originalPathname: url.pathname, deploymentId: "local" };
 }

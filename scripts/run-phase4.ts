@@ -295,8 +295,9 @@ try {
         ...(step4 ? [{ paths: ["tests/step4/"], mode: "operations" as const }] : []),
         ...(step5c1 ? [{ paths: ["tests/step5c1/runtime.test.ts"], mode: "runtime" as const }] : []),
       ];
+  let firstGroup = true;
   for (const group of groups) {
-    if (group.mode === "customer" || group.mode === "operations" || group.mode === "runtime") {
+    if (!firstGroup && (group.mode === "customer" || group.mode === "operations" || group.mode === "runtime")) {
       // Legacy tests deliberately alter order/counter rows. Their short holds
       // can lapse during a slow local run; the customer's real global expiry
       // sweep must start from a consistent fresh database, not those leftovers.
@@ -304,9 +305,10 @@ try {
       fixture = undefined;
       fixture = await startFixture((chunk) => output.write(chunk));
       log(
-        "Customer group: fresh owned database; prior fixture cleanup passed.",
+        `${group.mode} group: fresh owned database; prior fixture cleanup passed.`,
       );
     }
+    firstGroup = false;
     log(
       `Test group: ${group.mode}; isolated database; fresh app/test processes.`,
     );

@@ -51,9 +51,9 @@ jobs:
           python-version: '3.13'
       - run: python -m pip install -r scripts/requirements-pdf-test.txt
       - run: bun run scanner:build
-      - run: bun run test:step5c1
       - run: bun --no-env-file scripts/install-netlify-tools.ts
       - run: bun --no-env-file scripts/build-netlify-offline.ts
+      - run: bun run test:step5c1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
