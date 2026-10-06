@@ -12,9 +12,14 @@ process.chdir(input.functionRoot);
 const originalFetch = globalThis.fetch;
 globalThis.fetch = (url, init) => {
   const target = new URL(url instanceof Request ? url.url : String(url));
+  if (target.origin === "http://127.0.0.1:1") return Promise.resolve(new Response(null, { status: init?.method === "PUT" ? 200 : 404 }));
   if (target.hostname !== "127.0.0.1") throw new Error("External fetch forbidden in isolated package acceptance");
   return originalFetch(url, init);
 };
+// Synthetic framework cache environment. All SDK requests are intercepted above;
+// app storage and database remain the owned filesystem/Postgres fixture.
+process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify({ deployID: "fixture", siteID: "fixture", token: "synthetic-fixture-token",
+  edgeURL: "http://127.0.0.1:1", uncachedEdgeURL: "http://127.0.0.1:1", primaryRegion: "us-east-2" })).toString("base64");
 const requirePacked = createRequire(path.join(input.functionRoot, "___netlify-server-handler.mjs"));
 for (const name of ["@prisma/client", "sharp"]) assert(requirePacked.resolve(name).startsWith(input.functionRoot + path.sep), "Dependency must come from the final function ZIP");
 const { PrismaClient } = requirePacked("@prisma/client");
@@ -67,7 +72,7 @@ try {
   const sanitized = await readFile(path.join(process.env.LOCAL_STORAGE_DIR, row.storagePath)); assert(!(await sharp(sanitized).metadata()).exif, "EXIF stripped in actual packaged upload");
   await Promise.all(backgrounds);
   await writeFile(input.output, JSON.stringify({ node: process.version, platform: process.platform, finalZipIsolation: true, functionZipFingerprint: input.functionZipFingerprint, packagedPrismaQuery: true, packagedSharpUpload: true, exifRemoved: true,
-    independentLiveGuards: true, secretGatedBroker: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
+    independentLiveGuards: true, secretGatedBroker: true, syntheticFrameworkCache: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
   console.log("Packaged Node handler and native dependency checks passed.");
   await db.$disconnect(); process.exit(0);
 } catch (error) {

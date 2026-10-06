@@ -19,6 +19,16 @@ export async function correctCjsPaths(file) {
   if (hash(restored) !== originalCjsHash) throw new Error("Unknown adapter CJS runtime");
   return hash(original);
 }
+export async function correctVirtualCwd(file) {
+  const source = await readFile(file, "utf8");
+  const original = "Deno.cwd = () => ''";
+  const corrected = "Deno.cwd = () => Deno.build.os === 'windows' ? 'C:\\\\' : ''";
+  const restored = source.replace(corrected, original);
+  if (createHash("sha256").update(restored).digest("hex") !== "5e5b4c254c19c154c70c27c38e07e1d49c71b96d524b2ad174696d04b8a31a12") throw new Error("Unknown adapter cwd shim");
+  const result = source.replace(original, corrected);
+  await writeFile(file, result);
+  return result;
+}
 export async function integrateIngress(base) {
   const dir = resolve(base, ".netlify/edge-functions");
   const file = join(dir, "manifest.json");
@@ -29,6 +39,15 @@ export async function integrateIngress(base) {
   if (!declarations.length || !declarations.every(f => typeof f.pattern === "string" && !f.cache) ||
     new Set(declarations.map(f => f.pattern)).size !== declarations.length) throw new Error("Unsupported middleware declaration");
   const cjsFingerprint = await correctCjsPaths(join(dir, declarations[0].function, "edge-runtime/lib/cjs.ts"));
+  // The inlined shim's empty cwd breaks Windows path.relative/resolve. Keep
+  // Linux output unchanged; a fixed virtual drive root restores path semantics.
+  const generated = join(dir, declarations[0].function, "server/node-middleware.js");
+  const handler = await readFile(generated, "utf8");
+  const cwdOriginal = "Deno.cwd = () => ''";
+  const shim = await correctVirtualCwd(join(dir, declarations[0].function, "edge-runtime/shim/node.js"));
+  const cwdCorrected = "Deno.cwd = () => Deno.build.os === 'windows' ? 'C:\\\\' : ''";
+  if (!handler.includes(cwdOriginal) && !handler.includes(cwdCorrected)) throw new Error("Unknown generated cwd shim");
+  await writeFile(generated, handler.replace(cwdOriginal, cwdCorrected));
   const target = join(dir, INGRESS);
   await mkdir(target, { recursive: true });
   const source = await readFile(join(repository, "netlify/ingress/request-context.ts"), "utf8");
