@@ -72,7 +72,7 @@ test("private remote proof/PDF gates stay application-only; OWNER signature expi
   const f = await awaiting(); expect((await submitProof({ orderCode: f.order.orderCode, statusToken: token(f.order), reference: randomUUID(), ip: "10.7.0.3" })).status).toBe(200);
   const detail = await api(`/api/admin/orders/${f.order.id}`, { cookies: owner.cookies }); const payload = await detail.text();
   expect(detail.status).toBe(200); expect(payload).not.toContain(process.env.SUPABASE_URL!); expect(payload).not.toContain("storage_path");
-  const parsed = JSON.parse(payload); const url = parsed.proofs[0].image_url as string;
+  const parsed = JSON.parse(payload); const url = parsed.proof_attempts_detail[0].image_url as string;
   expect(url).toStartWith("/api/admin/storage/object?");
   expect((await api(url)).status).toBe(401); expect((await api(url, { cookies: staff.cookies })).status).toBe(403);
   const image = await api(url, { cookies: owner.cookies }); expect(image.status).toBe(200); expect(image.headers.get("cache-control")).toContain("no-store");

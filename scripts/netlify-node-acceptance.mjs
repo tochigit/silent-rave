@@ -99,7 +99,7 @@ try {
   const ledger = await db.storageObject.findUniqueOrThrow({ where: { key: row.storagePath } });
   assert.equal(ledger.state, "LINKED"); assert.equal(ledger.storedBytes, BigInt(sanitized.length));
   const detail = await call(`/api/admin/orders/${input.proofOrderId}`, { headers: owner }); assert.equal(detail.status, 200);
-  const signedProof = (await detail.json()).proofs[0].image_url;
+  const signedProof = (await detail.json()).proof_attempts_detail[0].image_url;
   assert(signedProof.startsWith("/api/admin/storage/object?"), "Application URL only");
   const privateImage = await call(signedProof, { headers: owner }); assert.equal(privateImage.status, 200); privateResponse(privateImage);
   assert(Buffer.from(await privateImage.arrayBuffer()).equals(Buffer.from(sanitized)));
