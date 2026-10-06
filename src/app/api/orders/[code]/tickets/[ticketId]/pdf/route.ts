@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { STATUS_TOKEN_HEADER } from "@/lib/constants";
 import { verifyStatusToken } from "@/lib/orders/status-token";
 import { getTicketPdf, PdfAccessError } from "@/lib/tickets/pdf";
+import { privateHeaders } from "@/lib/auth/policy";
 export const runtime = "nodejs";
-const headers = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" };
+const headers = { ...privateHeaders, "X-Content-Type-Options": "nosniff" };
 const missing = () => NextResponse.json({ error: "Order not found." }, { status: 404, headers });
 export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string; ticketId: string }> }) {
   const { code, ticketId } = await params;

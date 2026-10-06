@@ -482,6 +482,7 @@ export async function adminOperation(
     return reply({ event }, method === "POST" ? 201 : 200);
   }
   if (method === "POST" && path[0] === "events" && path[2] === "banner") {
+    const eventId = uuid.parse(path[1]);
     const form = await imageMultipart(request, "banner");
     const file = form.get("banner");
     if (!(file instanceof File)) throw new OperationError(422, "Choose a JPEG, PNG or WebP banner under 3 MiB.");
@@ -496,7 +497,7 @@ export async function adminOperation(
     const url = `/api/banners/${key.split("/")[1]}`;
     try { await db.$transaction(async (tx) => {
       await tx.event.update({ where: { id }, data: { bannerImageUrl: url } });
-      await storageLinked(tx, key, "EVENT", id);
+      await storageLinked(tx, key, "EVENT", eventId);
       await writeAudit(tx, {
         actorId,
         action: "EVENT_UPDATED",

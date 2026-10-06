@@ -62,9 +62,9 @@ test("only verified object absence is null; auth/throttle/outage/redirect/malfor
       await fault(fake, { operation: "authenticated", ...active, once: true });
       await expect(adapter.getObject(key)).rejects.toBeInstanceOf(StorageUnavailableError);
     }
-    const redirects = new SupabaseStorage({ ...config(fake), fetch: (async () => new Response(null, { status: 302 })) as typeof fetch });
+    const redirects = new SupabaseStorage({ ...config(fake), fetch: (async () => new Response(null, { status: 302 })) as unknown as typeof fetch });
     await expect(redirects.getObject(key)).rejects.toBeInstanceOf(StorageUnavailableError);
-    const badType = new SupabaseStorage({ ...config(fake), fetch: (async () => new Response(pdf, { headers: { "content-type": "text/html" } })) as typeof fetch });
+    const badType = new SupabaseStorage({ ...config(fake), fetch: (async () => new Response(pdf, { headers: { "content-type": "text/html" } })) as unknown as typeof fetch });
     await expect(badType.getObject(key)).rejects.toMatchObject({ code: "TYPE" });
     await expect(adapter.putObject(key, new Uint8Array(PDF_OBJECT_BYTES + 1), "application/pdf")).rejects.toBeInstanceOf(StorageUnavailableError);
   } finally { fake.server.stop(true); }

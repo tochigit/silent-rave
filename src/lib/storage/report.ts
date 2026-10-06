@@ -3,6 +3,13 @@ import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
 import { getStorage } from "./index";
 import { objectContract } from "./keys";
+type ReportItem = {
+  key: string; kind: string | null; state: string | null;
+  stored_bytes: string | null; stored_sha256: string | null; input_hash: string | null;
+  references: Array<{ type: string; id: string }>;
+  object_status: "UNCHECKED" | "PRESENT" | "MISSING" | "UNAVAILABLE";
+  flags: string[]; deletion_allowed: false;
+};
 
 /** Operator-only, bounded keyset dry-run. No ledger changes, list calls or object deletion. */
 export async function storageReport(after = "", verify = false) {
@@ -19,7 +26,7 @@ export async function storageReport(after = "", verify = false) {
     FROM keys k LEFT JOIN storage_objects s ON s.key = k.key
     WHERE k.key > ${after} ORDER BY k.key LIMIT ${take + 1}`);
   const page = rows.slice(0, take);
-  const items = [];
+  const items: ReportItem[] = [];
   for (const row of page) {
     const refs = row.references as Array<{ type: string; id: string }>;
     const flags: string[] = [];

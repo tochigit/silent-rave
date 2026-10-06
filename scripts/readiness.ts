@@ -78,8 +78,18 @@ export function inspectLaunchConfig(env: Env) {
   check("storage-driver", env.STORAGE_DRIVER === "supabase", "Local disk is a fixture adapter; Supabase is required for the intended host.");
   check("storage-signature", (env.STORAGE_SIGNING_SECRET?.length ?? 0) >= 32,
     "Retain a random server-only application signing key for session-gated proof reads.");
+  let storageConfig = false;
+  try {
+    const url = new URL(env.SUPABASE_URL ?? "");
+    const key = env.SUPABASE_STORAGE_SERVER_KEY ?? "";
+    const parts = key.split(".");
+    const serverKey = /^sb_secret_[A-Za-z0-9_-]+$/.test(key) || (parts.length === 3 && parts.every(p => /^[A-Za-z0-9_-]+$/.test(p)) && JSON.parse(Buffer.from(parts[1], "base64url").toString()).role === "service_role");
+    const privateBucket = env.SR_PRIVATE_BUCKET ?? "sr-private", banners = env.SR_BANNER_BUCKET ?? "sr-banners";
+    storageConfig = url.protocol === "https:" && !url.port && !url.username && !url.password && !url.search && !url.hash && url.pathname === "/" && serverKey && privateBucket !== banners && [privateBucket, banners].every(b => /^[a-z0-9][a-z0-9-]{0,62}$/.test(b));
+  } catch { /* Fixed redacted diagnostic below. */ }
+  check("storage-config", storageConfig, "Configure the HTTPS Storage origin, server key and separate private/banner buckets; hosted acceptance remains separate.");
   check("public-secret-exposure", !Object.entries(env).some(([key, value]) => !!value &&
-    /^NEXT_PUBLIC_.*(?:SECRET|PRIVATE|SERVICE_ROLE|DATABASE_URL|DIRECT_URL|RESEND_API_KEY|GOOGLE_PLACES_API_KEY|OWNER_PASSWORD)/.test(key)),
+    /^NEXT_PUBLIC_.*(?:SECRET|PRIVATE|SERVICE_ROLE|STORAGE_SERVER_KEY|DATABASE_URL|DIRECT_URL|RESEND_API_KEY|GOOGLE_PLACES_API_KEY|OWNER_PASSWORD)/.test(key)),
     "Server credentials must never have a NEXT_PUBLIC_ alias.");
   check("fixture-flags", env.SILENT_RAVE_ISOLATED_FIXTURE !== "1" && env.PUSH_ADAPTER !== "capture" &&
     !env.OWNER_PASSWORD && !env.OWNER_EMAIL, "Exclude fixture/capture and owner-provisioning variables from deployment.");
