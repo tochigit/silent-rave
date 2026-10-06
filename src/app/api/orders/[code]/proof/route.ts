@@ -1,3 +1,4 @@
+import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { kickEmailJobs } from "@/lib/email/kick";
 import { dispatchOwnerPush } from "@/lib/operations/push";
 import { NextResponse, type NextRequest, after } from "next/server";
@@ -40,7 +41,7 @@ export async function POST(
 ) {
   const { code } = await params;
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = readTrustedContextNode(request).clientIp;
   const limited = consumeRateLimit("proof-submit-ip", ip, {
     limit: PROOF_IP_RATE_PER_HOUR,
     windowMs: 60 * 60 * 1000,
@@ -111,7 +112,7 @@ export async function POST(
     if (error instanceof OrderServiceError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: error.httpStatus });
     }
-    console.error("[orders/proof] unexpected error:", error);
+    console.error("[orders/proof] unexpected error");
     return NextResponse.json({ error: "Proof submission failed unexpectedly." }, { status: 500 });
   }
 }

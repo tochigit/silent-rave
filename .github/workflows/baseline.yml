@@ -20,7 +20,7 @@ jobs:
           - os: windows-latest
             platform: win32
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 25
+    timeout-minutes: 45
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       # Generation/build need syntactically valid configuration, not a hosted DB.
@@ -44,15 +44,23 @@ jobs:
       - run: bun run lint
       - run: bun run typecheck
       - run: bun --no-env-file run test:readiness
+      - run: bun --no-env-file run test:runtime-policy
+      - run: bun --no-env-file run check:route-policy
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
       - run: python -m pip install -r scripts/requirements-pdf-test.txt
       - run: bun run scanner:build
-      - run: bun run test:step4
-      - run: bun run build
+      - run: bun --no-env-file scripts/install-netlify-tools.ts
+      - run: bun --no-env-file scripts/build-netlify-offline.ts
+      - run: bun --no-env-file scripts/verify-netlify-artifacts.ts
+      - run: bun --no-env-file scripts/verify-netlify-node.ts
+      - run: bun run test:step5c1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: step4-test-evidence-${{ matrix.platform }}
-          path: reports/step4-${{ matrix.platform }}-test-output.txt
+          name: step5c1-evidence-${{ matrix.platform }}
+          path: |
+            reports/step5c1-*-test-output.txt
+            reports/step5c1-netlify-*-build.txt
+            reports/step5c1-*-acceptance.json

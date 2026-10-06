@@ -164,7 +164,7 @@ async function fresh() {
         customer_phone: `080${Math.floor(10000000 + Math.random() * 89999999)}`,
         line_items: [{ tier_id: event.ticketTiers[0].id, quantity: 1 }],
       },
-      headers: { "x-forwarded-for": crypto.randomUUID() },
+      headers: { "x-sr-test-ip": `198.18.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}` },
     },
   );
   if (response.status() !== 201)

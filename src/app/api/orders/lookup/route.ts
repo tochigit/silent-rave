@@ -1,3 +1,4 @@
+import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { kickEmailJobs } from "@/lib/email/kick";
 import { NextResponse, type NextRequest, after } from "next/server";
 import { randomUUID } from "node:crypto";
@@ -42,7 +43,7 @@ function generic202(): NextResponse {
 }
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = readTrustedContextNode(request).clientIp;
   const ipLimited = consumeRateLimit("lookup-ip", ip, {
     limit: LOOKUP_IP_RATE_PER_HOUR,
     windowMs: 60 * 60 * 1000,

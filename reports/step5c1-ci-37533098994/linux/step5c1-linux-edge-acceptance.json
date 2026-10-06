@@ -1,0 +1,12 @@
+{
+  "fingerprint": "3722ffa34366953f71673ff806f284423a9abfb2ce3576bfaaf53fb6dabc1b05",
+  "proxyTraceFingerprint": "0b3cf88ad5ce1f51a08c597a2afd2f0aff577de410633622ae2048c99899fb02",
+  "proxyNativeFree": true,
+  "buildCanariesAbsent": true,
+  "inspectedFiles": 2146,
+  "generatedEdgeExecution": true,
+  "transferCount": 2,
+  "streamingBodyPreserved": true,
+  "privateResponses": true,
+  "nodeContextVerification": true
+}

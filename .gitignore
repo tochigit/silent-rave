@@ -39,6 +39,7 @@ worklog.md
 
 # vercel
 .vercel
+.netlify/
 
 
 # typescript

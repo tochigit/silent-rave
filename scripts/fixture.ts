@@ -94,7 +94,8 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
   Object.assign(env, {
     NODE_ENV: "development", SILENT_RAVE_ISOLATED_FIXTURE: "1", DATABASE_URL: `${databaseUrl}?connection_limit=8`,
     DIRECT_URL: databaseUrl, TEST_DATABASE_URL: `${databaseUrl}?connection_limit=8`,
-    ROOT_DOMAIN: "localhost", ALLOW_DEV_ORIGIN: "", NEXT_TELEMETRY_DISABLED: "1", CHECKPOINT_DISABLE: "1",
+    ROOT_DOMAIN: "localhost", HOST_PLATFORM: "local", AUTH_INTERNAL_BASE_URL: "", PROXY_AUTH_SECRET: randomBytes(32).toString("base64url"), NETLIFY_INGRESS_SECRET: "", DEPLOY_ID: "",
+    ALLOW_DEV_ORIGIN: "", NEXT_TELEMETRY_DISABLED: "1", CHECKPOINT_DISABLE: "1",
     STATUS_TOKEN_SECRET: randomBytes(32).toString("base64url"),
     STORAGE_SIGNING_SECRET: randomBytes(32).toString("base64url"),
     CRON_SECRET: randomBytes(24).toString("base64url"),

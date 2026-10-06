@@ -1,5 +1,11 @@
 # Step 5 readiness/preflight report
 
+Current status (2026-10-06): this historical milestone was merged as PR #5 at
+`3b69187d017403fb84777f9c3406c68bb3e96a55`; main CI 37232720318 passed.
+Netlify is selected for preparation. [Step 5C.1](./09-netlify-runtime-auth.md)
+is incomplete at its ingress-ordering gate. Current instructions are in
+CHECKPOINT.md; original Step 5 evidence below remains unchanged.
+
 Prepared 2026-10-03, Africa/Lagos. Scope: reversible local preparation and a
 reviewable configuration/forward-migration/deployment plan. **Launch blocked;
 hosted implementation and deployment are not complete.**

@@ -9,6 +9,8 @@
 import { PrismaClient, type EmailJobKind } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import sharp from "sharp";
+import { createHash } from "node:crypto";
+import { isIP } from "node:net";
 import "./load-env";
 
 // Fixture configuration is supplied explicitly and checked by load-env.
@@ -43,7 +45,12 @@ export async function api(path: string, options: ApiOptions = {}): Promise<Respo
   if (options.origin !== null && options.origin !== undefined) {
     headers.origin = options.origin;
   }
-  if (options.ip) headers["x-forwarded-for"] = options.ip;
+  if (options.ip) {
+    // Older suites use UUIDs as independent rate-bucket identities. Map those
+    // deterministically to a valid IP; hosted requests never accept this header.
+    const bytes = createHash("sha256").update(options.ip).digest();
+    headers["x-sr-test-ip"] = isIP(options.ip) ? options.ip : [...bytes.subarray(0, 4)].join(".");
+  }
   if (options.cookies) {
     headers.cookie = Object.entries(options.cookies)
       .map(([name, value]) => `${name}=${value}`)

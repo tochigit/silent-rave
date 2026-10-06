@@ -1,0 +1,15 @@
+[build]
+  command = "bun install --frozen-lockfile && bun run build:netlify"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "24"
+  BUN_VERSION = "1.3.14"
+  BUN_FLAGS = "--frozen-lockfile"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[plugins]]
+  package = "./netlify/plugins/ingress"
