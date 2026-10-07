@@ -1,0 +1,21 @@
+.preview-banner {
+  background: #202430;
+  border-bottom: 1px solid #424752;
+  color: #bec1cc;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+.preview-banner strong { color: #a3f7bf; }
+.preview-note {
+  padding: 16px 20px;
+  margin-bottom: 32px;
+  border: 1px solid var(--sr-border);
+  border-left: 4px solid var(--sr-purple);
+  border-radius: 8px;
+}
+.preview-note p { margin: 6px 0 12px; }

@@ -43,6 +43,8 @@ jobs:
       - run: bun run db:generate
       - run: bun run lint
       - run: bun run typecheck
+      - name: Build isolated client preview
+        run: bun --no-env-file run preview:build
       - run: bun --no-env-file run test:readiness
       - run: bun --no-env-file run test:runtime-policy
       - run: bun --no-env-file run check:route-policy
@@ -67,6 +69,12 @@ jobs:
           export BROWSER_EXECUTABLE="$(command -v google-chrome)"
           test -n "$BROWSER_EXECUTABLE"
           bun --no-env-file scripts/run-browser-step5a.ts
+      - name: Verify static client preview in owned Chrome
+        if: matrix.platform == 'linux'
+        run: |
+          export BROWSER_EXECUTABLE="$(command -v google-chrome)"
+          test -n "$BROWSER_EXECUTABLE"
+          node scripts/browser-client-preview.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,4 +86,7 @@ jobs:
             reports/step5a-*-test-output.txt
             reports/step5a-*-migration-backfill.txt
             reports/step5a-mobile-*.png
+            reports/client-preview-build.json
+            reports/client-preview/
+            out/client-preview/
             reports/step5-*-db-preflight.txt

@@ -1,0 +1,34 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Keyboard skip link and loaded first-party poster",
+    "375px home without overflow",
+    "1440px home without overflow",
+    "360px checkout without overflow",
+    "No reservations or payment submission, including programmatic form submit",
+    "Cart persists through document navigation",
+    "Clear cart works",
+    "360px event listing without overflow",
+    "Filters and empty state work",
+    "360px month calendar without overflow",
+    "Month to day calendar navigation works",
+    "360px About without overflow",
+    "360px Contact without overflow",
+    "360px Find Order without overflow",
+    "Contact and recovery forms visibly disabled",
+    "360px event detail without overflow",
+    "Landscape with reduced motion without overflow",
+    "No HTTP API calls, POSTs, external requests or JavaScript errors; admin route excluded"
+  ],
+  "errors": [],
+  "externalRequests": 0,
+  "apiRequests": 0,
+  "pages": 8,
+  "browser": "isolated owned Chrome",
+  "viewports": [
+    360,
+    375,
+    812,
+    1440
+  ]
+}
