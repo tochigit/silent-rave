@@ -36,24 +36,34 @@ export function BuyTickets({ className = "button" }: { className?: string }) {
   );
 }
 export function Header() {
+  const ticker = "THE MOST ANTICIPATED EVENT IN EUA - ".repeat(3);
   return (
     <>
-      <a className="skip-link" href="#main">
-        Skip to content
-      </a>
+      <a className="skip-link" href="#main">Skip to content</a>
+      <div className="ticker-wrapper" aria-label="The most anticipated event in EUA">
+        <div className="ticker-content" aria-hidden="true">
+          <span className="ticker-item">{ticker}</span>
+          <span className="ticker-item">{ticker}</span>
+        </div>
+      </div>
       <header className="site-header">
-        <Link className="brand" href="/" aria-label="Silent Rave home">
-          SILENT<span>RAVE</span>
-          <span className="brand-dot" aria-hidden="true" />
-        </Link>
-        <nav aria-label="Main navigation">
-          <Link href="/events">Events</Link>
-          <Link href="/about">About</Link>
-          <Link href="/contact">Contact</Link>
-          <Link href="/lookup">Find order</Link>
-          <CartLink />
-        </nav>
-        <BuyTickets className="button compact" />
+        <Link className="brand" href="/" aria-label="Silent Rave home">Silent Rave</Link>
+        <details className="site-menu" onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.currentTarget.open = false;
+            event.currentTarget.querySelector("summary")?.focus();
+          }
+        }}>
+          <summary>Menu</summary>
+          <nav aria-label="Main navigation">
+            <Link href="/">Home</Link>
+            <Link href="/events">Events</Link>
+            <Link href="/about">About</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/lookup">Find order</Link>
+            <CartLink />
+          </nav>
+        </details>
       </header>
     </>
   );
@@ -61,17 +71,14 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="site-footer">
-      <Link className="brand" href="/">
-        SILENT<span>RAVE</span>
-      </Link>
-      <p>Choose your night. Bring your people.</p>
       <nav aria-label="Footer">
         <Link href="/events">Events</Link>
         <Link href="/about">About</Link>
         <Link href="/contact">Contact</Link>
-        <Link href="/lookup">Recover order link</Link>
+        <Link href="/lookup">Find order</Link>
+        <CartLink />
       </nav>
-      <small>© {new Date().getFullYear()} Silent Rave</small>
+      <p>Copyright © {new Date().getFullYear()}. All rights reserved.</p>
     </footer>
   );
 }

@@ -62,12 +62,8 @@ export function CheckoutPage() {
   }
   return (
     <section className="narrow stack">
-      <p className="eyebrow">GUEST CHECKOUT</p>
-      <h1>
-        Your tickets.
-        <br />
-        <span>No account needed.</span>
-      </h1>
+      <h1>Checkout</h1>
+      <p className="muted">Enter your details. No account needed.</p>
       {!cart ? (
         <div className="panel">
           <p>Your cart is empty.</p>
@@ -93,8 +89,8 @@ export function CheckoutPage() {
               </strong>
             </p>
             <p className="muted">
-              The server checks the current price and availability. The next
-              screen shows your final amount and bank details before you pay.
+              We’ll confirm ticket availability and your final amount before
+              you pay. Bank transfer details appear in the next step.
             </p>
             <Link href="/cart">Review cart</Link>
           </div>

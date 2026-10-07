@@ -292,7 +292,7 @@ async function verifyPolling() {
 }
 try {
   await page.goto(base);
-  await page.getByRole("heading", { name: /Your night/ }).waitFor();
+  await page.getByRole("heading", { level: 1 }).waitFor();
   await overflow("mobile home");
   await page.keyboard.press("Tab");
   check(
@@ -309,15 +309,12 @@ try {
     "skip link focuses main content",
   );
   await page
-    .getByRole("button", { name: "Buy tickets", exact: true })
+    .getByRole("button", { name: "Buy Early Bird", exact: true })
     .first()
     .click();
-  await page.waitForURL(/\/event\//);
+  await page.getByRole("dialog", { name: "Buy Early Bird", exact: true }).waitFor();
   await visible("Early Bird");
   await overflow("mobile event");
-  await page
-    .getByRole("button", { name: "Add one Early Bird", exact: true })
-    .click();
   await page
     .getByRole("button", { name: "Add 1 tickets to cart", exact: true })
     .click();

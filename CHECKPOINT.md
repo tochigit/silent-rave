@@ -1,3 +1,28 @@
+# Silent Rave reference design correction
+
+2026-10-07, Africa/Lagos. **REFERENCE DESIGN CORRECTION COMPLETE; READY FOR REVIEW.**
+Branch `fix/reference-design-mobile-first`, base main
+`5d566efd2529c2bf1bd8634f5013578d853df450`. PR #8 is already merged. The user
+subsequently rejected its invented homepage layout and authorized restoring and
+enhancing the client's `references/Rave.html` / `Rave.css` design, mobile first.
+Read `.docs/REFERENCE_DESIGN_REPORT.md` and the Desktop
+`Silent Rave - Reference design continuation.md` for current evidence/publication.
+
+Shared application and preview now preserve the source's 600px single event card,
+light exterior, ticker/title/poster/description/calendar/tickets/details/venue,
+with responsive controls, readable text, navigation and a keyboard-safe popup.
+Local full Bun lint, app/tooling types, build, 30 owned Chrome reference/responsive/
+interaction checks and corrected ZIP validation passed. Screenshots inspected.
+The corrected Desktop package is `Silent Rave - Reference Preview`; use its new
+upload guide. Older preview artifacts/evidence and all branches are preserved.
+Source references, backend/payment/approval rules, migrations and locks are unchanged.
+The user uploads the corrected demo and supplies its URL for visitor verification.
+Do not infer a merge of this correction, Batch B or production rollout. Actual
+hosted behavior is unverified; readyForLaunch=false remains. Current external
+handoff supersedes the historical PR-open/merge/upload state below.
+
+## Historical original client preview checkpoint
+
 # Silent Rave checkpoint
 
 2026-10-07, Africa/Lagos. **CLIENT VISUAL PREVIEW PACKAGED.**

@@ -2,24 +2,28 @@ import type { EventDetail } from "../src/lib/customer/types";
 
 // Entirely illustrative content. No hosted data or credentials are read.
 export const previewEvents: EventDetail[] = [{
-  id: "preview-owerri", slug: "silent-rave-owerri", title: "Silent Rave — Owerri",
+  id: "preview-evangel", slug: "nusa-evangel-silent-rave", title: "NUSA Evangel - Silent Rave",
   banner_image_url: "/assets/poster.jpeg",
-  starts_at: "2026-11-07T18:00:00+01:00", ends_at: "2026-11-08T00:00:00+01:00",
+  starts_at: "2026-11-11T16:00:00+01:00", ends_at: "2026-11-11T21:00:00+01:00",
   is_date_confirmed: true, sold_out: false, status: "PUBLISHED",
-  price_range: { min_kobo: 500000, max_kobo: 1500000 },
-  description: "Three channels. One unforgettable night. Put on your headphones, find your favourite sound, and dance with your people.\n\nThis is a sample event for reviewing the website design. The venue, date, prices and ticket availability are illustrative.",
-  venue: { name: "Sample venue", city: "Owerri", address: "Sample location · Owerri, Imo State", latitude: null, longitude: null, directions_url: null, map_embed_url: null },
-  organizer: { name: "Silent Rave", description: "Choose your night. Bring your people." },
+  price_range: { min_kobo: 50000, max_kobo: 200000 },
+  description: "Nitro Experience is bringing the ultimate Jersey Rave to the city. Wear your favorite jersey, grab your crew, and experience an unforgettable silent disco with multiple DJs, non-stop vibes, games, great music, glowing lights, and an electric atmosphere.\n\nWhether you're repping your favorite football, basketball, or custom jersey, this is where music, energy, and style come together.\n\nDon't miss the biggest Jersey Rave in Abakaliki! Secure your ticket now and be part of the experience.",
+  venue: { name: "Evangel University Akaeze", city: "Akaeze", address: "KM 48, Enugu-Abakaliki Expressway, Okpoto\nEbonyi State, Nigeria", latitude: null, longitude: null, directions_url: null, map_embed_url: null },
+  organizer: { name: "Intelligent Minds", description: null },
   ticket_tiers: [
-    { id: "preview-early", name: "Early Bird", price_kobo: 500000, available: 30, state: "OPEN", sales_start_at: null, sales_end_at: null },
-    { id: "preview-regular", name: "Regular", price_kobo: 1000000, available: 50, state: "OPEN", sales_start_at: null, sales_end_at: null },
-    { id: "preview-vip", name: "VIP", price_kobo: 1500000, available: 20, state: "OPEN", sales_start_at: null, sales_end_at: null },
+    { id: "preview-early", name: "Early Bird Ticket", price_kobo: 50000, available: 30, state: "OPEN", sales_start_at: null, sales_end_at: null },
+    { id: "preview-standard", name: "Standard Ticket", price_kobo: 200000, available: 50, state: "OPEN", sales_start_at: null, sales_end_at: null },
   ],
-  calendar_links: {},
+  calendar_links: {
+    google: "https://calendar.google.com/calendar/render?action=TEMPLATE&text=NUSA+Silent+Rave&dates=20261111T150000Z/20261111T200000Z&location=Evangel+University+Akaeze",
+    ical: "data:text/calendar;charset=utf-8," + encodeURIComponent("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:silent-rave-preview@example.invalid\r\nDTSTAMP:20261007T000000Z\r\nSUMMARY:NUSA Silent Rave\r\nDTSTART:20261111T150000Z\r\nDTEND:20261111T200000Z\r\nLOCATION:Evangel University Akaeze\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"),
+    outlook365: "https://outlook.office.com/calendar/0/deeplink/compose?subject=NUSA+Silent+Rave&startdt=2026-11-11T15:00:00Z&enddt=2026-11-11T20:00:00Z",
+    outlooklive: "https://outlook.live.com/calendar/0/deeplink/compose?subject=NUSA+Silent+Rave&startdt=2026-11-11T15:00:00Z&enddt=2026-11-11T20:00:00Z",
+  },
 }];
 
 export const previewPages = {
-  about: { title: "About Silent Rave", body: "Your night. Your frequency.\n\nSilent Rave brings people together through music, movement and a shared night out. Slip on a pair of headphones, choose a channel and make the dance floor your own.\n\nBring your friends, find your favourite sound and make memories together.\n\nSample copy for design review. Final event and brand information will be supplied before launch." },
+  about: { title: "About Silent Rave", body: "Music, energy and a night with your people.\n\nSilent Rave brings people together through music, movement and a shared night out. Slip on a pair of headphones, choose a channel and make the dance floor your own.\n\nBring your friends, find your favourite sound and make memories together.\n\nSample copy for design review. Final event and brand information will be supplied before launch." },
   contact: { title: "Contact", body: "Have a question about Silent Rave, an event or your tickets? Get in touch using the form below.\n\nThis is a design preview. Contact details are illustrative and the message form is disabled." },
 };
 

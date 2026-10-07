@@ -1,13 +1,13 @@
-# Upload the Silent Rave design preview
+# Upload the corrected Silent Rave reference preview
 
-This package is already built. It shows the existing website design with sample event content. Reservations, payments, uploads, messages and order-recovery emails are disabled.
+This package follows the client's `Rave.html` / `Rave.css` design and improves its mobile layout. Event details are examples. Reservations, payments, uploads, messages and order-recovery emails are disabled. Use the new **Reference Preview** package; the older **Client Preview** package shows the superseded design.
 
-1. Find `Silent Rave - Client Preview.zip` on your Desktop. Right-click it and choose **Extract All**. Open the extracted folder. The upload folder must contain `index.html`, `assets`, `events`, `event`, `about`, `contact`, `cart`, `checkout`, `lookup`, `_headers` and `robots.txt`.
+1. Open the prepared `Silent Rave - Reference Preview` folder on your Desktop. If using the ZIP, find `Silent Rave - Reference Preview.zip`, right-click it and choose **Extract All**. The upload folder must contain `index.html`, `assets`, `events`, `event`, `about`, `contact`, `cart`, `checkout`, `lookup`, `_headers` and `robots.txt`.
 2. Sign in to your Netlify account, then open https://app.netlify.com/drop. Select the team where you want to keep this preview.
-3. Drag the extracted `Silent Rave - Client Preview` folder into the upload area. Upload only that prepared folder. It needs no build command, database, environment variables or connection to the GitHub repository.
+3. Drag the `Silent Rave - Reference Preview` folder into the upload area. Upload only that prepared folder. If you already uploaded the previous demo, open that preview project's **Deploys** page and drop the new folder into its manual deploy area to update the same URL. It needs no build command, database, environment variables or connection to the GitHub repository.
 4. Wait for Netlify to finish and open the generated `https://...netlify.app` address.
 5. Open the link in an Incognito/InPrivate window. If Netlify asks for your team login, select **Make public** in the project overview, or change **Project configuration → General → Visitor access → Project visibility** to **Public**, then test again. Share only after the link opens for a visitor who is not signed in to your team.
-6. Check the homepage and click **Buy tickets**. Select a sample ticket, add it to the cart and open checkout. The reservation button is disabled by design. Check the same link on your phone, then send the link to the client.
+6. Check the NUSA Evangel homepage, poster and calendar dropdown. Click a ticket's mint **Buy** button, change its quantity in the popup, add it to the cart and open checkout. The reservation button is disabled by design. Check **Menu**, About, Contact and Find order on your phone. Send the resulting link back for verification before sharing it with the client.
 
 Suggested message: "Here is the Silent Rave website design preview. You can browse it on your phone or laptop. The event details are examples, and payments are disabled while you review the design."
 
