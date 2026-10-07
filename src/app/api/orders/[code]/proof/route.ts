@@ -6,6 +6,9 @@ import { PROOF_IP_RATE_PER_HOUR, STATUS_TOKEN_HEADER } from "@/lib/constants";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { submitProof } from "@/lib/proofs/service";
 import { OrderServiceError } from "@/lib/orders/errors";
+import { imageMultipart, UploadError } from "@/lib/uploads/multipart";
+import { StorageUnavailableError, StorageCollisionError } from "@/lib/storage";
+import { privateHeaders } from "@/lib/auth/policy";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/orders/:code/proof — "I have paid" (03 v2.1; full contract in
@@ -33,8 +36,6 @@ import { OrderServiceError } from "@/lib/orders/errors";
 // staff routes). Per-IP rate limit below.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const MAX_MULTIPART_BYTES = 8 * 1024 * 1024; // hard ceiling above the 4MB file limit
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
@@ -50,21 +51,11 @@ export async function POST(
     return rateLimitResponse(limited.retryAfterSec, "Too many proof uploads from this network.");
   }
 
-  const contentType = request.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
-    return NextResponse.json({ error: "Expected multipart/form-data." }, { status: 400 });
-  }
-
-  const declaredLength = Number(request.headers.get("content-length") ?? 0);
-  if (declaredLength > MAX_MULTIPART_BYTES) {
-    return NextResponse.json({ error: "Upload too large." }, { status: 422 });
-  }
-
   let form: FormData;
   try {
-    form = await request.formData();
-  } catch {
-    return NextResponse.json({ error: "Could not parse the upload." }, { status: 400 });
+    form = await imageMultipart(request, "proof", { transfer_reference: 128, sender_name: 200, client_submission_id: 128 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof UploadError ? error.message : "Could not parse the upload.", code: error instanceof UploadError ? error.code : "BAD_UPLOAD" }, { status: error instanceof UploadError ? error.status : 400, headers: privateHeaders });
   }
 
   // The status_token (header or ?t=) is resolved BEFORE the service call but
@@ -109,6 +100,9 @@ export async function POST(
     if (result.idempotentReplay) body.idempotent_replay = true;
     return NextResponse.json(body, { status: 200 });
   } catch (error) {
+    if (error instanceof StorageUnavailableError || error instanceof StorageCollisionError) {
+      return NextResponse.json({ error: "Image storage is temporarily unavailable. Your fields are saved; retry with the same submission.", code: "STORAGE_UNAVAILABLE" }, { status: 503, headers: privateHeaders });
+    }
     if (error instanceof OrderServiceError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: error.httpStatus });
     }

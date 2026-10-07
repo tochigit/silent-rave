@@ -1,6 +1,50 @@
 # Silent Rave checkpoint
 
-2026-10-06, Africa/Lagos. **Step 5C.1 COMPLETE; STOPPED FOR PR REVIEW.**
+2026-10-07, Africa/Lagos. **Batch A COMPLETE; STOP FOR REVIEW.**
+
+Branch `feat/step5c-upload-storage`; base main/origin/main
+`0da2051ca9c617fbe09d50cabcd2e2232045fd9f`. PR #6 is merged; post-merge CI
+37540660015 passed Windows/Linux, verified live before this branch. All previous
+branches and interrupted fixtures are preserved. No applicable AGENTS.md.
+
+Batch A PR #7: https://github.com/tochigit/silent-rave/pull/7
+Implementation head `9f4f7fe4d61e7da4069a5038e26fa0778ca0e13b` passed complete
+Windows/Linux CI 37645797361: 196 regressions per OS, lint/types/readiness/policy,
+guard audit, disposable replay/backfill, actual offline Netlify build, generated
+Edge and isolated final native Node ZIP/privacy/Prisma/Sharp/PDF/font/QR acceptance.
+Dedicated Linux owned-Chrome acceptance passed actual preparation, HEIC refusal,
+413/saved retries, proof/banner uploads, mobile width and no JavaScript errors.
+The full regression browser skip is separate from this dedicated pass.
+
+Evidence: reports/step5a-ci-37645797361/{linux,win32}/; earlier passed implementation
+reports also retained in reports/step5a-ci-37548057323/. See .docs/BATCH_A_REPORT.md
+for exact coverage/local failure history, and .docs/10-uploads-durable-storage.md
+for configuration/legacy/lifecycle contracts. Screenshots were visually inspected.
+
+Implemented: shared 3 MiB/3.25 MiB limits and bounded multipart; browser preparation
+and saved retries; metadata-free Sharp output; immutable Supabase REST objects and
+first-writer PDFs; shared application signatures/live private reads; additive
+storage ledger/atomic intents/transactional pointer links and OWNER dry-run report.
+The four historical migrations and dependency locks remain unchanged.
+
+Local supported Node24 generation, both types, direct Bun lint, 7 readiness cases,
+guard audit and backfill/role denial/repeated deploy passed. Initial Bun generation
+stalled; a later focused app startup timed out before cases (both incomplete).
+Owned cleanup passed, process count checked zero, root dotenv absent. Global Node26
+unchanged. Supabase/Postgres/UI and branch/checkpoint skills applied; public docs
+were checked without hosted data access. Earlier failed CI never counted as passes.
+
+Read the entire Desktop Batch A continuation for final publication head/checks,
+then the Consolidated handoff and original Step 5B/5C1 technical specifications.
+The exact publication head/checks and completed PR description are recorded in PR #7
+and the Desktop continuation; verify those live before any later action. STOP FOR REVIEW.
+No merge, Batch B, hosted queries/configuration/buckets/import/deletion, DNS/deploy,
+purchases, real sends or permanent owner/password changes are authorized here.
+readyForLaunch=false remains intentional; actual hosted/device gates remain unverified.
+
+## Historical Step 5C.1 checkpoint (superseded merge/review state)
+
+Step 5C.1 COMPLETE; PR #6 subsequently merged as recorded above.
 Netlify runtime/auth adaptation is implemented and verified in Windows/Linux CI.
 PR #6: https://github.com/tochigit/silent-rave/pull/6
 Branch: `feat/step5c1-netlify-runtime-auth`; base main remains

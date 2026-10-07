@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { guardApi, ADMIN_API_ROLES } from "@/lib/auth/guards";
 import { getStorage, verifyStorageSignature } from "@/lib/storage";
+import { objectContract } from "@/lib/storage/keys";
+import { privateHeaders } from "@/lib/auth/policy";
+export const runtime = "nodejs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/admin/storage/object?key=<path>&exp=<epochSec>&sig=<base64url>
@@ -29,36 +32,50 @@ export async function GET(request: NextRequest) {
   const sig = url.searchParams.get("sig");
 
   if (!key || expParam === null || !sig) {
-    return NextResponse.json({ error: "Incomplete signed URL." }, { status: 400 });
+    return NextResponse.json({ error: "Incomplete signed URL." }, { status: 400, headers: privateHeaders });
   }
   const exp = Number(expParam);
   if (!Number.isSafeInteger(exp)) {
-    return NextResponse.json({ error: "Malformed signed URL." }, { status: 400 });
+    return NextResponse.json({ error: "Malformed signed URL." }, { status: 400, headers: privateHeaders });
   }
 
-  const check = verifyStorageSignature(key, exp, sig);
+  let check;
+  try { check = verifyStorageSignature(key, exp, sig); }
+  catch { return NextResponse.json({ error: "Image temporarily unavailable." }, { status: 503, headers: privateHeaders }); }
   if (!check.ok) {
     const status = check.reason === "expired" ? 410 : 403;
     return NextResponse.json(
       { error: check.reason === "expired" ? "Signed URL has expired." : "Invalid signature." },
-      { status }
+      { status, headers: privateHeaders }
     );
   }
 
   // Defense in depth: the proof-images namespace is only ever handed out as
   // signed URLs minted from actual payment_proofs rows.
   if (!key.startsWith("proofs/")) {
-    return NextResponse.json({ error: "Invalid signature." }, { status: 403 });
+    return NextResponse.json({ error: "Invalid signature." }, { status: 403, headers: privateHeaders });
   }
 
-  const object = await getStorage().getObject(key);
-  if (!object) {
-    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  let object;
+  try {
+    if (objectContract(key).kind !== "PROOF") throw new Error();
+    object = await getStorage().getObject(key);
+  } catch {
+    return NextResponse.json({ error: "Image temporarily unavailable." }, { status: 503, headers: privateHeaders });
   }
+  if (!object) {
+    return NextResponse.json({ error: "Not found." }, { status: 404, headers: privateHeaders });
+  }
+
+  const live = await guardApi(request, ADMIN_API_ROLES);
+  if (!live.ok) return live.response;
+  const finalSignature = verifyStorageSignature(key, exp, sig);
+  if (!finalSignature.ok) return NextResponse.json({ error: "Signed URL has expired." }, { status: 410, headers: privateHeaders });
 
   return new NextResponse(new Uint8Array(object.bytes), {
     status: 200,
     headers: {
+      ...privateHeaders,
       "content-type": object.contentType,
       "cache-control": "private, no-store", // never cached — URLs are short-lived
     },

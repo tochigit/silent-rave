@@ -11,8 +11,7 @@
 //   • local  — dev fixture: files under ./.storage-local (gitignored, 0600),
 //              signed URLs are HMAC'd query params verified by
 //              /api/admin/storage/object (OWNER + signature + expiry).
-//   • supabase — production: Supabase Storage private bucket. STUB — see
-//              supabase.ts for the documented implementation plan.
+//   • supabase — production: bounded HTTP; application-signed private serving.
 // Selected via STORAGE_DRIVER (default "local").
 // ─────────────────────────────────────────────────────────────────────────────
 

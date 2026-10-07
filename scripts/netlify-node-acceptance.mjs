@@ -10,14 +10,41 @@ assert(process.env.SILENT_RAVE_ISOLATED_FIXTURE === "1" && new URL(process.env.D
 process.chdir(input.functionRoot);
 // This harness has no provider credentials and must never contact a provider.
 const originalFetch = globalThis.fetch;
-globalThis.fetch = (url, init) => {
+const storageObjects = new Map();
+let beforeStorageRead;
+process.env.STORAGE_DRIVER = "supabase";
+process.env.SUPABASE_URL = "https://storage.native-fixture.invalid";
+process.env.SUPABASE_STORAGE_SERVER_KEY = "sb_secret_native_synthetic_fixture";
+process.env.SR_PRIVATE_BUCKET = "sr-private";
+process.env.SR_BANNER_BUCKET = "sr-banners";
+globalThis.fetch = async (url, init) => {
   const target = new URL(url instanceof Request ? url.url : String(url));
+  if (target.origin === process.env.SUPABASE_URL) {
+    const request = new Request(url, init);
+    assert.equal(request.headers.get("apikey"), process.env.SUPABASE_STORAGE_SERVER_KEY);
+    assert.equal(request.headers.get("authorization"), null); assert.equal(request.headers.get("cookie"), null);
+    const match = /^\/storage\/v1\/object\/(?:(authenticated|info)\/)?(.+)$/.exec(target.pathname);
+    assert(match, "Allowlisted Storage REST contract");
+    const key = match[2];
+    if (request.method === "POST") {
+      assert.equal(request.headers.get("x-upsert"), "false");
+      const bytes = new Uint8Array(await request.arrayBuffer());
+      if (storageObjects.has(key)) return Response.json({ code: "Duplicate" }, { status: 409 });
+      storageObjects.set(key, { bytes, type: request.headers.get("content-type"), metadata: JSON.parse(Buffer.from(request.headers.get("x-metadata"), "base64").toString()) });
+      return Response.json({ Key: key });
+    }
+    const object = storageObjects.get(key);
+    if (!object) return Response.json({ code: "NoSuchKey" }, { status: 404 });
+    if (match[1] === "info") return Response.json({ size: object.bytes.length, content_type: object.type, metadata: object.metadata });
+    if (beforeStorageRead) { const action = beforeStorageRead; beforeStorageRead = undefined; await action(); }
+    return new Response(object.bytes, { headers: { "content-type": object.type } });
+  }
   if (target.origin === "http://127.0.0.1:1") return Promise.resolve(new Response(null, { status: init?.method === "PUT" ? 200 : 404 }));
   if (target.hostname !== "127.0.0.1") throw new Error("External fetch forbidden in isolated package acceptance");
   return originalFetch(url, init);
 };
 // Synthetic framework cache environment. All SDK requests are intercepted above;
-// app storage and database remain the owned filesystem/Postgres fixture.
+// app Storage REST is a fake provider; database remains owned loopback Postgres.
 process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify({ deployID: "fixture", siteID: "fixture", token: "synthetic-fixture-token",
   edgeURL: "http://127.0.0.1:1", uncachedEdgeURL: "http://127.0.0.1:1", primaryRegion: "us-east-2" })).toString("base64");
 const requirePacked = createRequire(path.join(input.functionRoot, "___netlify-server-handler.mjs"));
@@ -69,10 +96,24 @@ try {
   form.append("transfer_reference", "NATIVE-PACKAGE-REFERENCE"); form.append("sender_name", "Synthetic Sender"); form.append("client_submission_id", crypto.randomUUID());
   const proof = await call(input.proofPath, { method: "POST", headers: { "x-status-token": input.proofToken }, body: form }); assert.equal(proof.status, 200, "Packaged Sharp upload endpoint"); await proof.arrayBuffer();
   const row = await db.paymentProof.findFirstOrThrow({ where: { orderId: input.proofOrderId } });
-  const sanitized = await readFile(path.join(process.env.LOCAL_STORAGE_DIR, row.storagePath)); assert(!(await sharp(sanitized).metadata()).exif, "EXIF stripped in actual packaged upload");
+  const sanitized = storageObjects.get(`sr-private/${row.storagePath}`).bytes; assert(!(await sharp(sanitized).metadata()).exif, "EXIF stripped in actual packaged upload");
+  const ledger = await db.storageObject.findUniqueOrThrow({ where: { key: row.storagePath } });
+  assert.equal(ledger.state, "LINKED"); assert.equal(ledger.storedBytes, BigInt(sanitized.length));
+  const detail = await call(`/api/admin/orders/${input.proofOrderId}`, { headers: owner }); assert.equal(detail.status, 200);
+  const signedProof = (await detail.json()).proof_attempts_detail[0].image_url;
+  assert(signedProof.startsWith("/api/admin/storage/object?"), "Application URL only");
+  const privateImage = await call(signedProof, { headers: owner }); assert.equal(privateImage.status, 200); privateResponse(privateImage);
+  assert(Buffer.from(await privateImage.arrayBuffer()).equals(Buffer.from(sanitized)));
+  const ownerRow = await db.staffUser.findFirstOrThrow({ where: { role: "OWNER" } });
+  beforeStorageRead = () => db.staffUser.update({ where: { id: ownerRow.id }, data: { isActive: false } });
+  const revokedDuringRead = await call(signedProof, { headers: owner }); assert.equal(revokedDuringRead.status, 401); privateResponse(revokedDuringRead);
+  await revokedDuringRead.arrayBuffer(); await db.staffUser.update({ where: { id: ownerRow.id }, data: { isActive: true } });
+  const approvedUnit = await db.ticketUnit.findFirstOrThrow({ where: { pdfUrl: { not: null } } });
+  beforeStorageRead = () => db.order.update({ where: { id: approvedUnit.orderId }, data: { statusTokenVersion: { increment: 1 } } });
+  const revokedToken = await call(input.pdfPath, { headers: { "x-status-token": input.pdfToken } }); assert.equal(revokedToken.status, 404); privateResponse(revokedToken); await revokedToken.arrayBuffer();
   await Promise.all(backgrounds);
   await writeFile(input.output, JSON.stringify({ node: process.version, platform: process.platform, finalZipIsolation: true, functionZipFingerprint: input.functionZipFingerprint, packagedPrismaQuery: true, packagedSharpUpload: true, exifRemoved: true,
-    independentLiveGuards: true, secretGatedBroker: true, syntheticFrameworkCache: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
+    independentLiveGuards: true, secretGatedBroker: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, permissionChangesDuringStorageRead: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
   console.log("Packaged Node handler and native dependency checks passed.");
   await db.$disconnect(); process.exit(0);
 } catch (error) {

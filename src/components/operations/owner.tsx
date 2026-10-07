@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { usePoll } from "@/components/customer/use-poll";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { PlaceInput } from "./place-input";
+import { BannerUpload } from "./banner-upload";
 
 type Field = {
   key: string;
@@ -685,25 +686,7 @@ export function OwnerPanel({ section = ["payments"] }: { section?: string[] }) {
                     ) : (
                       <p>Upload a banner before publishing.</p>
                     )}
-                    <label>
-                      Upload banner
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file)
-                            void run(async () => {
-                              const form = new FormData();
-                              form.append("banner", file);
-                              return change(
-                                `/api/admin/events/${row.id}/banner`,
-                                form,
-                              );
-                            });
-                        }}
-                      />
-                    </label>
+                    <BannerUpload eventId={row.id} onUploaded={poll.refresh} />
                     <TierManager event={row} refresh={poll.refresh} />
                     <Checkins eventId={row.id} />
                   </>

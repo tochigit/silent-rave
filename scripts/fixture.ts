@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, mkdtemp, open, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, open, readFile, rm, cp, readdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
 
@@ -63,7 +63,7 @@ async function runPgControl(args: string[], env: Record<string, string>, logFile
   if (code !== 0) throw new Error(`pg_ctl failed (${code}).`);
 }
 
-export async function startFixture(capture?: (chunk: Uint8Array) => void) {
+export async function startFixture(capture?: (chunk: Uint8Array) => void, legacyStorage = false) {
   assertFixtureEnvironment(); // before loading native binaries or writing anything
   const { default: EmbeddedPostgres } = await import("embedded-postgres");
   await mkdir(runtimeRoot, { recursive: true });
@@ -102,6 +102,7 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
     TICKET_SIGNING_PRIVATE_KEY: randomBytes(32).toString("base64url"),
     TICKET_SIGNING_KID: "fixture", TICKET_SIGNING_PUBLIC_KEYS_JSON: "",
     STORAGE_DRIVER: "local", LOCAL_STORAGE_DIR: path.join(runDir, "storage"),
+    SUPABASE_URL: "", SUPABASE_STORAGE_SERVER_KEY: "", SUPABASE_SERVICE_ROLE_KEY: "", SR_PRIVATE_BUCKET: "", SR_BANNER_BUCKET: "",
     EMAIL_TRANSPORT: "capture", RESEND_API_KEY: "", RESEND_WEBHOOK_SECRET: "whsec_" + randomBytes(32).toString("base64"),
     EMAIL_FROM: "tickets@example.test", EMAIL_REPLY_TO: "help@example.test", PUBLIC_BASE_URL: "http://localhost:3000",
     EMAIL_PAYLOAD_SECRET: randomBytes(32).toString("base64url"), EMAIL_KICK_ENABLED: "0",
@@ -147,7 +148,18 @@ export async function startFixture(capture?: (chunk: Uint8Array) => void) {
       finally { await client.end(); }
     } else { await postgres.createDatabase("silentrave_test"); }
     await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "generate"], env, capture);
-    await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "migrate", "deploy"], env, capture);
+    let migrationArgs: string[] = [];
+    if (legacyStorage) {
+      // A temporary copy of the four unchanged old migrations, exclusively for additive backfill acceptance.
+      const legacy = path.join(runDir, "legacy-prisma"); await mkdir(path.join(legacy, "migrations"), { recursive: true });
+      await writeFile(path.join(legacy, "schema.prisma"), await readFile("prisma/schema.prisma"));
+      for (const name of await readdir("prisma/migrations")) {
+        if (name === "20261006000000_step5_storage_accounting") continue;
+        await cp(path.join("prisma/migrations", name), path.join(legacy, "migrations", name), { recursive: true });
+      }
+      migrationArgs = ["--schema", path.join(legacy, "schema.prisma")];
+    }
+    await runCommand([process.execPath, "--no-env-file", "node_modules/prisma/build/index.js", "migrate", "deploy", ...migrationArgs], env, capture);
     await runCommand([process.execPath, "--no-env-file", "prisma/seed-owner.ts"], env, capture);
     await runCommand([process.execPath, "--no-env-file", "prisma/seed-dev-event.ts"], env, capture);
     return { env, runDir, cleanup };

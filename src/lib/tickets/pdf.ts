@@ -7,6 +7,11 @@ import QRCode from "qrcode";
 import { db } from "@/lib/db";
 import { getStorage } from "@/lib/storage";
 import { directionsUrl } from "@/lib/venues/directions";
+import { TX_OPTIONS } from "@/lib/constants";
+import { PDF_OBJECT_BYTES } from "@/lib/uploads/limits";
+import { StorageUnavailableError } from "@/lib/storage/errors";
+import { storageIntent, storageStored, storageLinked, storageFailed } from "@/lib/storage/accounting";
+import type { Prisma } from "@prisma/client";
 
 export const PDF_STYLE = { version: 1, qrMm: 60, quietModules: 4, mint: "#7CEFCB", purple: "#A78BFA" } as const;
 const fontPath = path.join(process.cwd(), "assets/fonts/NotoSans-Regular.ttf");
@@ -60,11 +65,13 @@ export async function renderTicketPdf(input: PdfInputs, encoder = (token: string
     if (qr.modules.get(row, col)) page.drawRectangle({ x: x + (col + 4) * cell, y: bottom + (count - row - 5) * cell, width: cell, height: cell, color: rgb(0, 0, 0) });
   }
   pdf.setTitle("Silent Rave ticket"); pdf.setCreator("Silent Rave");
-  return { bytes: await pdf.save(), qrToken: input.qrToken, qrMm: PDF_STYLE.qrMm, activeQrMm: qr.modules.size * cell * 25.4 / 72 };
+  const bytes = await pdf.save();
+  if (bytes.length > PDF_OBJECT_BYTES) throw new StorageUnavailableError("SIZE");
+  return { bytes, qrToken: input.qrToken, qrMm: PDF_STYLE.qrMm, activeQrMm: qr.modules.size * cell * 25.4 / 72 };
 }
 export class PdfAccessError extends Error { constructor(public status: 409 | 410) { super(status === 410 ? "Ticket no longer valid." : "Order not approved."); } }
-export async function ticketPdfInputs(ticketId: string) {
-  const unit = await db.ticketUnit.findUniqueOrThrow({ where: { id: ticketId }, include: { order: true, tier: true, event: { include: { venue: true } } } });
+export async function ticketPdfInputs(ticketId: string, client: Prisma.TransactionClient = db) {
+  const unit = await client.ticketUnit.findUniqueOrThrow({ where: { id: ticketId }, include: { order: true, tier: true, event: { include: { venue: true } } } });
   if (unit.voidedAt || unit.order.status === "REFUNDED") throw new PdfAccessError(410);
   if (unit.order.status !== "APPROVED") throw new PdfAccessError(409);
   const input: PdfInputs = { ticketId, event: unit.event.title, date: unit.event.isDateConfirmed ? lagosDate(unit.event.startsAt) : "Date to be announced", venue: unit.event.venue.name, address: unit.event.venue.address, directions: directionsUrl(unit.event.venue), tier: unit.tier.name, holder: unit.holderName, orderCode: unit.order.orderCode, qrToken: unit.qrToken };
@@ -74,13 +81,29 @@ export async function getTicketPdf(ticketId: string) {
   const storage = getStorage();
   for (let attempt = 0; attempt < 3; attempt++) {
     const snapshot = await ticketPdfInputs(ticketId); const key = await pdfCacheKey(snapshot.input);
-    const cached = snapshot.storedKey === key ? await storage.getObject(key) : null;
-    const bytes = cached?.bytes ?? (await renderTicketPdf(snapshot.input)).bytes;
-    if (!cached) await storage.putObject(key, bytes, "application/pdf");
+    const cached = await storage.getObject(key); // Outages throw; only confirmed absence regenerates.
+    await storageIntent(key);
+    let bytes = cached?.bytes;
+    try {
+      if (!bytes) {
+        await storage.putObject(key, (await renderTicketPdf(snapshot.input)).bytes, "application/pdf");
+        const winner = await storage.getObject(key); // Concurrent timestamp/byte differences: serve the first stored artifact.
+        if (!winner) throw new StorageUnavailableError("PROVIDER");
+        bytes = winner.bytes;
+      }
+      await storageStored(key, bytes);
+    } catch (error) { await storageFailed(key, error); throw error; }
     // Revalidate after I/O; concurrent edits/refunds must never serve stale cache.
-    const fresh = await ticketPdfInputs(ticketId);
-    if (await pdfCacheKey(fresh.input) !== key) continue;
-    await db.ticketUnit.updateMany({ where: { id: ticketId, voidedAt: null, order: { status: "APPROVED" }, OR: [{ pdfUrl: null }, { pdfUrl: { not: key } }] }, data: { pdfUrl: key } });
+    const linked = await db.$transaction(async tx => {
+      // Order lock serializes refund/void writers; provider I/O is already complete.
+      await tx.$queryRaw`SELECT id FROM orders WHERE id = (SELECT order_id FROM ticket_units WHERE id = ${ticketId}::uuid) FOR UPDATE`;
+      const fresh = await ticketPdfInputs(ticketId, tx);
+      if (await pdfCacheKey(fresh.input) !== key) return false;
+      if (fresh.storedKey !== key) await tx.ticketUnit.update({ where: { id: ticketId }, data: { pdfUrl: key } });
+      await storageLinked(tx, key, "TICKET", ticketId);
+      return true;
+    }, TX_OPTIONS);
+    if (!linked) continue;
     return { bytes, key, cached: Boolean(cached) };
   }
   throw new Error("PDF_INPUTS_CHANGED");

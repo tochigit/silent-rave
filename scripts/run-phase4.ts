@@ -3,18 +3,20 @@ import { mkdir } from "node:fs/promises";
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import { freePort, runCommand, startFixture } from "./fixture";
+import { startFakeStorage } from "../tests/step5a/fake-storage";
 
 await mkdir("reports", { recursive: true });
 const focus = process.argv.slice(2);
 const step3 = process.env.SILENT_RAVE_TEST_STEP3 === "1";
 const step4 = process.env.SILENT_RAVE_TEST_STEP4 === "1";
 const step5c1 = process.env.SILENT_RAVE_TEST_STEP5C1 === "1";
-const suite = step5c1 ? "step5c1" : step4 ? "step4" : step3 ? "step3" : "phase4";
+const step5a = process.env.SILENT_RAVE_TEST_STEP5A === "1";
+const suite = step5a ? "step5a" : step5c1 ? "step5c1" : step4 ? "step4" : step3 ? "step3" : "phase4";
 if (
   focus.some(
     (p) =>
       !new RegExp(
-        `^tests/${step5c1 ? "(?:step5c1|step4|step3|phase4)" : step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
+        `^tests/${step5a ? "(?:step5a|step5c1|step4|step3|phase4)" : step5c1 ? "(?:step5c1|step4|step3|phase4)" : step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
       ).test(p),
   )
 )
@@ -31,6 +33,7 @@ let server: ChildProcess | undefined;
 let testProcess: ChildProcess | undefined;
 let serverLog: WriteStream | undefined;
 let fixture: Awaited<ReturnType<typeof startFixture>> | undefined;
+let storageFixture: ReturnType<typeof startFakeStorage> | undefined;
 let stopping: Promise<void> | undefined;
 const cleanup = () =>
   (stopping ??= (async () => {
@@ -55,6 +58,7 @@ const cleanup = () =>
       server?.stderr?.unpipe(serverLog);
       await new Promise<void>((resolve) => serverLog!.end(resolve));
     }
+    storageFixture?.server.stop(true);
     await fixture?.cleanup();
   })());
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
@@ -287,7 +291,7 @@ try {
   };
   let exitCode = 0;
   const groups = focus.length
-    ? [{ paths: focus, mode: focus.some(p => p.includes("/step5c1/")) ? "runtime" as const : "phase4" as const }]
+    ? [{ paths: focus, mode: focus.some(p => p.includes("/step5c1/") || p.includes("/step5a/")) ? "runtime" as const : "phase4" as const }]
     : [
         { paths: ["tests/phase3b/"], mode: "baseline" as const },
         { paths: ["tests/phase4/"], mode: "phase4" as const },
@@ -296,6 +300,7 @@ try {
           : []),
         ...(step4 ? [{ paths: ["tests/step4/"], mode: "operations" as const }] : []),
         ...(step5c1 ? [{ paths: ["tests/step5c1/runtime.test.ts"], mode: "runtime" as const }] : []),
+        ...(step5a ? [{ paths: ["tests/step5a/"], mode: "runtime" as const }] : []),
       ];
   let firstGroup = true;
   for (const group of groups) {
@@ -328,9 +333,12 @@ try {
         (chunk) => output.write(chunk),
       );
     }
-    const env = await startApp(group.paths.includes("tests/step5c1/unavailable.test.ts") ? outageEnvironment : {}, group.mode);
+    const storageGroup = group.paths.some(p => p.startsWith("tests/step5a/"));
+    if (storageGroup) storageFixture = startFakeStorage();
+    const env = await startApp(group.paths.includes("tests/step5c1/unavailable.test.ts") ? outageEnvironment : storageGroup ? storageFixture!.env : {}, group.mode);
     exitCode = await runTests(group.paths, env);
     await stopApp();
+    if (storageGroup) { storageFixture!.server.stop(true); storageFixture = undefined; }
     if (exitCode !== 0) break;
   }
   if (step5c1 && !focus.length && exitCode === 0) {

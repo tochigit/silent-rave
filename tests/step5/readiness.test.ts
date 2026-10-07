@@ -12,6 +12,7 @@ const candidate = {
   EMAIL_TRANSPORT: "resend", RESEND_API_KEY: "dummy-resend-secret", EMAIL_FROM: "tickets@example.test",
   EMAIL_REPLY_TO: "help@example.test", EMAIL_PAYLOAD_SECRET: secret,
   RESEND_WEBHOOK_SECRET: "whsec_" + Buffer.alloc(32, 4).toString("base64"), STORAGE_DRIVER: "supabase",
+  SUPABASE_URL: "https://project.example.test", SUPABASE_STORAGE_SERVER_KEY: "sb_secret_synthetic_candidate", SR_PRIVATE_BUCKET: "sr-private", SR_BANNER_BUCKET: "sr-banners",
 };
 const blocked = (overrides: Record<string, string>, id: string) =>
   expect(inspectLaunchConfig({ ...candidate, ...overrides }).checks.find((c) => c.id === id)?.status).toBe("BLOCKED");
@@ -56,14 +57,19 @@ test("refuses fixture deployment and incomplete push while allowing manual fallb
   blocked({ PUSH_ADAPTER: "capture" }, "fixture-flags");
   blocked({ OWNER_PASSWORD: "fixture-password" }, "fixture-flags");
   blocked({ STORAGE_DRIVER: "local" }, "storage-driver");
+  blocked({ SUPABASE_URL: "http://127.0.0.1:1" }, "storage-config");
+  blocked({ SUPABASE_STORAGE_SERVER_KEY: "sb_publishable_fixture" }, "storage-config");
+  blocked({ SR_PRIVATE_BUCKET: "sr-banners" }, "storage-config");
+  blocked({ NEXT_PUBLIC_SUPABASE_STORAGE_SERVER_KEY: "sb_secret_fixture" }, "public-secret-exposure");
   blocked({ VAPID_PUBLIC_KEY: "only-one-key" }, "push-config-pair");
   expect(inspectLaunchConfig(candidate).configurationValid).toBe(true);
 });
-test("migration fingerprints cover the unchanged chronological forward chain", async () => {
+test("migration fingerprints cover the chronological additive forward chain", async () => {
   const migrations = await migrationFingerprints();
   expect(migrations.map((m) => m.name)).toEqual([
     "20260930000000_v2_1_baseline", "20261002000000_phase4_email_state",
     "20261002010000_step3_content_payment_snapshot", "20261003000000_step4_staff_password",
+    "20261006000000_step5_storage_accounting",
   ]);
   for (const migration of migrations) expect(migration.sha256).toMatch(/^[a-f0-9]{64}$/);
 });

@@ -15,7 +15,9 @@ export async function GET(
     }))
   )
     return new Response("Not found", { status: 404 });
-  const file = await getStorage().getObject(`banners/${name}`);
+  let file;
+  try { file = await getStorage().getObject(`banners/${name}`); }
+  catch { return new Response("Banner temporarily unavailable", { status: 503, headers: { "Cache-Control": "no-store" } }); }
   if (!file) return new Response("Not found", { status: 404 });
   return new Response(new Uint8Array(file.bytes), {
     headers: {

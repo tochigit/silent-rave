@@ -67,7 +67,7 @@ Fields: `proof image`, `transfer_reference` (required — the transaction/sessio
 
 Server-side handling:
 1. Validate the order exists and that either (a) status is `AWAITING_PAYMENT` or `NEEDS_RESUBMIT` and the hold has not expired, or (b) status is `EXPIRED` with **no** proof yet and `now() <= hold_expires_at + LATE_PROOF_GRACE` (a *late proof*); and attempts are not exhausted (`proof_attempts < 1 + MAX_RESUBMISSIONS`, else `403`).
-2. Validate file by **magic bytes**, not the client MIME: JPEG/PNG/WebP only (HEIC from iPhones must be converted to one of these client-side before upload; the server does not accept HEIC), max size (default 4 MB after client-side compression), sane pixel dimensions. Re-encode server-side (strips EXIF/GPS and any embedded payload). Compute `file_sha256` of the original upload.
+2. Validate file by **magic bytes**, not the client MIME: JPEG/PNG/WebP only (HEIC from iPhones must be converted locally before upload), at most 3 MiB after browser preparation, within a bounded 3.25 MiB multipart envelope. Check sane pixels; orient/re-encode and strip EXIF/GPS; bound stored output to 3 MiB. Compute `file_sha256` of the original upload. Record stored-byte hash/size separately in storage accounting. See [Batch A](10-uploads-durable-storage.md).
 3. Normalise `transfer_reference` (trim, uppercase, strip spaces) and enforce **uniqueness among proofs whose status is `PENDING` or `APPROVED`** at the DB level (partial unique index). A collision returns a clear buyer-facing error and writes an audit entry.
 4. If `file_sha256` matches a proof on a *different* order, do not block; set `flags.duplicate_image_of = <proof id>` so the admin sees it prominently.
 5. Store the image in a **private** bucket. Never public, never a guessable URL.

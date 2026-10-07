@@ -1,0 +1,53 @@
+Step 5 DB preflight: disposable PostgreSQL only; no app/provider/hosted connection.
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 204ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:46079"
+
+5 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+Applying migration `20261006000000_step5_storage_accounting`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+  └─ 20261006000000_step5_storage_accounting/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 271a9fca-9235-4522-84b9-ee600a3b1ab4
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+PASS: fresh forward migration chain and exact file checksums match Prisma history.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:46079"
+
+5 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+PASS: repeat deploy is a no-op and preserves the disposable owner credential/state.
+PASS: independent interactive transactions respect transaction advisory and row/SKIP LOCKED locks.
+PASS: rollback restores inventory and releases both locks without changing transaction limits.
+4 checks passed; hosted Supavisor behavior remains UNVERIFIED.
+Cleanup complete: owned database stopped and disposable directory removed.

@@ -1,14 +1,15 @@
 import type { NextRequest } from "next/server";
 import { Prisma, OrderStatus, OrderSource } from "@prisma/client";
 import { z } from "zod";
-import sharp from "sharp";
+import { sanitizeImage } from "@/lib/uploads/sanitize";
+import { imageMultipart } from "@/lib/uploads/multipart";
+import { storeNewImage, storageLinked, storageFailed } from "@/lib/storage/accounting";
 import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { db } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { hashPassword } from "@/lib/auth/password";
 import { TX_OPTIONS } from "@/lib/constants";
-import { getStorage } from "@/lib/storage";
 import { kickEmailJobs } from "@/lib/email/kick";
 import { issueOrder, issueSchema } from "./issue";
 import { body, OperationError, paging, reply, text, uuid } from "./http";
@@ -481,60 +482,22 @@ export async function adminOperation(
     return reply({ event }, method === "POST" ? 201 : 200);
   }
   if (method === "POST" && path[0] === "events" && path[2] === "banner") {
-    if (Number(request.headers.get("content-length")) > 5 * 1024 * 1024)
-      throw new OperationError(413, "Banner must be smaller than 4 MB.");
-    // Stream cap before multipart parsing, including chunked uploads.
-    const reader = request.body?.getReader();
-    if (!reader) throw new OperationError(400, "Banner required.");
-    let size = 0;
-    const chunks: Uint8Array[] = [];
-    try {
-      for (;;) {
-        const p = await reader.read();
-        if (p.done) break;
-        size += p.value.length;
-        if (size > 5 * 1024 * 1024) {
-          await reader.cancel();
-          throw new OperationError(413, "Banner too large.");
-        }
-        chunks.push(p.value);
-      }
-    } finally {
-      reader.releaseLock();
-    }
-    const form = await new Request(request.url, {
-      method: "POST",
-      headers: { "content-type": request.headers.get("content-type") ?? "" },
-      body: Buffer.concat(chunks),
-    }).formData();
+    const eventId = uuid.parse(path[1]);
+    const form = await imageMultipart(request, "banner");
     const file = form.get("banner");
-    if (!(file instanceof File) || file.size > 4 * 1024 * 1024)
-      throw new OperationError(
-        422,
-        "Choose a JPEG, PNG or WebP banner smaller than 4 MB.",
-      );
+    if (!(file instanceof File)) throw new OperationError(422, "Choose a JPEG, PNG or WebP banner under 3 MiB.");
     let bytes: Buffer;
     try {
-      const image = sharp(Buffer.from(await file.arrayBuffer()), {
-        limitInputPixels: 24000000,
-      });
-      const meta = await image.metadata();
-      if (!["jpeg", "png", "webp"].includes(meta.format ?? ""))
-        throw new Error();
-      bytes = await image
-        .rotate()
-        .resize({ width: 1600, withoutEnlargement: true })
-        .webp({ quality: 85 })
-        .toBuffer();
+      bytes = await sanitizeImage(Buffer.from(await file.arrayBuffer()), "banner");
     } catch {
       throw new OperationError(422, "Invalid image. Use JPEG, PNG or WebP.");
     }
     await db.event.findUniqueOrThrow({ where: { id } });
-    const key = `banners/${randomUUID()}.webp`;
-    await getStorage().putObject(key, bytes, "image/webp");
+    const key = await storeNewImage(() => `banners/${randomUUID()}.webp`, bytes, "image/webp");
     const url = `/api/banners/${key.split("/")[1]}`;
-    await db.$transaction(async (tx) => {
+    try { await db.$transaction(async (tx) => {
       await tx.event.update({ where: { id }, data: { bannerImageUrl: url } });
+      await storageLinked(tx, key, "EVENT", eventId);
       await writeAudit(tx, {
         actorId,
         action: "EVENT_UPDATED",
@@ -542,7 +505,7 @@ export async function adminOperation(
         entityId: id,
         metadata: { banner: url },
       });
-    }, TX_OPTIONS);
+    }, TX_OPTIONS); } catch (error) { await storageFailed(key, error); throw error; }
     return reply({ banner_image_url: url });
   }
   if (

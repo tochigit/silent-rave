@@ -55,12 +55,27 @@ jobs:
       - run: bun --no-env-file scripts/build-netlify-offline.ts
       - run: bun --no-env-file scripts/verify-netlify-artifacts.ts
       - run: bun --no-env-file scripts/verify-netlify-node.ts
-      - run: bun run test:step5c1
+      - run: bun --no-env-file run db:preflight
+      - run: bun --no-env-file run db:preflight-storage
+      - run: bun --no-env-file run test:step5a
+      - name: Install pinned owned browser test client
+        if: matrix.platform == 'linux'
+        run: npm install --prefix .test-runtime/browser-check --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright-core@1.58.2
+      - name: Verify receipt and banner flows in owned Chrome
+        if: matrix.platform == 'linux'
+        run: |
+          export BROWSER_EXECUTABLE="$(command -v google-chrome)"
+          test -n "$BROWSER_EXECUTABLE"
+          bun --no-env-file scripts/run-browser-step5a.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: step5c1-evidence-${{ matrix.platform }}
+          name: step5a-evidence-${{ matrix.platform }}
           path: |
             reports/step5c1-*-test-output.txt
             reports/step5c1-netlify-*-build.txt
             reports/step5c1-*-acceptance.json
+            reports/step5a-*-test-output.txt
+            reports/step5a-*-migration-backfill.txt
+            reports/step5a-mobile-*.png
+            reports/step5-*-db-preflight.txt

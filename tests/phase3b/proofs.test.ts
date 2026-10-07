@@ -77,17 +77,17 @@ describe("proof — file validation (magic bytes, size, dimensions)", () => {
     checkEqual(result.status, 422, "magic-byte mismatch rejected despite .jpg name + MIME");
   });
 
-  test("oversized (> 4 MB) valid JPEG → 422", async () => {
+  test("oversized (> 3 MiB) valid JPEG → 422", async () => {
     const order = await freshOrder("oversized");
     const smallJpeg = await makeJpeg(64, 64);
-    const padded = Buffer.concat([smallJpeg, Buffer.alloc(4 * 1024 * 1024 + 1, 0x00)]);
+    const padded = Buffer.concat([smallJpeg, Buffer.alloc(3 * 1024 * 1024 + 1 - smallJpeg.length, 0x00)]);
     const result = await submitProof({
       orderCode: order.orderCode,
       statusToken: order.token,
       reference: `BIG${Date.now()}`,
       file: padded,
     });
-    checkEqual(result.status, 422, "4MB+1 upload rejected");
+    checkEqual(result.status, 422, "3 MiB+1 upload rejected");
     checkEqual(result.body.code, "BAD_FILE", "error code");
   });
 
