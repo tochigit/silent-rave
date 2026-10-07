@@ -26,6 +26,11 @@ after recovery; the project's isolated owned Chrome harness verified rendering.
 Initial CI 37693398184 failed its immediate Linux hover-color sample after
 backend/build checks passed. Acceptance now waits for the rendered state and
 dialog opening; UI/package bytes are unchanged. Corrected-head CI follows.
+CI 37694330455 then had a dependency extraction failure and, on Linux retry,
+a hover timeout after passing backend checks. The isolated headless harness now
+declares Playwright's desktop mouse capabilities and asserts the pointer media
+state before the retained hover/pressed checks. See the separate failed report
+and final publication status in the Desktop handoff and PR.
 
 Stop for client/user review after completing this milestone. Do not merge PR #9
 or start Batch B/C/D. No hosted data/provider/DNS/deployments/real sends are

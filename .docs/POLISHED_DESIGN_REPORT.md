@@ -64,6 +64,15 @@ The browser check now waits for observed hover/pressed style changes and the
 actual dialog opening before Escape. It still requires distinct state colors;
 application/package bytes are unchanged. Final corrected-head CI is recorded
 in the Desktop handoff and PR; the failed run is not counted as a pass.
+Corrected-head CI 37694330455 first stopped during a Next tarball extraction;
+its Linux retry passed backend/build checks but timed out waiting for hover
+color. The manually launched browser lacked explicit desktop mouse settings.
+The harness now matches the installed Playwright 1.58.2 headless pointer
+configuration and asserts hover/fine-pointer capability before the unchanged
+distinct-color checks. This is a harness correction; app/package bytes remain
+unchanged. The failure and inferred diagnosis are preserved separately in
+ci-pointer-capability-failure.json. Final publication CI is recorded in the
+Desktop handoff and PR.
 
 Desktop delivery: Silent Rave - Polished Preview v1 folder/ZIP and
 Silent Rave - Polished preview v1 upload steps.md. This package replaces earlier

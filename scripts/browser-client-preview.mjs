@@ -63,6 +63,8 @@ const port = await new Promise((resolve, reject) => {
 let chrome; let browser; let step = "launch";
 try {
   chrome = spawn(process.env.BROWSER_EXECUTABLE ?? "C:/Program Files/Google/Chrome/Application/chrome.exe", [
+    // Match Playwright's headless mouse capabilities on runners without a mouse.
+    "--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4",
     "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--disable-background-networking", "--disable-extensions", "--disable-component-update", "--disable-sync", "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "about:blank",
   ], { windowsHide: true, stdio: "ignore" });
   let launchError; chrome.once("error", error => { launchError = error; });
@@ -348,6 +350,8 @@ try {
   checks.push("Home, listings, information, contact, recovery, cart and checkout fit at 320px and 1440px");
   await page.goto(base); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   const buy = page.getByRole("button", { name: "Buy Early Bird Ticket", exact: true });
+  const desktopPointer = await page.evaluate(() => ({ hover: matchMedia("(hover: hover)").matches, fine: matchMedia("(pointer: fine)").matches }));
+  assert.deepEqual(desktopPointer, { hover: true, fine: true }, "Desktop pointer checks require an emulated mouse");
   await page.mouse.move(0, 0);
   await page.waitForFunction(() => !document.querySelector(".buy-btn").matches(":hover"));
   const restColor = await buy.evaluate(button => getComputedStyle(button).backgroundColor);
