@@ -1,0 +1,57 @@
+step5a focused: tests/step5a/browser.test.ts; isolated PostgreSQL/HTTP; fake transport/time.
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 201ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:46615"
+
+5 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+Applying migration `20261006000000_step5_storage_accounting`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+  └─ 20261006000000_step5_storage_accounting/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id e03c347d-6980-45c7-95af-13322916734e
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+Test group: runtime; isolated database; fresh app/test processes.
+Fixture app ready; login compiled; strict Origin checks; dedicated app port.
+bun test v1.3.14 (0d9b296a)
+
+::group::tests/step5a/browser.test.ts:
+PASS: real receipt canvas, HEIC refusal, non-JSON 413, saved fields/bytes/retry ID and mobile width.
+PASS: real banner preparation, 413/saved image/retry, remote pointer, mobile width and no JavaScript errors.
+(pass) owned Chrome: real canvas preparation, non-JSON 413/saved retry ID, HEIC fallback, mobile/banner feedback [20786.03ms]
+
+::endgroup::
+
+ 1 pass
+ 0 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [20.88s]
+Phase 4 + Phase 3b runner exit: 0
+Cleanup complete: owned app and database stopped; temporary fixture removed.

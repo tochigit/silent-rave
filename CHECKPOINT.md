@@ -1,54 +1,45 @@
 # Silent Rave checkpoint
 
-2026-10-07, Africa/Lagos. **Batch A IN PROGRESS: uploads and durable storage.**
+2026-10-07, Africa/Lagos. **Batch A IMPLEMENTED AND VERIFIED; publication checks pending.**
 
-Current branch: `feat/step5c-upload-storage`, from verified merged main/origin/main
-`0da2051ca9c617fbe09d50cabcd2e2232045fd9f`. PR #6 is merged; exact post-merge
-CI 37540660015 passed Windows/Linux, confirmed live before this branch was created.
-All earlier branches/fixtures/reports remain preserved. Initial working tree clean;
-no owned Node/Bun/Postgres/pg_ctl processes at preflight; no applicable AGENTS.md.
+Branch `feat/step5c-upload-storage`; base main/origin/main
+`0da2051ca9c617fbe09d50cabcd2e2232045fd9f`. PR #6 is merged; post-merge CI
+37540660015 passed Windows/Linux, verified live before this branch. All previous
+branches and interrupted fixtures are preserved. No applicable AGENTS.md.
 
-Read the entire Desktop Consolidated continuation, Step 5B plan, Step 5C1 handoff,
-this checkpoint and doc 09. Consolidated Batch A supersedes the separate 5C.2/5C.3
-PR boundaries. Authorized: local implementation, controlled disposable/fake-provider
-checks, additive migration authoring/replay, progress checkpoints and ONE focused PR.
-Stop for review after publication. No merge or Batch B; no hosted queries/writes,
-bucket setup/import/deletion, DNS/deployment/purchases/real sends/owner changes.
+Batch A PR #7: https://github.com/tochigit/silent-rave/pull/7
+Implementation head `9f4f7fe4d61e7da4069a5038e26fa0778ca0e13b` passed complete
+Windows/Linux CI 37645797361: 196 regressions per OS, lint/types/readiness/policy,
+guard audit, disposable replay/backfill, actual offline Netlify build, generated
+Edge and isolated final native Node ZIP/privacy/Prisma/Sharp/PDF/font/QR acceptance.
+Dedicated Linux owned-Chrome acceptance passed actual preparation, HEIC refusal,
+413/saved retries, proof/banner uploads, mobile width and no JavaScript errors.
+The full regression browser skip is separate from this dedicated pass.
 
-Implemented, awaiting acceptance: shared 3 MiB/3.25 MiB request/output limits,
-bounded multipart reader, Sharp sanitation, browser preparation/retry feedback,
-Supabase HTTP adapter and typed no-overwrite/collision/failure behavior, shared
-application signatures, immutable first-writer PDFs, additive storage ledger/linkage
-and OWNER dry-run lifecycle report. Doc 10 describes configuration and legacy gates.
-New tests cover boundaries, real images/PDF concurrency, provider faults, privacy,
-retries/accounting and backfill/public-role denial. Final Node ZIP acceptance now
-uses fake Storage HTTP, with application-signed proof reads and linked accounting.
+Evidence: reports/step5a-ci-37645797361/{linux,win32}/; earlier passed implementation
+reports also retained in reports/step5a-ci-37548057323/. See .docs/BATCH_A_REPORT.md
+for exact coverage/local failure history, and .docs/10-uploads-durable-storage.md
+for configuration/legacy/lifecycle contracts. Screenshots were visually inspected.
 
-Draft PR #7: https://github.com/tochigit/silent-rave/pull/7 (do not merge).
-Published implementation head before the current fixes: `bb78a8112656b71ee52b28ea8f41cec0194d469e`.
-Local Bun Prisma generation STALLED and was stopped; it is incomplete. Supported
-Node 24 generation, both TypeScript configurations, lint, 7 readiness tests and
-route-policy guard audit PASSED locally. Windows startup is unusually slow.
-CI 37546344560 FAILED on both platforms at the new backfill fixture: synthetic
-ONLINE order lacked its required hold expiry. Native ZIP acceptance passed before
-that failure. Earlier runs 37545909437/37546025639 were canceled/failed, never passes.
-The missing fixture field is now fixed. Cached PDF reads also avoid needless
-scanner sync-sequence updates. Browser connection attempts timed out; controlled
-owned-Chrome acceptance remains pending, as do the full new regressions.
-Local backfill/role-denial/repeated-deploy checks and owned cleanup subsequently PASSED.
-CI 37547556300 reached all new cases on Linux after baseline regressions passed,
-but concurrent PDF intent exposed a Prisma empty-upsert read/create race. Intent now
-uses atomic parameterized INSERT ON CONFLICT DO NOTHING; existing real concurrent
-PDF acceptance covers this failure. In-progress local focused tests use current code.
-Implementation head `43e5d52a9d1a55187eb8f20a2be67bac29399894` PASSED both complete
-Windows/Linux jobs in CI 37548057323. Both contain all 196 regressions, plus one
-explicit browser skip. Dedicated Linux owned-Chrome acceptance is now added to CI
-and remains pending. Local focused app readiness timed out before tests (incomplete,
-not a pass); owned cleanup is in progress. No application assertion was relaxed.
-Next: complete dedicated browser/current-head CI and evidence/docs/handoff;
-then exact-head evidence/docs/handoff and ONE completed PR, STOP FOR REVIEW.
-Supabase/Postgres/UI and branch/checkpoint skills read; current public docs/changelog
-reviewed without accessing hosted data. readyForLaunch=false remains intentional.
+Implemented: shared 3 MiB/3.25 MiB limits and bounded multipart; browser preparation
+and saved retries; metadata-free Sharp output; immutable Supabase REST objects and
+first-writer PDFs; shared application signatures/live private reads; additive
+storage ledger/atomic intents/transactional pointer links and OWNER dry-run report.
+The four historical migrations and dependency locks remain unchanged.
+
+Local supported Node24 generation, both types, direct Bun lint, 7 readiness cases,
+guard audit and backfill/role denial/repeated deploy passed. Initial Bun generation
+stalled; a later focused app startup timed out before cases (both incomplete).
+Owned cleanup passed, process count checked zero, root dotenv absent. Global Node26
+unchanged. Supabase/Postgres/UI and branch/checkpoint skills applied; public docs
+were checked without hosted data access. Earlier failed CI never counted as passes.
+
+Read the entire Desktop Batch A continuation for final publication head/checks,
+then the Consolidated handoff and original Step 5B/5C1 technical specifications.
+Finish exact-head publication verification and PR description, then STOP FOR REVIEW.
+No merge, Batch B, hosted queries/configuration/buckets/import/deletion, DNS/deploy,
+purchases, real sends or permanent owner/password changes are authorized here.
+readyForLaunch=false remains intentional; actual hosted/device gates remain unverified.
 
 ## Historical Step 5C.1 checkpoint (superseded merge/review state)
 

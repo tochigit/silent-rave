@@ -1,8 +1,9 @@
 # Batch A: uploads and durable storage
 
-2026-10-07, Africa/Lagos. Implementation and acceptance are in progress on
+2026-10-07, Africa/Lagos. Implementation and acceptance are verified on
 `feat/step5c-upload-storage`, based on merged main `0da2051`. Batch A combines
-5C.2 and 5C.3 into one PR. Check CHECKPOINT.md for current verification status.
+5C.2 and 5C.3 into one PR. [Acceptance report](BATCH_A_REPORT.md) records evidence;
+check CHECKPOINT.md and PR #7 for final publication verification status.
 
 Both proof and banner files are limited to 3 MiB (3,145,728 bytes), with a
 3.25 MiB (3,407,872 bytes) multipart envelope. Declared and actual bytes are
@@ -76,7 +77,8 @@ review; no merge, Batch B, hosted access/configuration, DNS/deployment or real s
 Dedicated browser acceptance: `bun --no-env-file scripts/run-browser-step5a.ts`,
 using an owned Chrome profile, loopback app/database and fake Storage. Linux CI
 installs pinned Playwright Core 1.58.2 only under ignored `.test-runtime/`, then runs
-this check with its installed Chrome. Dependency locks/application dependencies stay
+this check with its installed Chrome under supported Node 24, while Bun owns the
+guarded fixture/app runner. Dependency locks/application dependencies stay
 unchanged. The full suite's explicit browser skip is reported separately from this
 dedicated result. Checks cover actual canvas output, unsupported HEIC, non-JSON 413,
 saved fields/prepared receipt/retry ID, successful proof/banner uploads, mobile width
