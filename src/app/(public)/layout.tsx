@@ -1,5 +1,6 @@
 import { CartProvider } from "@/components/customer/cart";
 import { Header, Footer } from "@/components/customer/shell";
+import { PublicTheme } from "@/components/customer/theme";
 export default function PublicLayout({
   children,
 }: {
@@ -7,13 +8,13 @@ export default function PublicLayout({
 }) {
   return (
     <CartProvider>
-      <div className="public-site">
+      <PublicTheme>
         <Header />
         <main id="main" className="site-main" tabIndex={-1}>
           {children}
         </main>
         <Footer />
-      </div>
+      </PublicTheme>
     </CartProvider>
   );
 }

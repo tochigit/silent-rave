@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, copyFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile, copyFile, rm, lstat } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import type { BunPlugin } from "bun";
@@ -53,6 +53,13 @@ const plugin: BunPlugin = {
   },
 };
 
+// This script owns only its ignored generated directory. Reject redirected paths.
+if (path.relative(root, output).split(path.sep).join("/") !== "out/client-preview") throw new Error("Unexpected preview output path.");
+for (const directory of [path.join(root, "out"), output]) {
+  const entry = await lstat(directory).catch(error => { if (error.code !== "ENOENT") throw error; });
+  if (entry?.isSymbolicLink()) throw new Error("Preview output must not be a symbolic link.");
+}
+await rm(output, { recursive: true, force: true });
 await mkdir(path.join(output, "assets"), { recursive: true });
 const result = await Bun.build({
   entrypoints: [path.join(root, "preview", "app.tsx")], outdir: path.join(output, "assets"),
@@ -61,10 +68,12 @@ const result = await Bun.build({
 });
 if (!result.success) throw new Error(result.logs.join("\n"));
 const globals = await readFile(path.join(root, "src", "app", "globals.css"), "utf8");
-const marker = "/* Step 3: the prototype's dark card, mint and purple visual system. */";
-if (!globals.includes(marker)) throw new Error("Public style contract changed.");
-const css = await readFile(path.join(root, "node_modules", "tailwindcss", "preflight.css"), "utf8") + "\n" + globals.slice(globals.indexOf(marker)) + "\n" + await readFile(path.join(root, "preview", "preview.css"), "utf8");
+if (!globals.includes('@import "./reference-rave.css";')) throw new Error("Reference style contract changed.");
+const referenceStyles = await readFile(path.join(root, "src", "app", "reference-rave.css"), "utf8");
+const css = await readFile(path.join(root, "node_modules", "tailwindcss", "preflight.css"), "utf8") + "\n" + referenceStyles + "\n" + await readFile(path.join(root, "preview", "preview.css"), "utf8");
 sourceHashes["src/app/globals.css"] = hash(globals);
+sourceHashes["src/app/reference-rave.css"] = hash(referenceStyles);
+for (const file of ["references/Rave.html", "references/Rave.css"]) sourceHashes[file] = hash(await readFile(path.join(root, file)));
 await writeFile(path.join(output, "assets", "preview.css"), css);
 await copyFile(path.join(root, "public", "fixture-poster.jpeg"), path.join(output, "assets", "poster.jpeg"));
 const policy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; font-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'";

@@ -8,6 +8,7 @@ import { ContentPage } from "../src/components/customer/content-page";
 import { LookupPage } from "../src/components/customer/lookup";
 import Home from "../src/app/(public)/page";
 import { installPreviewData, previewEvents } from "./fixtures";
+import { PublicTheme } from "../src/components/customer/theme";
 
 installPreviewData();
 const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -26,8 +27,8 @@ function Page() {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <CartProvider><div className="public-site">
+  <CartProvider><PublicTheme>
     <aside className="preview-banner" aria-label="Design preview"><strong>Design preview</strong><span>Sample event · Reservations, payments and messages disabled</span></aside>
     <Header /><main id="main" className="site-main" tabIndex={-1}><Page /></main><Footer />
-  </div></CartProvider>,
+  </PublicTheme></CartProvider>,
 );

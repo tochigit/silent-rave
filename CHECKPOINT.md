@@ -1,3 +1,90 @@
+# Silent Rave final visual polish
+
+2026-10-07, Africa/Lagos. **FINAL POLISH LOCALLY VERIFIED; PR #9 UNMERGED.**
+Only this visual milestone, checks, publication and a new preview package are
+authorized. Branch fix/reference-design-mobile-first starts at
+31afba2bd6de70cbe5c36284f1b5cdd2f18b5a17; main remains
+5d566efd2529c2bf1bd8634f5013578d853df450. Starting branch/tree/remote/PR and
+exact-head Windows/Linux CI 37682550314 verified live. No applicable AGENTS.md.
+
+Completed shared theme: compact masthead, readable type/spacing,
+poster/content balance, mint ticket emphasis, consistent supporting pages,
+button/loading feedback and reduced motion. Original references and poster,
+desktop top links, mobile section order and real checkout rules preserved.
+The user's latest correction requires a hamburger on phones/tablets; all six
+navigation links remain inside it, with keyboard/Escape/focus-return behavior.
+The next user correction also requires white/dark switching. PublicTheme now
+provides dark by default, a light palette and persistent device preference;
+both themes and the new menu passed fresh rendered acceptance.
+Full Bun lint, supported Node24 app/tooling types, final preview build and 59
+owned Chrome checks passed. New Desktop Polished Preview v1 folder/ZIP and guide
+passed allowlist/hash/integrity/byte checks; prior packages remain preserved.
+Read .docs/POLISHED_DESIGN_REPORT.md and reports/polished-design/acceptance.json.
+Publication/exact-head CI are pending; their final state will be recorded in the
+Desktop Final polish continuation and PR #9. In-app browser discovery was empty
+after recovery; the project's isolated owned Chrome harness verified rendering.
+Initial CI 37693398184 failed its immediate Linux hover-color sample after
+backend/build checks passed. Acceptance now waits for the rendered state and
+dialog opening; UI/package bytes are unchanged. Corrected-head CI follows.
+CI 37694330455 then had a dependency extraction failure and, on Linux retry,
+a hover timeout after passing backend checks. The isolated headless harness now
+declares Playwright's desktop mouse capabilities and asserts the pointer media
+state before the retained hover/pressed checks. See the separate failed report
+and final publication status in the Desktop handoff and PR.
+
+Stop for client/user review after completing this milestone. Do not merge PR #9
+or start Batch B/C/D. No hosted data/provider/DNS/deployments/real sends are
+authorized; readyForLaunch=false remains.
+
+## Historical blended design review
+
+# Silent Rave blended design review
+
+2026-10-07, Africa/Lagos. **LATEST UI REVISION COMPLETE; PR #9 UNMERGED.**
+Existing branch fix/reference-design-mobile-first, base main
+5d566efd2529c2bf1bd8634f5013578d853df450. The user authorized blending the
+earlier lively dark/mint/purple theme with the client's reference, visible top
+links and a wider PC layout. This supersedes the older 600px-only design rule.
+
+Read .docs/BLENDED_DESIGN_REPORT.md for implementation and local evidence, and
+the Desktop Silent Rave - Blended design continuation.md for the latest exact
+head, PR and CI state. Full local lint/types/build, 37
+owned Chrome checks and the new ZIP passed. Desktop delivery is Silent Rave -
+Blended Preview. Earlier packages, source references and all branches remain.
+
+The user uploads the new preview folder and supplies its URL for visitor
+verification. No specific PR #9 merge approval has been given. Preserve
+backend/payment/approval rules, and do not start Batch B or production rollout.
+Hosted behavior remains unverified; readyForLaunch=false remains.
+
+## Historical reference restoration checkpoint
+
+
+# Silent Rave reference design correction
+
+2026-10-07, Africa/Lagos. **REFERENCE DESIGN CORRECTION COMPLETE; READY FOR REVIEW.**
+Branch `fix/reference-design-mobile-first`, base main
+`5d566efd2529c2bf1bd8634f5013578d853df450`. PR #8 is already merged. The user
+subsequently rejected its invented homepage layout and authorized restoring and
+enhancing the client's `references/Rave.html` / `Rave.css` design, mobile first.
+Read `.docs/REFERENCE_DESIGN_REPORT.md` and the Desktop
+`Silent Rave - Reference design continuation.md` for current evidence/publication.
+
+Shared application and preview now preserve the source's 600px single event card,
+light exterior, ticker/title/poster/description/calendar/tickets/details/venue,
+with responsive controls, readable text, navigation and a keyboard-safe popup.
+Local full Bun lint, app/tooling types, build, 30 owned Chrome reference/responsive/
+interaction checks and corrected ZIP validation passed. Screenshots inspected.
+The corrected Desktop package is `Silent Rave - Reference Preview`; use its new
+upload guide. Older preview artifacts/evidence and all branches are preserved.
+Source references, backend/payment/approval rules, migrations and locks are unchanged.
+The user uploads the corrected demo and supplies its URL for visitor verification.
+Do not infer a merge of this correction, Batch B or production rollout. Actual
+hosted behavior is unverified; readyForLaunch=false remains. Current external
+handoff supersedes the historical PR-open/merge/upload state below.
+
+## Historical original client preview checkpoint
+
 # Silent Rave checkpoint
 
 2026-10-07, Africa/Lagos. **CLIENT VISUAL PREVIEW PACKAGED.**

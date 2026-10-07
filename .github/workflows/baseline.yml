@@ -88,5 +88,8 @@ jobs:
             reports/step5a-mobile-*.png
             reports/client-preview-build.json
             reports/client-preview/
+            reports/reference-design/
+            reports/blended-design/
+            reports/polished-design/
             out/client-preview/
             reports/step5-*-db-preflight.txt

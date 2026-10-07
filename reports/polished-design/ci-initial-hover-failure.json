@@ -1,0 +1,12 @@
+{
+  "result": "FAIL",
+  "runId": 37693398184,
+  "head": "54b2a848827cf45559475acf34390bd7ec7dc592",
+  "platform": "linux",
+  "step": "Verify static client preview in owned Chrome",
+  "assertion": "Distinct rest and hover background colors",
+  "sampledRestAndHover": "rgb(163, 247, 191)",
+  "backendAndBuildSteps": "PASS before browser failure",
+  "correction": "Wait for rendered hover and pressed style changes and actual dialog opening before Escape",
+  "applicationOrPackageBytesChanged": false
+}
