@@ -28,8 +28,9 @@ globalThis.fetch = async (url, init) => {
     const key = match[2];
     if (request.method === "POST") {
       assert.equal(request.headers.get("x-upsert"), "false");
+      const bytes = new Uint8Array(await request.arrayBuffer());
       if (storageObjects.has(key)) return Response.json({ code: "Duplicate" }, { status: 409 });
-      storageObjects.set(key, { bytes: new Uint8Array(await request.arrayBuffer()), type: request.headers.get("content-type"), metadata: JSON.parse(Buffer.from(request.headers.get("x-metadata"), "base64").toString()) });
+      storageObjects.set(key, { bytes, type: request.headers.get("content-type"), metadata: JSON.parse(Buffer.from(request.headers.get("x-metadata"), "base64").toString()) });
       return Response.json({ Key: key });
     }
     const object = storageObjects.get(key);

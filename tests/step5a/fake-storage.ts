@@ -29,9 +29,10 @@ export function startFakeStorage() {
     const key = match[2];
     if (request.method === "POST" && operation === "put") {
       if (request.headers.get("x-upsert") !== "false") return Response.json({ code: "UnsafeUpsert" }, { status: 400 });
-      if (objects.has(key)) return Response.json({ code: "Duplicate" }, { status: 409 });
       const bytes = new Uint8Array(await request.arrayBuffer());
       const metadata = JSON.parse(Buffer.from(request.headers.get("x-metadata") ?? "", "base64").toString());
+      // Check after all awaits: parallel bodies must not both pass a stale absence check.
+      if (objects.has(key)) return Response.json({ code: "Duplicate" }, { status: 409 });
       objects.set(key, { bytes, metadata, contentType: request.headers.get("content-type")! });
       return Response.json({ Key: key }, { status: 200 });
     }
