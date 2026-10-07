@@ -1,6 +1,6 @@
 # Silent Rave checkpoint
 
-2026-10-07, Africa/Lagos. **Batch A IMPLEMENTED AND VERIFIED; publication checks pending.**
+2026-10-07, Africa/Lagos. **Batch A COMPLETE; STOP FOR REVIEW.**
 
 Branch `feat/step5c-upload-storage`; base main/origin/main
 `0da2051ca9c617fbe09d50cabcd2e2232045fd9f`. PR #6 is merged; post-merge CI
@@ -36,7 +36,8 @@ were checked without hosted data access. Earlier failed CI never counted as pass
 
 Read the entire Desktop Batch A continuation for final publication head/checks,
 then the Consolidated handoff and original Step 5B/5C1 technical specifications.
-Finish exact-head publication verification and PR description, then STOP FOR REVIEW.
+The exact publication head/checks and completed PR description are recorded in PR #7
+and the Desktop continuation; verify those live before any later action. STOP FOR REVIEW.
 No merge, Batch B, hosted queries/configuration/buckets/import/deletion, DNS/deploy,
 purchases, real sends or permanent owner/password changes are authorized here.
 readyForLaunch=false remains intentional; actual hosted/device gates remain unverified.
