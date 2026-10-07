@@ -348,12 +348,19 @@ try {
   checks.push("Home, listings, information, contact, recovery, cart and checkout fit at 320px and 1440px");
   await page.goto(base); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   const buy = page.getByRole("button", { name: "Buy Early Bird Ticket", exact: true });
+  await page.mouse.move(0, 0);
+  await page.waitForFunction(() => !document.querySelector(".buy-btn").matches(":hover"));
   const restColor = await buy.evaluate(button => getComputedStyle(button).backgroundColor);
   await buy.hover();
+  // Chromium can apply pointer pseudo-classes on the next rendering frame.
+  // Wait for the actual style change rather than sampling the dispatched event.
+  await page.waitForFunction(background => getComputedStyle(document.querySelector(".buy-btn")).backgroundColor !== background, restColor);
   const hoverColor = await buy.evaluate(button => getComputedStyle(button).backgroundColor);
   await page.mouse.down();
+  await page.waitForFunction(background => getComputedStyle(document.querySelector(".buy-btn")).backgroundColor !== background, hoverColor);
   const pressedColor = await buy.evaluate(button => getComputedStyle(button).backgroundColor);
-  await page.mouse.up(); await page.keyboard.press("Escape");
+  await page.mouse.up(); await page.getByRole("dialog").waitFor();
+  await page.keyboard.press("Escape"); await page.getByRole("dialog").waitFor({ state: "hidden" });
   assert.notEqual(restColor, hoverColor); assert.notEqual(hoverColor, pressedColor);
   checks.push("Mint ticket buttons give distinct hover and pressed feedback without moving layout");
   step = "light theme and remembered preference";

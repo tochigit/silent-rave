@@ -23,6 +23,9 @@ Read .docs/POLISHED_DESIGN_REPORT.md and reports/polished-design/acceptance.json
 Publication/exact-head CI are pending; their final state will be recorded in the
 Desktop Final polish continuation and PR #9. In-app browser discovery was empty
 after recovery; the project's isolated owned Chrome harness verified rendering.
+Initial CI 37693398184 failed its immediate Linux hover-color sample after
+backend/build checks passed. Acceptance now waits for the rendered state and
+dialog opening; UI/package bytes are unchanged. Corrected-head CI follows.
 
 Stop for client/user review after completing this milestone. Do not merge PR #9
 or start Batch B/C/D. No hosted data/provider/DNS/deployments/real sends are

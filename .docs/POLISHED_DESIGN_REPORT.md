@@ -58,6 +58,12 @@ corrected to enter keyboard modality before checking focus-visible. Their failed
 reports are preserved. A wrapped 320px wordmark and faint light preview label were
 caught during visual review and corrected before the final build/acceptance.
 pre-mobile-menu-acceptance.json records an earlier bundle and is historical.
+Initial exact-head CI 37693398184 passed Linux backend/build checks but failed
+its immediate hover-color sample before Chromium applied the pointer state.
+The browser check now waits for observed hover/pressed style changes and the
+actual dialog opening before Escape. It still requires distinct state colors;
+application/package bytes are unchanged. Final corrected-head CI is recorded
+in the Desktop handoff and PR; the failed run is not counted as a pass.
 
 Desktop delivery: Silent Rave - Polished Preview v1 folder/ZIP and
 Silent Rave - Polished preview v1 upload steps.md. This package replaces earlier
