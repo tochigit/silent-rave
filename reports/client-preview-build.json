@@ -1,0 +1,32 @@
+{
+  "output": "out/client-preview",
+  "routes": [
+    "",
+    "events",
+    "about",
+    "contact",
+    "cart",
+    "checkout",
+    "lookup",
+    "event/silent-rave-owerri"
+  ],
+  "sourceHashes": {
+    "src/components/customer/checkout.tsx": "2dc0a13468cf489384a7ca887814255c95c298488f99c4c7788fedc691966cb9",
+    "src/components/customer/lookup.tsx": "4f3689e4e78c2d112bf71bf8ed0ed4337bfcb797bd793130a4a7a2ca06dbb262",
+    "src/components/customer/event-detail.tsx": "d03470546fea3a086164d523cc8fb78dd91820c41110be255f0f8f03b96ea018",
+    "src/components/customer/events-browser.tsx": "4db2460fce7effa067e88cd262abf1d17bd96adee9a643638713713573c095fd",
+    "src/components/customer/cart.tsx": "d698635c71bbf89a12fbd9c9e65b5691ace349b8377e809fe2077ae9f3a65231",
+    "src/components/customer/shell.tsx": "9a35719504a2f7bbe6f6131b2f50b412c9feb5db6ab5f548ca878bf402aca899",
+    "src/components/customer/content-page.tsx": "c414f4642a79fa30ff038a5b25d34fe0801f37a8ea9aaf0f82b03a733e68da0c",
+    "src/app/(public)/page.tsx": "d4ef324d439ffedcf4860d3b5539d2e7a25f24da536d9ceaf85e8ff99cd19381",
+    "src/components/customer/event-card.tsx": "ce6c6f60fa71bed34a015a329b350736484d34c1d1625406f302f6be449c8057",
+    "src/components/customer/contact-form.tsx": "065e5fb81fd8e4e8e44d85a652e715c66dcd3a5d74a7c4ca904c7d989b913fcb",
+    "src/app/globals.css": "86c189a1a63ae9aaf1d2da12cccef60b6d461bcfb919ce8ec35a8f65fd7af139"
+  },
+  "bundleBytes": 213274,
+  "bundleSha256": "634063face9e5eae5d8a9d5867d491356b96823d5bc9a8fe427ebdf2431b335e",
+  "cssSha256": "16e7d1b4e6bfb7ac5d4350db0990e21b38c43ca8cc330515f67fc6b142f31e91",
+  "backend": "none",
+  "submissions": "removed",
+  "networkConnections": "blocked"
+}

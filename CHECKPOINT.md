@@ -1,5 +1,42 @@
 # Silent Rave checkpoint
 
+2026-10-07, Africa/Lagos. **CLIENT VISUAL PREVIEW PACKAGED.**
+
+User authorized preparing the design preview and providing upload steps. Scope:
+standalone static public UI with sample content, ticket selection/cart and disabled
+submissions. No Batch B or production rollout. Branch `feat/client-visual-preview`
+from main `8fbcf98669298d50170c2f0435c8b75f3de59fa3` (PR #7 merged; exact-main
+Windows/Linux CI 37650842656 passed). All previous branches/fixtures preserved.
+
+Source: `preview/`, `scripts/build-client-preview.ts`, browser acceptance and
+allowlisted Desktop packaging scripts; `preview:build` command. Existing customer
+components/styles are reused through a build-only adapter; application source,
+dependencies/locks, database, auth/payment/QR and hosted settings are unchanged.
+The adapter substitutes fixtures, removes submission handlers, disables controls,
+isolates cart state, blocks server imports and validates bundle contents. Output
+`out/client-preview` contains only public static pages/assets and restrictive CSP.
+
+Build PASSED locally: 8 pages, 213274 JS bytes; source/bundle/CSS hashes recorded
+in `reports/client-preview-build.json`. Browser connection unavailable after
+documented discovery; isolated owned Chrome subsequently PASSED 18 acceptance
+checks: responsive views, navigation/calendar/filtering, cart/persistence, disabled
+and programmatic submits, no HTTP APIs/POSTs/external requests/JavaScript errors.
+Screenshots inspected; owned browser/server cleanup passed and process count zero.
+CI builds the preview on both OSs and runs owned Linux Chrome acceptance.
+
+Desktop `Silent Rave - Client Preview` folder, matching ZIP and upload guide were
+created. The 226628-byte ZIP passed allowlist/hash/integrity/byte checks (14 files).
+SHA256 5d6fa821f00656a9999dd918cefccca28498f8f542744a37cc875c55c235a760.
+Packaging refuses existing deliverable paths. See `preview/UPLOAD_STEPS.md`.
+Final lint/type/CI status, exact published head and PR are recorded in the Desktop
+`Silent Rave - Client preview continuation.md`; verify that current handoff first.
+The user uploads the prepared folder and shares the resulting Netlify URL; actual
+hosted accessibility remains unverified until that URL is supplied. No upload has
+been performed by the agent. Keep readyForLaunch=false. Preserve branches; do not
+merge this preview PR or begin Batch B without the user's specific instruction.
+
+## Historical Batch A checkpoint (merged; prior review boundary superseded)
+
 2026-10-07, Africa/Lagos. **Batch A COMPLETE; STOP FOR REVIEW.**
 
 Branch `feat/step5c-upload-storage`; base main/origin/main
