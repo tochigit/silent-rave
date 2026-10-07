@@ -69,7 +69,7 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
     );
   if (!event)
     return (
-      <div className="panel" role={error ? "alert" : "status"}>
+      <div className={error ? "panel" : "panel loading-panel"} role={error ? "alert" : "status"} aria-busy={!error}>
         {error || "Loading event…"}
         {error && <button onClick={refresh}>Retry</button>}
       </div>
@@ -113,6 +113,7 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
   const dateLabel = event.starts_at
     ? `${day(event.starts_at)} @ ${time(event.starts_at)}${event.ends_at ? ` – ${day(event.ends_at) === day(event.starts_at) ? "" : day(event.ends_at) + " @ "}${time(event.ends_at)}` : ""} · WAT`
     : "Date to be announced";
+  const titleBreak = event.title.lastIndexOf(" - ");
   return (
     <section className="reference-event">
       <div className="alert-banner">
@@ -123,7 +124,7 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
       {error && <div role="alert" className="panel"><p>{error}</p><button onClick={refresh}>Refresh availability</button></div>}
       <header className="event-header">
         <p className="event-kicker">{featured ? "YOUR NIGHT. YOUR FREQUENCY." : "FIND YOUR FREQUENCY."}</p>
-        <h1 className="event-title">{event.title}</h1>
+        <h1 className="event-title">{titleBreak > 0 ? <><span className="title-line">{event.title.slice(0, titleBreak)} - </span><span className="title-line">{event.title.slice(titleBreak + 3)}</span></> : event.title}</h1>
         <p className="event-datetime-sub">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
           <span>{dateLabel}</span>
@@ -159,7 +160,7 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
                 <button className="buy-btn" aria-label={`Buy ${tier.name}`} disabled={tier.state !== "OPEN" || tier.available < 1 || (!quantities[tier.id] && totalQuantity >= 10)} onClick={() => {
                   setQuantities((current) => ({ ...current, [tier.id]: current[tier.id] || 1 }));
                   setSelectedTier(tier.id);
-                }}>{money(tier.price_kobo)} – Buy</button>
+                }}><span className="ticket-price">{money(tier.price_kobo)}</span><span className="ticket-buy-label">Buy <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></button>
               </div>)}
             </div>
             {notice && <div role="status" className="selection-notice"><p>{notice}</p><Link className="button purple" href="/checkout">Continue to checkout</Link></div>}
@@ -196,7 +197,7 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
           <p className="total">Total amount <strong>{money(total)}</strong></p>
           {cart && cart.eventId !== event.id && <p className="subtext">These tickets replace the other event in your cart.</p>}
           {!valid && <p role="alert" className="error">Availability changed. Reduce quantities or choose another tier.</p>}
-          <button className="button" disabled={!totalQuantity || !valid} onClick={add}>Add {totalQuantity || ""} tickets to cart</button>
+          <button className="button" disabled={!totalQuantity || !valid} onClick={add}>Add {totalQuantity || ""} {totalQuantity === 1 ? "ticket" : "tickets"} to cart</button>
           <p className="subtext">Enter your details at checkout, then receive bank transfer instructions. Only approved payments create tickets.</p>
         </div>}
       </dialog>

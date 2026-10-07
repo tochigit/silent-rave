@@ -90,5 +90,6 @@ jobs:
             reports/client-preview/
             reports/reference-design/
             reports/blended-design/
+            reports/polished-design/
             out/client-preview/
             reports/step5-*-db-preflight.txt

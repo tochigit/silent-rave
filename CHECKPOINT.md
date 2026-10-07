@@ -1,3 +1,35 @@
+# Silent Rave final visual polish
+
+2026-10-07, Africa/Lagos. **FINAL POLISH LOCALLY VERIFIED; PR #9 UNMERGED.**
+Only this visual milestone, checks, publication and a new preview package are
+authorized. Branch fix/reference-design-mobile-first starts at
+31afba2bd6de70cbe5c36284f1b5cdd2f18b5a17; main remains
+5d566efd2529c2bf1bd8634f5013578d853df450. Starting branch/tree/remote/PR and
+exact-head Windows/Linux CI 37682550314 verified live. No applicable AGENTS.md.
+
+Completed shared theme: compact masthead, readable type/spacing,
+poster/content balance, mint ticket emphasis, consistent supporting pages,
+button/loading feedback and reduced motion. Original references and poster,
+desktop top links, mobile section order and real checkout rules preserved.
+The user's latest correction requires a hamburger on phones/tablets; all six
+navigation links remain inside it, with keyboard/Escape/focus-return behavior.
+The next user correction also requires white/dark switching. PublicTheme now
+provides dark by default, a light palette and persistent device preference;
+both themes and the new menu passed fresh rendered acceptance.
+Full Bun lint, supported Node24 app/tooling types, final preview build and 59
+owned Chrome checks passed. New Desktop Polished Preview v1 folder/ZIP and guide
+passed allowlist/hash/integrity/byte checks; prior packages remain preserved.
+Read .docs/POLISHED_DESIGN_REPORT.md and reports/polished-design/acceptance.json.
+Publication/exact-head CI are pending; their final state will be recorded in the
+Desktop Final polish continuation and PR #9. In-app browser discovery was empty
+after recovery; the project's isolated owned Chrome harness verified rendering.
+
+Stop for client/user review after completing this milestone. Do not merge PR #9
+or start Batch B/C/D. No hosted data/provider/DNS/deployments/real sends are
+authorized; readyForLaunch=false remains.
+
+## Historical blended design review
+
 # Silent Rave blended design review
 
 2026-10-07, Africa/Lagos. **LATEST UI REVISION COMPLETE; PR #9 UNMERGED.**

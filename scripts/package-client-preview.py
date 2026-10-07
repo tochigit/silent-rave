@@ -15,16 +15,20 @@ actual = sorted(p.relative_to(output).as_posix() for p in output.rglob('*') if p
 assert actual == sorted(files), 'Unexpected files in output; package refused'
 assert hashlib.sha256((output / 'assets' / 'preview.js').read_bytes()).hexdigest() == manifest['bundleSha256']
 assert hashlib.sha256((output / 'assets' / 'preview.css').read_bytes()).hexdigest() == manifest['cssSha256']
-acceptance = json.loads((root / 'reports' / 'blended-design' / 'acceptance.json').read_text(encoding='utf-8'))
+acceptance = json.loads((root / 'reports' / 'polished-design' / 'acceptance.json').read_text(encoding='utf-8'))
 assert acceptance['result'] == 'PASS', 'Browser acceptance must pass before packaging'
 assert acceptance['build']['bundleSha256'] == manifest['bundleSha256'], 'Browser result is for another bundle'
 assert acceptance['build']['cssSha256'] == manifest['cssSha256'], 'Browser result is for another stylesheet'
 
 desktop = Path.home() / 'Desktop'
-folder = desktop / 'Silent Rave - Blended Preview'
-archive = desktop / 'Silent Rave - Blended Preview.zip'
+delivery = 'Silent Rave - Polished Preview v1'
+folder = desktop / delivery
+archive = desktop / f'{delivery}.zip'
+guide = desktop / 'Silent Rave - Polished preview v1 upload steps.md'
 # Refuse to overwrite a pre-existing directory or archive from another task.
-assert not folder.exists() and not archive.exists(), 'Preview deliverables already exist; preserve and review them first'
+assert not folder.exists() and not archive.exists() and not guide.exists(), 'Preview deliverables already exist; preserve and review them first'
+guide_text = (root / 'preview' / 'UPLOAD_STEPS.md').read_text(encoding='utf-8')
+assert delivery in guide_text and f'{delivery}.zip' in guide_text, 'Guide must name the new folder and ZIP'
 folder.mkdir()
 for name in files:
     destination = folder / name
@@ -38,7 +42,10 @@ with zipfile.ZipFile(archive) as package:
     assert package.testzip() is None
     for name in files:
         assert package.read(name) == (folder / name).read_bytes()
-shutil.copyfile(root / 'preview' / 'UPLOAD_STEPS.md', desktop / 'Silent Rave - Blended preview upload steps.md')
-report = {'folder': str(folder), 'zip': str(archive), 'files': len(files), 'zipBytes': archive.stat().st_size, 'zipSha256': hashlib.sha256(archive.read_bytes()).hexdigest(), 'browserResult': 'PASS'}
-(root / 'reports' / 'blended-preview-package.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+shutil.copyfile(root / 'preview' / 'UPLOAD_STEPS.md', guide)
+for name in files:
+    assert (output / name).read_bytes() == (folder / name).read_bytes(), 'Desktop folder must match build bytes'
+assert guide.read_bytes() == (root / 'preview' / 'UPLOAD_STEPS.md').read_bytes()
+report = {'folder': str(folder), 'zip': str(archive), 'guide': str(guide), 'files': len(files), 'zipBytes': archive.stat().st_size, 'zipSha256': hashlib.sha256(archive.read_bytes()).hexdigest(), 'browserResult': 'PASS', 'bundleSha256': manifest['bundleSha256'], 'cssSha256': manifest['cssSha256']}
+(root / 'reports' / 'polished-preview-package.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(report, indent=2))

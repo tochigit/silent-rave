@@ -1,0 +1,6 @@
+{
+  "result": "FAIL",
+  "step": "home and keyboard",
+  "message": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n'none' !== 'solid'\n",
+  "errors": []
+}

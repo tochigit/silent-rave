@@ -1,0 +1,6 @@
+{
+  "result": "FAIL",
+  "step": "home and keyboard",
+  "message": "AssertionError [ERR_ASSERTION]: Both ticket actions visible in a 1440x1000 PC view",
+  "errors": []
+}
