@@ -25,7 +25,8 @@ export const previewPages = {
 
 export function installPreviewData() {
   // All component reads resolve in memory. Unknown requests never reach a server.
-  window.fetch = async (input, init) => {
+  // The repository's Bun ambient types add fetch.preconnect; browsers do not.
+  window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const request = input instanceof Request ? input : null;
     const signal = init?.signal ?? request?.signal;
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
@@ -57,5 +58,5 @@ export function installPreviewData() {
       }
     }
     return new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json" } });
-  };
+  }) as typeof window.fetch;
 }
