@@ -89,5 +89,6 @@ jobs:
             reports/client-preview-build.json
             reports/client-preview/
             reports/reference-design/
+            reports/blended-design/
             out/client-preview/
             reports/step5-*-db-preflight.txt

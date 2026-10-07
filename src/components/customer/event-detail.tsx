@@ -122,52 +122,60 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
       </div>
       {error && <div role="alert" className="panel"><p>{error}</p><button onClick={refresh}>Refresh availability</button></div>}
       <header className="event-header">
+        <p className="event-kicker">{featured ? "YOUR NIGHT. YOUR FREQUENCY." : "FIND YOUR FREQUENCY."}</p>
         <h1 className="event-title">{event.title}</h1>
         <p className="event-datetime-sub">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
           <span>{dateLabel}</span>
         </p>
       </header>
-      <div className="poster-container">
-        {event.banner_image_url ? <img className="detail-poster" src={event.banner_image_url} alt={`${event.title} poster`} width={600} height={900} />
-          : <div className="poster-placeholder"><span>SILENT<br />RAVE</span><small>Poster coming soon</small></div>}
-      </div>
-      <div className="event-description">{event.description}</div>
-      {Object.keys(event.calendar_links).length > 0 && <details className="calendar-dropdown">
-        <summary className="calendar-btn">Add to calendar <span aria-hidden="true">▾</span></summary>
-        <div className="calendar-menu">
-          {Object.entries(event.calendar_links).map(([format, url]) => <a key={format} href={url} download={format === "ical" || format === "ics" ? "event.ics" : undefined} target={format === "ical" || format === "ics" ? undefined : "_blank"} rel="noreferrer">
-            {({ google: "Google Calendar", ical: "iCalendar", outlook365: "Outlook 365", outlooklive: "Outlook Live", ics: "Download .ics" } as Record<string, string>)[format] ?? format}
-          </a>)}
+      <div className="event-hero-grid">
+        <div className="poster-container">
+          {event.banner_image_url ? <img className="detail-poster" src={event.banner_image_url} alt={`${event.title} poster`} width={600} height={900} />
+            : <div className="poster-placeholder"><span>SILENT<br />RAVE</span><small>Poster coming soon</small></div>}
         </div>
-      </details>}
-      <div id="tickets" className="tickets-section" tabIndex={-1}>
-        <h2 className="tickets-title">Tickets</h2>
-        <p className="tickets-status">Choose your ticket. Up to 10 tickets per order.</p>
-        {!event.ticket_tiers.length && <p>Ticket tiers coming soon.</p>}
-        <div className="ticket-options">
-          {event.ticket_tiers.map((tier) => <div className="ticket-card" key={tier.id}>
-            <div><strong>{tier.name}</strong><p className="subtext">
-              {states[tier.state]}{tier.state === "OPEN" ? ` · ${tier.available} left` : ""}
-              {tier.state === "COMING_SOON" && tier.sales_start_at ? ` · ${lagosDate(tier.sales_start_at)} WAT` : ""}
-              {(quantities[tier.id] ?? 0) > 0 ? ` · ${quantities[tier.id]} selected` : ""}
-            </p></div>
-            <button className="buy-btn" aria-label={`Buy ${tier.name}`} disabled={tier.state !== "OPEN" || tier.available < 1 || (!quantities[tier.id] && totalQuantity >= 10)} onClick={() => {
-              setQuantities((current) => ({ ...current, [tier.id]: current[tier.id] || 1 }));
-              setSelectedTier(tier.id);
-            }}>{money(tier.price_kobo)} – Buy</button>
-          </div>)}
+        <div className="event-content">
+          <h2 className="experience-title">The experience</h2>
+          <div className="event-description">{event.description}</div>
+          {Object.keys(event.calendar_links).length > 0 && <details className="calendar-dropdown">
+            <summary className="calendar-btn">Add to calendar <span aria-hidden="true">▾</span></summary>
+            <div className="calendar-menu">
+              {Object.entries(event.calendar_links).map(([format, url]) => <a key={format} href={url} download={format === "ical" || format === "ics" ? "event.ics" : undefined} target={format === "ical" || format === "ics" ? undefined : "_blank"} rel="noreferrer">
+                {({ google: "Google Calendar", ical: "iCalendar", outlook365: "Outlook 365", outlooklive: "Outlook Live", ics: "Download .ics" } as Record<string, string>)[format] ?? format}
+              </a>)}
+            </div>
+          </details>}
+          <div id="tickets" className="tickets-section" tabIndex={-1}>
+            <h2 className="tickets-title">Tickets</h2>
+            <p className="tickets-status">Choose your ticket. Up to 10 tickets per order.</p>
+            {!event.ticket_tiers.length && <p>Ticket tiers coming soon.</p>}
+            <div className="ticket-options">
+              {event.ticket_tiers.map((tier) => <div className="ticket-card" key={tier.id}>
+                <div><strong>{tier.name}</strong><p className="subtext">
+                  {states[tier.state]}{tier.state === "OPEN" ? ` · ${tier.available} left` : ""}
+                  {tier.state === "COMING_SOON" && tier.sales_start_at ? ` · ${lagosDate(tier.sales_start_at)} WAT` : ""}
+                  {(quantities[tier.id] ?? 0) > 0 ? ` · ${quantities[tier.id]} selected` : ""}
+                </p></div>
+                <button className="buy-btn" aria-label={`Buy ${tier.name}`} disabled={tier.state !== "OPEN" || tier.available < 1 || (!quantities[tier.id] && totalQuantity >= 10)} onClick={() => {
+                  setQuantities((current) => ({ ...current, [tier.id]: current[tier.id] || 1 }));
+                  setSelectedTier(tier.id);
+                }}>{money(tier.price_kobo)} – Buy</button>
+              </div>)}
+            </div>
+            {notice && <div role="status" className="selection-notice"><p>{notice}</p><Link className="button purple" href="/checkout">Continue to checkout</Link></div>}
+          </div>
         </div>
-        {notice && <div role="status" className="selection-notice"><p>{notice}</p><Link className="button purple" href="/checkout">Continue to checkout</Link></div>}
       </div>
-      <div className="details-grid">
-        <div className="details-group"><h2>Details</h2><p><strong>Date:</strong> {event.starts_at ? day(event.starts_at) : "To be announced"}</p><p><strong>Time:</strong> {event.starts_at ? time(event.starts_at) : "To be announced"}{event.ends_at ? ` – ${time(event.ends_at)}` : ""} · WAT</p></div>
-        <div className="details-group"><h2>Organizer</h2><p>{event.organizer.name}</p>{event.organizer.description && <p className="prose">{event.organizer.description}</p>}</div>
-      </div>
-      <div className="details-group"><h2>Venue</h2><p>{event.venue.name}</p><p className="prose">{event.venue.address}</p>
-        {event.venue.directions_url && <a className="secondary" href={event.venue.directions_url} target="_blank" rel="noreferrer">Get directions</a>}
-        {event.venue.map_embed_url ? <div className="map-box"><iframe src={event.venue.map_embed_url} title={`Map of ${event.venue.name}`} loading="lazy" referrerPolicy="no-referrer" /></div>
-          : <div className="map-box map-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><strong>{event.venue.name}</strong><span>Venue location · Map unavailable</span></div>}
+      <div className="event-info-grid">
+        <div className="details-grid">
+          <div className="details-group"><h2>Details</h2><p><strong>Date:</strong> {event.starts_at ? day(event.starts_at) : "To be announced"}</p><p><strong>Time:</strong> {event.starts_at ? time(event.starts_at) : "To be announced"}{event.ends_at ? ` – ${time(event.ends_at)}` : ""} · WAT</p></div>
+          <div className="details-group"><h2>Organizer</h2><p>{event.organizer.name}</p>{event.organizer.description && <p className="prose">{event.organizer.description}</p>}</div>
+        </div>
+        <div className="details-group venue-group"><h2>Venue</h2><p>{event.venue.name}</p><p className="prose">{event.venue.address}</p>
+          {event.venue.directions_url && <a className="secondary" href={event.venue.directions_url} target="_blank" rel="noreferrer">Get directions</a>}
+          {event.venue.map_embed_url ? <div className="map-box"><iframe src={event.venue.map_embed_url} title={`Map of ${event.venue.name}`} loading="lazy" referrerPolicy="no-referrer" /></div>
+            : <div className="map-box map-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><strong>{event.venue.name}</strong><span>Venue location · Map unavailable</span></div>}
+        </div>
       </div>
       <dialog ref={dialog} className="ticket-modal" aria-labelledby="ticket-dialog-title" onCancel={() => setSelectedTier(null)} onClick={(click) => { if (click.target === click.currentTarget) setSelectedTier(null); }}>
         {selected && <div className="modal-content">

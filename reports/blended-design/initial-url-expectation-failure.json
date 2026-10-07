@@ -1,0 +1,6 @@
+{
+  "result": "FAIL",
+  "step": "home and keyboard",
+  "message": "TimeoutError: page.waitForURL: Timeout 60000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://127.0.0.1:55714/event/nusa-evangel-silent-rave#tickets\"\n============================================================",
+  "errors": []
+}

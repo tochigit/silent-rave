@@ -1,12 +1,14 @@
 # Silent Rave client design preview
 
-The client's `references/Rave.html` and `references/Rave.css` define the design.
-The shared public components now preserve their single-column 600px event card,
-light outer background, Arial, mint ticker, centered title, uncropped poster,
-purple calendar dropdown, mint ticket rows, purchase popup and details/venue order.
-`src/app/reference-rave.css` scopes that adaptation to the public site. Mobile
-styles come first; touch targets, keyboard focus, reduced motion, short-screen
-modal scrolling and legible text improve the original without changing its theme.
+The client's `references/Rave.html` and `references/Rave.css` are the foundation.
+The latest user-authorized blend retains their mint ticker, uncropped poster,
+purple calendar dropdown, mint ticket rows, purchase popup and mobile event order,
+while bringing back the earlier dark/mint/lilac theme, brand and bold typography.
+All six navigation links stay visible at the top. PCs use an 1180px shell and a
+poster/content split from 960px; the earlier 600px-only constraint is superseded.
+`src/app/reference-rave.css` scopes the shared styling to the public site. Mobile
+styles come first, with touch targets, keyboard focus, reduced motion and
+short-screen modal scrolling. Original references and previous evidence remain.
 
 The standalone static preview reuses the current customer shell, homepage JSX,
 event cards/list/calendar/detail, cart, checkout, content and recovery components,
@@ -32,19 +34,20 @@ the existing pinned Playwright client under ignored `.test-runtime/browser-check
 starts a loopback static server and its own headless Chrome/profile, and cleans up
 its processes. Set `BROWSER_EXECUTABLE` when Chrome is not at the Windows default.
 CI installs that client and checks the preview in owned Linux Chrome. Evidence is
-in `reports/reference-design/` and `reports/client-preview-build.json`. Acceptance
+in `reports/blended-design/` and `reports/client-preview-build.json`. Acceptance
 renders a script-free, network-free copy of the original reference for screenshots
-and compares desktop geometry/colors/type with the app. It also checks 320–1440px
-layouts, the ticket popup, ten-ticket limit, calendar/navigation and disabled forms.
+and compares its poster/card/accent styling with the app, then checks the wider
+desktop layout and mobile order. It also checks 320–1920px layouts, all six top
+links, Buy tickets, the popup, ten-ticket limit, calendar and disabled forms.
 Evidence includes the exact tested bundle/style hashes; packaging rejects stale
 browser acceptance.
 
 After browser acceptance passes, run `python scripts/package-client-preview.py`
-once to create the Desktop `Silent Rave - Reference Preview` folder, matching ZIP
-and `Silent Rave - Reference preview upload steps.md`. Packaging verifies
+once to create the Desktop `Silent Rave - Blended Preview` folder, matching ZIP
+and `Silent Rave - Blended preview upload steps.md`. Packaging verifies
 the output allowlist, build hashes, browser result, ZIP contents and bytes. It
 refuses to overwrite existing Desktop deliverables. The earlier `Client Preview`
-package is preserved and superseded for client design review. The upload steps are in
+and `Reference Preview` packages are preserved for comparison. Upload steps are in
 [UPLOAD_STEPS.md](UPLOAD_STEPS.md).
 
 This is a design preview, not a production release. Event/date/price/content are

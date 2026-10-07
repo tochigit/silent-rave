@@ -1,3 +1,25 @@
+# Silent Rave blended design review
+
+2026-10-07, Africa/Lagos. **LATEST UI REVISION COMPLETE; PR #9 UNMERGED.**
+Existing branch fix/reference-design-mobile-first, base main
+5d566efd2529c2bf1bd8634f5013578d853df450. The user authorized blending the
+earlier lively dark/mint/purple theme with the client's reference, visible top
+links and a wider PC layout. This supersedes the older 600px-only design rule.
+
+Read .docs/BLENDED_DESIGN_REPORT.md for implementation and local evidence, and
+the Desktop Silent Rave - Blended design continuation.md for the latest exact
+head, PR and CI state. Full local lint/types/build, 37
+owned Chrome checks and the new ZIP passed. Desktop delivery is Silent Rave -
+Blended Preview. Earlier packages, source references and all branches remain.
+
+The user uploads the new preview folder and supplies its URL for visitor
+verification. No specific PR #9 merge approval has been given. Preserve
+backend/payment/approval rules, and do not start Batch B or production rollout.
+Hosted behavior remains unverified; readyForLaunch=false remains.
+
+## Historical reference restoration checkpoint
+
+
 # Silent Rave reference design correction
 
 2026-10-07, Africa/Lagos. **REFERENCE DESIGN CORRECTION COMPLETE; READY FOR REVIEW.**

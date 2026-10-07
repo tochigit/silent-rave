@@ -1,5 +1,10 @@
 # Reference design correction
 
+Historical restoration report. The subsequent user-authorized blend, visible
+top navigation and wider PC layout are described in [BLENDED_DESIGN_REPORT.md](BLENDED_DESIGN_REPORT.md).
+Its current delivery is **Silent Rave - Blended Preview**; the 600px-only rule below
+is superseded. Original reference files and earlier evidence remain preserved.
+
 2026-10-07, Africa/Lagos. Branch `fix/reference-design-mobile-first`, base
 `5d566efd2529c2bf1bd8634f5013578d853df450`. The user rejected the prior preview's
 invented hero/layout and explicitly authorized restoring the client's references

@@ -15,14 +15,14 @@ actual = sorted(p.relative_to(output).as_posix() for p in output.rglob('*') if p
 assert actual == sorted(files), 'Unexpected files in output; package refused'
 assert hashlib.sha256((output / 'assets' / 'preview.js').read_bytes()).hexdigest() == manifest['bundleSha256']
 assert hashlib.sha256((output / 'assets' / 'preview.css').read_bytes()).hexdigest() == manifest['cssSha256']
-acceptance = json.loads((root / 'reports' / 'reference-design' / 'acceptance.json').read_text(encoding='utf-8'))
+acceptance = json.loads((root / 'reports' / 'blended-design' / 'acceptance.json').read_text(encoding='utf-8'))
 assert acceptance['result'] == 'PASS', 'Browser acceptance must pass before packaging'
 assert acceptance['build']['bundleSha256'] == manifest['bundleSha256'], 'Browser result is for another bundle'
 assert acceptance['build']['cssSha256'] == manifest['cssSha256'], 'Browser result is for another stylesheet'
 
 desktop = Path.home() / 'Desktop'
-folder = desktop / 'Silent Rave - Reference Preview'
-archive = desktop / 'Silent Rave - Reference Preview.zip'
+folder = desktop / 'Silent Rave - Blended Preview'
+archive = desktop / 'Silent Rave - Blended Preview.zip'
 # Refuse to overwrite a pre-existing directory or archive from another task.
 assert not folder.exists() and not archive.exists(), 'Preview deliverables already exist; preserve and review them first'
 folder.mkdir()
@@ -38,7 +38,7 @@ with zipfile.ZipFile(archive) as package:
     assert package.testzip() is None
     for name in files:
         assert package.read(name) == (folder / name).read_bytes()
-shutil.copyfile(root / 'preview' / 'UPLOAD_STEPS.md', desktop / 'Silent Rave - Reference preview upload steps.md')
+shutil.copyfile(root / 'preview' / 'UPLOAD_STEPS.md', desktop / 'Silent Rave - Blended preview upload steps.md')
 report = {'folder': str(folder), 'zip': str(archive), 'files': len(files), 'zipBytes': archive.stat().st_size, 'zipSha256': hashlib.sha256(archive.read_bytes()).hexdigest(), 'browserResult': 'PASS'}
-(root / 'reports' / 'reference-preview-package.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+(root / 'reports' / 'blended-preview-package.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(report, indent=2))
