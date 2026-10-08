@@ -3,14 +3,14 @@ waiting for server to start...... done
 server started
 Prisma schema loaded from prisma\schema.prisma
 
-✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 10.19s
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 2.58s
 
 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
 
-Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
 
 Prisma schema loaded from prisma\schema.prisma
-Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:52393"
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:50553"
 
 8 migrations found in prisma/migrations
 
@@ -44,49 +44,49 @@ migrations/
     └─ migration.sql
       
 All migrations have been successfully applied.
-✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 3432afde-1c78-4aa9-97d7-950dccf9f220
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id 66afec8a-1f09-4bca-9ce2-18dfc5b9383c
   Log in at /admin (or admin.localhost).
 ✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
 ✔ dev fixture payment account created (active)
 bun test v1.3.14 (0d9b296a)
 
 tests\step5b\mail-quota.test.ts:
-(pass) concurrent reservations share day/month ceilings and deduplicate opaque send IDs [8286.44ms]
-(pass) UTC calendar boundaries handle year rollover and leap day; past windows do not consume current quotas [1207.41ms]
-(pass) month refusal defers untouched job before attempt/claim/payload/first send; no transport call [2255.28ms]
-(pass) definitive first provider quota undoes only fresh attempt/marker and releases new reservations [2924.82ms]
-(pass) network ambiguity followed by quota preserves original retention, immutable retry body and conservative counts [2271.35ms]
-(pass) crash after reservation and after acceptance retries one reservation with identical body [2366.50ms]
-(pass) contact and order share gate/budget; busy contact stores no contents and makes no send [1729.45ms]
-(pass) stale worker fence after preparation blocks I/O; oversized attachments fail before send [1756.92ms]
-(pass) repeated settlement never releases accepted or already rejected budget twice [856.45ms]
-(pass) acceptance waiting on a job row leaves reservation locks available to reclaim [1334.37ms]
-(pass) a provider Retry-After later than daily reset postpones the gate without consuming a first attempt [1322.56ms]
-(pass) aggregate attachment budget fails before encryption/provider I/O and releases a fresh reservation [1165.67ms]
+(pass) concurrent reservations share day/month ceilings and deduplicate opaque send IDs [2568.59ms]
+(pass) UTC calendar boundaries handle year rollover and leap day; past windows do not consume current quotas [540.01ms]
+(pass) month refusal defers untouched job before attempt/claim/payload/first send; no transport call [889.38ms]
+(pass) definitive first provider quota undoes only fresh attempt/marker and releases new reservations [1277.43ms]
+(pass) network ambiguity followed by quota preserves original retention, immutable retry body and conservative counts [1504.64ms]
+(pass) crash after reservation and after acceptance retries one reservation with identical body [1544.80ms]
+(pass) contact and order share gate/budget; busy contact stores no contents and makes no send [931.52ms]
+(pass) stale worker fence after preparation blocks I/O; oversized attachments fail before send [1160.86ms]
+(pass) repeated settlement never releases accepted or already rejected budget twice [319.37ms]
+(pass) acceptance waiting on a job row leaves reservation locks available to reclaim [846.87ms]
+(pass) a provider Retry-After later than daily reset postpones the gate without consuming a first attempt [798.78ms]
+(pass) aggregate attachment budget fails before encryption/provider I/O and releases a fresh reservation [662.25ms]
 
 tests\step5b\measurements.test.ts:
-(pass) real ten-ticket payload and database size fit measured local bounds [27818.47ms]
+(pass) real ten-ticket payload and database size fit measured local bounds [17068.32ms]
 
 tests\step5b\privacy.test.ts:
-(pass) complete table inventory has RLS and provider roles lack table/sequence/routine access [6028.70ms]
-(pass) RLS still denies provider reads and writes after an accidental table grant [448.85ms]
-(pass) runtime is a nonowner restricted login with append-only ledgers and no migration/DDL access [673.53ms]
-(pass) actual migration guards reject elevated roles and unknown views, policies, grants and column grants [714.60ms]
+(pass) complete table inventory has RLS and provider roles lack table/sequence/routine access [1866.47ms]
+(pass) RLS still denies provider reads and writes after an accidental table grant [211.91ms]
+(pass) runtime is a nonowner restricted login with append-only ledgers and no migration/DDL access [403.11ms]
+(pass) actual migration guards reject elevated roles and unknown views, policies, grants and column grants [3581.77ms]
 
 tests\step5b\rate-limits.test.ts:
-(pass) independent connections and cold instance share one atomic first-request window [3377.74ms]
-(pass) HMAC canonical identities hide PII; mapped IPs agree without subnet collapse [250.57ms]
-(pass) database clock resets expired windows, ignores app clock skew and clamps saturated bigint [491.21ms]
-(pass) cleanup is bounded to 1000 expired rows, skips a locked row and preserves active counters [681.50ms]
-(pass) invalid policy, missing secret and unavailable backend never fall back to memory [2100.33ms]
+(pass) independent connections and cold instance share one atomic first-request window [2073.00ms]
+(pass) HMAC canonical identities hide PII; mapped IPs agree without subnet collapse [388.49ms]
+(pass) database clock resets expired windows, ignores app clock skew and clamps saturated bigint [407.70ms]
+(pass) cleanup is bounded to 1000 expired rows, skips a locked row and preserves active counters [974.46ms]
+(pass) invalid policy, missing secret and unavailable backend never fall back to memory [2448.67ms]
 
 tests\step5b\scheduler.test.ts:
-(pass) scheduler posts exactly two fixed authenticated targets with independent bounded no-redirect calls [1354.93ms]
-(pass) one failed scheduler target never prevents calling the other and errors stay fixed [0.55ms]
+(pass) scheduler posts exactly two fixed authenticated targets with independent bounded no-redirect calls [2190.10ms]
+(pass) one failed scheduler target never prevents calling the other and errors stay fixed [0.69ms]
 
  24 pass
  0 fail
- 207 expect() calls
-Ran 24 tests across 5 files. [141.97s]
-waiting for server to shut down............................................. done
+ 210 expect() calls
+Ran 24 tests across 5 files. [110.71s]
+waiting for server to shut down........................................... done
 server stopped

@@ -1,18 +1,24 @@
-# Silent Rave Batch B in progress
+# Silent Rave Batch B complete for code review
 
 2026-10-08, Africa/Lagos. User authorized "merge and continue next batch".
 PR #9 is squash-merged at b3e511525290c7b754ed995c77344954d1fd02c6.
 Post-merge exact-head CI 37698983388 attempt 2 passed Windows and Linux;
 first Linux attempt detected a spurious 1D barcode beside the correct PDF QR.
-Branch feat/step5c-shared-controls-release starts at the verified merge.
-Consolidated Batch B alone is authorized (5C.4/5C.5/5C.6), one focused PR.
-Shared rate controls, mail quotas, scheduler source, runtime privacy and polling
-are implemented. First control pass was 18 pass/2 fail from PrismaPromise assertion
-wrappers, now corrected; final verification is pending. Fixture setup/inspection
-and application connections are separated so HTTP and direct services run restricted.
-Type checks and additional drift/browser verification are underway. All old branches
-and Desktop preview packages remain preserved. No hosted changes or real sends.
-Finish isolated tests, required checks, PR/CI and final handoff, then stop for review.
+Branch feat/step5c-shared-controls-release, PR #10:
+https://github.com/tochigit/silent-rave/pull/10.
+Consolidated Batch B (5C.4/5C.5/5C.6) is implemented: shared rate controls,
+mail quotas, scheduler source, runtime privacy/RLS, polling and release docs.
+Implementation head c307eb270a423e010c5e52bc67127fd2d1c848f0 passed CI
+37749443373 on Windows/Linux and GitGuardian. Each OS passed 221 restricted
+regression cases plus lint/types, policies, offline Netlify/native acceptance
+and migration preflights. Linux owned Chrome passed receipt/banner flows,
+59 polished preview checks and ten rendered polling checks. Latest local
+focused controls passed 24 tests/210 assertions; local polling passed ten checks.
+Earlier failed and incomplete attempts remain distinct in .docs/BATCH_B_REPORT.md.
+Publication head and final PR status are recorded in the Desktop
+Silent Rave - Batch B continuation.md; recheck them before any next action.
+All branches and preview packages are preserved. Mobile hamburger and white/dark
+preference remain. No hosted changes, deployment or real sends. Stop for review.
 Do not merge Batch B or enter Batch C/D. readyForLaunch=false remains.
 
 ## Historical visual polish checkpoint

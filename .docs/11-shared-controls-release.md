@@ -2,8 +2,9 @@
 
 Batch B combines 5C.4, 5C.5 and 5C.6 on `feat/step5c-shared-controls-release`.
 It follows PR #9's authorized merge `b3e511525290c7b754ed995c77344954d1fd02c6`.
-Code and verification are in progress; [the batch report](BATCH_B_REPORT.md)
-records completed, failed and pending evidence. Launch remains blocked.
+Code is complete for review; [the batch report](BATCH_B_REPORT.md) records passing
+Windows/Linux CI and browser checks, earlier failures and remaining hosted gates.
+Batch B remains unmerged. Launch remains blocked.
 
 The original poster, mint/purple identity, desktop links, mobile hamburger and
 remembered light/dark choice are preserved. Previous preview packages remain

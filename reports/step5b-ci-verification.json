@@ -1,0 +1,170 @@
+{
+    "verifiedImplementationHead":  "c307eb270a423e010c5e52bc67127fd2d1c848f0",
+    "mainBaseline":  "b3e511525290c7b754ed995c77344954d1fd02c6",
+    "scope":  "Disposable local/CI fixtures and owned browsers; publication head is recorded in Desktop handoff and PR #10.",
+    "run":  {
+                "id":  37749443373,
+                "attempt":  1,
+                "conclusion":  "success",
+                "url":  "https://github.com/tochigit/silent-rave/actions/runs/37749443373",
+                "completedAt":  "2026-10-08T08:29:36Z"
+            },
+    "jobs":  [
+                 {
+                     "id":  113218782174,
+                     "name":  "Verify (linux)",
+                     "conclusion":  "success",
+                     "url":  "https://github.com/tochigit/silent-rave/actions/runs/37749443373/job/113218782174",
+                     "regressionPassed":  221,
+                     "regressionFailed":  0,
+                     "regressionGroups":  [
+                                              112,
+                                              33,
+                                              15,
+                                              14,
+                                              6,
+                                              13,
+                                              24,
+                                              1,
+                                              1,
+                                              2
+                                          ],
+                     "conditionalSkips":  2,
+                     "readinessPassed":  8,
+                     "runtimePolicyPassed":  8,
+                     "successfulSteps":  [
+                                             "Set up job",
+                                             "Run actions/checkout@v4",
+                                             "Run actions/setup-node@v4",
+                                             "Run oven-sh/setup-bun@v2",
+                                             "Install locked dependencies with Bun",
+                                             "Run bun run db:generate",
+                                             "Run bun run lint",
+                                             "Run bun run typecheck",
+                                             "Build isolated client preview",
+                                             "Run bun --no-env-file run test:readiness",
+                                             "Run bun --no-env-file run test:runtime-policy",
+                                             "Run bun --no-env-file run check:route-policy",
+                                             "Run actions/setup-python@v5",
+                                             "Run python -m pip install -r scripts/requirements-pdf-test.txt",
+                                             "Run bun run scanner:build",
+                                             "Run bun --no-env-file scripts/install-netlify-tools.ts",
+                                             "Run bun --no-env-file scripts/build-netlify-offline.ts",
+                                             "Run bun --no-env-file scripts/verify-netlify-artifacts.ts",
+                                             "Run bun --no-env-file scripts/verify-netlify-node.ts",
+                                             "Run bun --no-env-file run db:preflight",
+                                             "Run bun --no-env-file run db:preflight-storage",
+                                             "Run bun --no-env-file run test:step5b",
+                                             "Install pinned owned browser test client",
+                                             "Verify receipt and banner flows in owned Chrome",
+                                             "Verify static client preview in owned Chrome",
+                                             "Verify rendered polling behavior in owned Chrome",
+                                             "Run actions/upload-artifact@v4",
+                                             "Post Run actions/setup-python@v5",
+                                             "Post Run oven-sh/setup-bun@v2",
+                                             "Post Run actions/setup-node@v4",
+                                             "Post Run actions/checkout@v4",
+                                             "Complete job"
+                                         ],
+                     "skippedSteps":  [
+                                          "Install locked dependencies with npm"
+                                      ]
+                 },
+                 {
+                     "id":  113218782419,
+                     "name":  "Verify (win32)",
+                     "conclusion":  "success",
+                     "url":  "https://github.com/tochigit/silent-rave/actions/runs/37749443373/job/113218782419",
+                     "regressionPassed":  221,
+                     "regressionFailed":  0,
+                     "regressionGroups":  [
+                                              112,
+                                              33,
+                                              15,
+                                              14,
+                                              6,
+                                              13,
+                                              24,
+                                              1,
+                                              1,
+                                              2
+                                          ],
+                     "conditionalSkips":  2,
+                     "readinessPassed":  8,
+                     "runtimePolicyPassed":  8,
+                     "successfulSteps":  [
+                                             "Set up job",
+                                             "Run actions/checkout@v4",
+                                             "Run actions/setup-node@v4",
+                                             "Run oven-sh/setup-bun@v2",
+                                             "Install locked dependencies with npm",
+                                             "Run bun run db:generate",
+                                             "Run bun run lint",
+                                             "Run bun run typecheck",
+                                             "Build isolated client preview",
+                                             "Run bun --no-env-file run test:readiness",
+                                             "Run bun --no-env-file run test:runtime-policy",
+                                             "Run bun --no-env-file run check:route-policy",
+                                             "Run actions/setup-python@v5",
+                                             "Run python -m pip install -r scripts/requirements-pdf-test.txt",
+                                             "Run bun run scanner:build",
+                                             "Run bun --no-env-file scripts/install-netlify-tools.ts",
+                                             "Run bun --no-env-file scripts/build-netlify-offline.ts",
+                                             "Run bun --no-env-file scripts/verify-netlify-artifacts.ts",
+                                             "Run bun --no-env-file scripts/verify-netlify-node.ts",
+                                             "Run bun --no-env-file run db:preflight",
+                                             "Run bun --no-env-file run db:preflight-storage",
+                                             "Run bun --no-env-file run test:step5b",
+                                             "Run actions/upload-artifact@v4",
+                                             "Post Run actions/setup-python@v5",
+                                             "Post Run oven-sh/setup-bun@v2",
+                                             "Post Run actions/setup-node@v4",
+                                             "Post Run actions/checkout@v4",
+                                             "Complete job"
+                                         ],
+                     "skippedSteps":  [
+                                          "Install locked dependencies with Bun",
+                                          "Install pinned owned browser test client",
+                                          "Verify receipt and banner flows in owned Chrome",
+                                          "Verify static client preview in owned Chrome",
+                                          "Verify rendered polling behavior in owned Chrome"
+                                      ]
+                 }
+             ],
+    "secretScan":  {
+                       "name":  "GitGuardian Security Checks",
+                       "conclusion":  "success",
+                       "url":  "https://github.com/tochigit/silent-rave/runs/113218763230"
+                   },
+    "linuxBrowser":  {
+                         "receiptAndBanner":  "PASS",
+                         "polishedPreviewChecks":  59,
+                         "renderedPollingChecks":  10,
+                         "physicalDeviceVerified":  false,
+                         "hostedVerified":  false
+                     },
+    "localWindows":  {
+                         "focusedControlsPassed":  24,
+                         "focusedControlsFailed":  0,
+                         "assertions":  210,
+                         "renderedPollingChecks":  10,
+                         "fullRegression":  "INCOMPLETE: local setup/readiness attempts timed out; complete regression passed in CI."
+                     },
+    "artifacts":  [
+                      {
+                          "id":  11537885328,
+                          "name":  "step5b-evidence-linux",
+                          "bytes":  18619834,
+                          "digest":  "sha256:f01104c59a239376db8515664b0be14d98be01992ef7c93c0980e81b301b69c0",
+                          "expired":  false
+                      },
+                      {
+                          "id":  11537104383,
+                          "name":  "step5b-evidence-win32",
+                          "bytes":  16984373,
+                          "digest":  "sha256:75c654880ae570079596917312ccdaf3cee80bca95825d68325f456d8ccc01c4",
+                          "expired":  false
+                      }
+                  ],
+    "readyForLaunch":  false
+}
