@@ -466,11 +466,26 @@ export async function submitProof(input: SubmitProofInput): Promise<SubmitProofR
     return result;
   } catch (error) {
     await storageFailed(storagePath, error);
+    // RLS can redact the key/constraint hint from a unique-violation DETAIL.
+    // Resolve that conflict after rollback through the same restricted client.
+    // The database index remains the authoritative concurrent write guard.
+    let referenceCollision = false;
+    if (isUniqueViolation(error)) {
+      const replay = await db.paymentProof.findUnique({
+        where: { orderId_clientSubmissionId: { orderId: order.id, clientSubmissionId: input.clientSubmissionId } },
+        select: { id: true },
+      });
+      if (replay) return submitProof(input);
+      referenceCollision = !!(await db.paymentProof.findFirst({
+        where: { transferReference, status: { in: ["PENDING", "APPROVED"] } },
+        select: { id: true },
+      }));
+    }
     // transfer_reference collision on the partial unique index → 409 + system
     // audit entry. Written AFTER the rollback, outside the transaction.
     // (Postgres 23505 messages name the COLUMN, not the partial index —
     // "Key (transfer_reference)=(…) already exists" — so we match on that.)
-    if (isUniqueViolationOn(error, "transfer_reference")) {
+    if (referenceCollision || isUniqueViolationOn(error, "transfer_reference")) {
       await writeAudit(db, {
         actorId: null,
         action: "PROOF_DUPLICATE_REFERENCE_ATTEMPT",
@@ -556,6 +571,11 @@ async function insertProofRow(
  * already exists"; P2002 is the ORM path). Column hints are unambiguous
  * across the partial/composite indexes on payment_proofs and email_jobs.
  */
+function isUniqueViolation(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError &&
+    (error.code === "P2002" || (error.code === "P2010" && error.meta?.code === "23505"));
+}
+
 function isUniqueViolationOn(error: unknown, columnHint: string): boolean {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     const message = String(
