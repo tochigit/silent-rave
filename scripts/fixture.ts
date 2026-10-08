@@ -287,8 +287,7 @@ export async function startFixture(
     }
     await runCommand(
       [
-        process.execPath,
-        "--no-env-file",
+        "node",
         "node_modules/prisma/build/index.js",
         "generate",
       ],
@@ -327,8 +326,7 @@ export async function startFixture(
     }
     await runCommand(
       [
-        process.execPath,
-        "--no-env-file",
+        "node",
         "node_modules/prisma/build/index.js",
         "migrate",
         "deploy",
