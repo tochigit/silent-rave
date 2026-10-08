@@ -118,7 +118,7 @@ export async function consumeRateLimit(
     const rows = await client.$queryRaw<
       Array<{ count: bigint; retry: number }>
     >(Prisma.sql`
-      WITH instant AS MATERIALIZED (SELECT clock_timestamp() AS value), consumed AS (
+      WITH instant AS MATERIALIZED (SELECT clock_timestamp()::timestamptz(3) AS value), consumed AS (
         INSERT INTO public.rate_limit_windows (bucket_name, key_hmac, count, reset_at)
         SELECT ${bucket}, ${identity}, 1, value + ${options.windowMs} * interval '1 millisecond' FROM instant
         ON CONFLICT (bucket_name, key_hmac) DO UPDATE SET
