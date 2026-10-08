@@ -422,14 +422,19 @@ test("acceptance waiting on a job row leaves reservation locks available to recl
   try {
     await db.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM public.email_jobs WHERE id=${j.id}::uuid FOR UPDATE`;
+      // Prime the observer before the worker resumes: a transaction keeps its
+      // activity snapshot until explicitly cleared, even while a peer changes.
+      await tx.$queryRaw`SELECT count(*) FROM pg_stat_activity`;
       release();
       let blocked = false;
       const deadline = Date.now() + 3000;
       while (Date.now() < deadline) {
+        await tx.$executeRaw`SELECT pg_stat_clear_snapshot()`;
         const [row] = await tx.$queryRaw<
           Array<{ blocked: boolean }>
         >`SELECT EXISTS(
           SELECT 1 FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND wait_event_type='Lock'
+            AND pg_backend_pid()=ANY(pg_blocking_pids(pid))
             AND query LIKE '%email_jobs%') AS blocked`;
         if (row.blocked) {
           blocked = true;
