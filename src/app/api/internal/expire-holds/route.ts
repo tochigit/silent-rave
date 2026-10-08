@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { expireHolds } from "@/lib/orders/expiry";
+import { cleanupRateLimits } from "@/lib/rate-limit";
+import { cleanupMailQuotas } from "@/lib/email/quota";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/internal/expire-holds (03 "Internal / background jobs" v2.1).
@@ -18,20 +23,27 @@ import { expireHolds } from "@/lib/orders/expiry";
 export async function POST(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
-    console.error("[internal/expire-holds] CRON_SECRET is not configured — refusing.");
+    console.error(
+      "[internal/expire-holds] CRON_SECRET is not configured — refusing.",
+    );
     return NextResponse.json({ error: "Not configured." }, { status: 500 });
   }
 
   const presented = request.headers.get("x-cron-secret") ?? "";
   const expected = Buffer.from(secret, "utf8");
   const given = Buffer.from(presented, "utf8");
-  const ok = expected.length === given.length && expected.length > 0 && timingSafeEqual(expected, given);
+  const ok =
+    expected.length === given.length &&
+    expected.length > 0 &&
+    timingSafeEqual(expected, given);
   if (!ok) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
   try {
     const result = await expireHolds();
+    await cleanupRateLimits();
+    await cleanupMailQuotas();
     return NextResponse.json({ expired: result.expired }, { status: 200 });
   } catch (error) {
     console.error("[internal/expire-holds] sweep failed");

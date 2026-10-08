@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { db } from "@/lib/db";
+import { db } from "./fixture-db";
 import { api, login, OWNER_EMAIL, OWNER_PASSWORD } from "./phase3b/helpers";
 import { orderFixture } from "./phase4/fixtures";
 test("real HTTP approve/reject succeed with kicks enabled and worker configuration failure", async () => {

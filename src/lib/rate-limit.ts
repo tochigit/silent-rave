@@ -1,77 +1,169 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Minimal in-memory sliding-window rate limiter. No Redis (per spec: no extra
-// middleware at this scale), no DB write on the hot path.
-//
-// WHERE THE LIMITER STATE LIVES: a module-level Map inside the Node server
-// process. Consequences (accepted for v1, documented): per-process only —
-// resets on server restart and is NOT shared across instances. This is fine
-// for the v1 deployment shape (single app server); a multi-instance deploy
-// would need a shared store before these limits mean anything globally.
-// The authoritative protections are elsewhere (transfer-reference
-// uniqueness, DB CHECK constraints, signature/token checks) — these limits
-// only blunt abuse.
-//
-// Consumers (manual-payment phase):
-//   • login route            — 10 attempts / 10 min / per email
-//   • checkout initialize    — per-IP 10/hour (INITIALIZE_IP_RATE_LIMIT_PER_HOUR)
-//   • proof submission       — per-IP 30/hour
-//   • orders lookup          — per-IP 10/hour + per-order-code 3/hour
-// ─────────────────────────────────────────────────────────────────────────────
+import { createHmac } from "node:crypto";
+import { Prisma, type PrismaClient } from "@prisma/client";
+import { db } from "./db";
+import { privateHeaders } from "./auth/policy";
+import { localMode } from "./hosting/config";
+import { readTrustedContextNode } from "./hosting/request-context-node";
 
-type Bucket = { count: number; resetAt: number };
-
-const buckets = new Map<string, Bucket>();
-
-function pruneExpired(now: number): void {
-  for (const [key, bucket] of buckets) {
-    if (bucket.resetAt <= now) buckets.delete(key);
+const policy = {
+  login: [10, 600000],
+  "checkout-initialize-ip": [10, 3600000],
+  "proof-submit-ip": [30, 3600000],
+  "lookup-ip": [10, 3600000],
+  "lookup-code": [3, 3600000],
+  "contact-ip": [5, 3600000],
+  "password-change": [5, 600000],
+  scanner: [300, 60000],
+  places: [60, 60000],
+} as const;
+export type RateLimitOptions = { limit: number; windowMs: number };
+export type RateLimitResult = { limited: boolean; retryAfterSec: number };
+export class RateLimitUnavailableError extends Error {
+  constructor() {
+    super("RATE_LIMIT_UNAVAILABLE");
   }
 }
 
-export type RateLimitOptions = {
-  /** Max requests within the window. */
-  limit: number;
-  /** Window length in milliseconds. */
-  windowMs: number;
-};
-
-export type RateLimitResult = {
-  /** true = the request is over the limit and must be rejected. */
-  limited: boolean;
-  /** Seconds until the bucket resets (for the Retry-After header). */
-  retryAfterSec: number;
-};
-
-/**
- * Consume one request from the named bucket (e.g. "checkout-email", "login").
- * Increments the counter even when returning over-limit — a hammering client
- * never "waits off" the limit by continuing to hit it.
- */
-export function consumeRateLimit(
-  bucketName: string,
+/** Canonical address, including IPv4-mapped IPv6, without subnet aggregation. */
+export function normalizeIp(value: string): string {
+  if (
+    /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value) &&
+    value.split(".").every((n) => +n <= 255)
+  )
+    return value.split(".").map(Number).join(".");
+  if (!/^[a-f0-9:.]+$/i.test(value) || !value.includes(":"))
+    throw new RateLimitUnavailableError();
+  let ip: string;
+  try {
+    ip = new URL(`http://[${value}]/`).hostname.slice(1, -1);
+  } catch {
+    throw new RateLimitUnavailableError();
+  }
+  const mapped = /^::ffff:([a-f0-9]+):([a-f0-9]+)$/.exec(ip);
+  if (mapped) {
+    const a = parseInt(mapped[1], 16),
+      b = parseInt(mapped[2], 16);
+    return [a >> 8, a & 255, b >> 8, b & 255].join(".");
+  }
+  return ip;
+}
+export function rateLimitIp(request: Request): string {
+  try {
+    return normalizeIp(readTrustedContextNode(request).clientIp);
+  } catch {
+    throw new RateLimitUnavailableError();
+  }
+}
+export function rateLimitIdentity(
+  bucket: string,
   key: string,
-  { limit, windowMs }: RateLimitOptions
-): RateLimitResult {
-  const now = Date.now();
-  if (buckets.size > 5000) pruneExpired(now);
-
-  const compositeKey = `${bucketName}:${key}`;
-  const existing = buckets.get(compositeKey);
-
-  if (!existing || existing.resetAt <= now) {
-    buckets.set(compositeKey, { count: 1, resetAt: now + windowMs });
-    return { limited: false, retryAfterSec: Math.ceil(windowMs / 1000) };
-  }
-
-  existing.count += 1;
-  const retryAfterSec = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
-  return { limited: existing.count > limit, retryAfterSec };
+  secret = process.env.RATE_LIMIT_SECRET,
+): string {
+  if (
+    !secret ||
+    !/^[A-Za-z0-9_-]{43}$/.test(secret) ||
+    Buffer.from(secret, "base64url").toString("base64url") !== secret
+  )
+    throw new RateLimitUnavailableError();
+  const normalized = bucket.endsWith("-ip")
+    ? normalizeIp(key)
+    : bucket === "lookup-code"
+      ? key.trim().toUpperCase()
+      : key.trim().toLowerCase();
+  if (!normalized || normalized.length > 320)
+    throw new RateLimitUnavailableError();
+  return createHmac("sha256", Buffer.from(secret, "base64url"))
+    .update(JSON.stringify([1, bucket, normalized]))
+    .digest("hex");
 }
-
-/** 429 response helper with the standard Retry-After header. */
+const memory = new Map<string, { count: number; resetAt: number }>();
+export async function consumeRateLimit(
+  bucket: string,
+  key: string,
+  options: RateLimitOptions,
+  client: PrismaClient = db,
+): Promise<RateLimitResult> {
+  try {
+    const expected = policy[bucket as keyof typeof policy];
+    if (
+      !expected ||
+      !Number.isSafeInteger(options.limit) ||
+      options.limit < 1 ||
+      options.limit > 1000000 ||
+      options.windowMs !== expected[1] ||
+      (bucket !== "checkout-initialize-ip" && options.limit !== expected[0])
+    )
+      throw new RateLimitUnavailableError();
+    const identity = rateLimitIdentity(bucket, key);
+    if (process.env.RATE_LIMIT_DRIVER === "memory") {
+      if (!localMode()) throw new RateLimitUnavailableError();
+      const now = Date.now(),
+        id = `${bucket}:${identity}`;
+      if (memory.size > 5000)
+        for (const [name, row] of memory)
+          if (row.resetAt <= now) memory.delete(name);
+      let row = memory.get(id);
+      if (!row || row.resetAt <= now) {
+        row = { count: 0, resetAt: now + options.windowMs };
+        memory.set(id, row);
+      }
+      row.count = Math.min(Number.MAX_SAFE_INTEGER, row.count + 1);
+      return {
+        limited: row.count > options.limit,
+        retryAfterSec: Math.max(1, Math.ceil((row.resetAt - now) / 1000)),
+      };
+    }
+    if (process.env.RATE_LIMIT_DRIVER !== "postgres")
+      throw new RateLimitUnavailableError();
+    const rows = await client.$queryRaw<
+      Array<{ count: bigint; retry: number }>
+    >(Prisma.sql`
+      WITH instant AS MATERIALIZED (SELECT clock_timestamp() AS value), consumed AS (
+        INSERT INTO public.rate_limit_windows (bucket_name, key_hmac, count, reset_at)
+        SELECT ${bucket}, ${identity}, 1, value + ${options.windowMs} * interval '1 millisecond' FROM instant
+        ON CONFLICT (bucket_name, key_hmac) DO UPDATE SET
+          count = CASE WHEN rate_limit_windows.reset_at <= (SELECT value FROM instant) THEN 1
+            ELSE LEAST(rate_limit_windows.count, 9223372036854775806::bigint) + 1 END,
+          reset_at = CASE WHEN rate_limit_windows.reset_at <= (SELECT value FROM instant)
+            THEN (SELECT value FROM instant) + ${options.windowMs} * interval '1 millisecond'
+            ELSE rate_limit_windows.reset_at END
+        RETURNING count, reset_at
+      ) SELECT count, GREATEST(1, ceil(extract(epoch FROM reset_at - value)))::int AS retry
+        FROM consumed CROSS JOIN instant
+    `);
+    if (!rows[0]) throw new RateLimitUnavailableError();
+    return {
+      limited: rows[0].count > BigInt(options.limit),
+      retryAfterSec: rows[0].retry,
+    };
+  } catch {
+    throw new RateLimitUnavailableError();
+  }
+}
+export async function cleanupRateLimits(
+  client: PrismaClient = db,
+): Promise<number> {
+  if (process.env.RATE_LIMIT_DRIVER === "memory" && localMode()) return 0;
+  if (process.env.RATE_LIMIT_DRIVER !== "postgres")
+    throw new RateLimitUnavailableError();
+  return client.$executeRaw`WITH expired AS (
+    SELECT bucket_name, key_hmac FROM public.rate_limit_windows WHERE reset_at <= statement_timestamp()
+    ORDER BY reset_at, bucket_name, key_hmac FOR UPDATE SKIP LOCKED LIMIT 1000
+  ) DELETE FROM public.rate_limit_windows w USING expired e
+    WHERE w.bucket_name = e.bucket_name AND w.key_hmac = e.key_hmac`;
+}
+export function rateLimitUnavailableResponse() {
+  return Response.json(
+    { error: "Service temporarily unavailable. Please retry later." },
+    { status: 503, headers: privateHeaders },
+  );
+}
 export function rateLimitResponse(retryAfterSec: number, message: string) {
-  return Response.json({ error: message }, {
-    status: 429,
-    headers: { "Retry-After": String(retryAfterSec) },
-  });
+  return Response.json(
+    { error: message },
+    {
+      status: 429,
+      headers: { ...privateHeaders, "Retry-After": String(retryAfterSec) },
+    },
+  );
 }

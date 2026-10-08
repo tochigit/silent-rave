@@ -1,0 +1,350 @@
+Fixture: isolated loopback PostgreSQL; root .env is untouched.
+waiting for server to start..... done
+server started
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to .\node_modules\@prisma\client in 1.81s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "silentrave_test", schema "public" at "127.0.0.1:52754"
+
+8 migrations found in prisma/migrations
+
+Applying migration `20260930000000_v2_1_baseline`
+Applying migration `20261002000000_phase4_email_state`
+Applying migration `20261002010000_step3_content_payment_snapshot`
+Applying migration `20261003000000_step4_staff_password`
+Applying migration `20261006000000_step5_storage_accounting`
+Applying migration `20261008000000_step5_shared_rate_limits`
+Applying migration `20261008000100_step5_mail_quotas`
+Applying migration `20261008000200_step5_private_runtime`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260930000000_v2_1_baseline/
+    └─ migration.sql
+  └─ 20261002000000_phase4_email_state/
+    └─ migration.sql
+  └─ 20261002010000_step3_content_payment_snapshot/
+    └─ migration.sql
+  └─ 20261003000000_step4_staff_password/
+    └─ migration.sql
+  └─ 20261006000000_step5_storage_accounting/
+    └─ migration.sql
+  └─ 20261008000000_step5_shared_rate_limits/
+    └─ migration.sql
+  └─ 20261008000100_step5_mail_quotas/
+    └─ migration.sql
+  └─ 20261008000200_step5_private_runtime/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+✔ OWNER account created: owner@silentrave.ng (Fixture Owner) — id ea44739b-6fc2-42cf-9446-359c081052f0
+  Log in at /admin (or admin.localhost).
+✔ dev fixture event created: dev-fixture-silent-rave (Early Bird ×30 @ ₦5,000, Regular ×50 @ ₦10,000 — confirmed date)
+✔ dev fixture payment account created (active)
+bun test v1.3.14 (0d9b296a)
+
+tests\step5b\mail-quota.test.ts:
+(pass) concurrent reservations share day/month ceilings and deduplicate opaque send IDs [1531.25ms]
+(pass) UTC calendar boundaries handle year rollover and leap day; past windows do not consume current quotas [346.23ms]
+(pass) month refusal defers untouched job before attempt/claim/payload/first send; no transport call [645.75ms]
+(pass) definitive first provider quota undoes only fresh attempt/marker and releases new reservations [1057.35ms]
+(pass) network ambiguity followed by quota preserves original retention, immutable retry body and conservative counts [1257.30ms]
+(pass) crash after reservation and after acceptance retries one reservation with identical body [2548.35ms]
+(pass) contact and order share gate/budget; busy contact stores no contents and makes no send [966.75ms]
+(pass) stale worker fence after preparation blocks I/O; oversized attachments fail before send [1879.39ms]
+(pass) repeated settlement never releases accepted or already rejected budget twice [517.87ms]
+
+tests\step5b\measurements.test.ts:
+(pass) real ten-ticket payload and database size fit measured local bounds [11747.91ms]
+
+tests\step5b\privacy.test.ts:
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table _prisma_migrations`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table audit_log_entries`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table check_in_scans`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table email_jobs`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table email_worker_gate`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table events`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table mail_quota_windows`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table mail_send_reservations`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table order_line_items`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table orders`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table organizers`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table payment_accounts`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table payment_proofs`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table push_subscriptions`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table rate_limit_windows`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table sessions`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table site_pages`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table staff_users`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table storage_objects`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table ticket_tiers`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table ticket_units`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table venues`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table _prisma_migrations`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table audit_log_entries`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table check_in_scans`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table email_jobs`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table email_worker_gate`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table events`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table mail_quota_windows`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table mail_send_reservations`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table order_line_items`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table orders`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table organizers`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table payment_accounts`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table payment_proofs`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table push_subscriptions`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table rate_limit_windows`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table sessions`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table site_pages`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table staff_users`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table storage_objects`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table ticket_tiers`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table ticket_units`
+prisma:error 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `ERROR: permission denied for table venues`
+(pass) complete table inventory has RLS and provider roles lack table/sequence/routine access [550.76ms]
+22 | test("RLS still denies provider reads and writes after an accidental table grant", async () => {
+23 |   try { await db.$transaction(async tx => {
+24 |     await tx.$executeRawUnsafe("GRANT SELECT,INSERT ON public.organizers TO anon");
+25 |     await tx.$executeRawUnsafe("SET LOCAL ROLE anon");
+26 |     expect(await tx.organizer.count()).toBe(0);
+27 |     await expect(tx.organizer.create({ data: { name: "must be denied" } })).rejects.toThrow();
+                                                                                         ^
+error: 
+
+Expected promise
+Received: PrismaPromise {
+  spec: [Getter],
+  then: [Function: then],
+  catch: [Function: catch],
+  finally: [Function: finally],
+  requestTransaction: [Function: requestTransaction],
+  [Symbol(Symbol.toStringTag)]: "PrismaPromise",
+}
+
+      at <anonymous> (C:\Users\Tochi\Desktop\Silent Rave\tests\step5b\privacy.test.ts:27:85)
+      at async _transactionWithCallback (C:\Users\Tochi\Desktop\Silent Rave\node_modules\@prisma\client\runtime\library.js:130:8126)
+      at async <anonymous> (C:\Users\Tochi\Desktop\Silent Rave\tests\step5b\privacy.test.ts:23:18)
+(fail) RLS still denies provider reads and writes after an accidental table grant [13.47ms]
+34 | test("runtime is a nonowner restricted login with append-only ledgers and no migration/DDL access", async () => {
+35 |   const [role] = await runtime.$queryRaw<Array<{ name: string; super: boolean; bypass: boolean }>>`SELECT current_user AS name,rolsuper AS super,rolbypassrls AS bypass FROM pg_roles WHERE rolname=current_user`;
+36 |   expect(role).toEqual({ name: "fixture_runtime", super: false, bypass: false });
+37 |   expect(await runtime.event.count()).toBeGreaterThan(0);
+38 |   for (const table of ["order_line_items", "audit_log_entries", "check_in_scans"]) {
+39 |     await expect(runtime.$executeRawUnsafe(`UPDATE public.${table} SET id=id`)).rejects.toThrow();
+                                                                                             ^
+error: 
+
+Expected promise
+Received: PrismaPromise {
+  spec: [Getter],
+  then: [Function: then],
+  catch: [Function: catch],
+  finally: [Function: finally],
+  requestTransaction: [Function: requestTransaction],
+  [Symbol(Symbol.toStringTag)]: "PrismaPromise",
+}
+
+      at <anonymous> (C:\Users\Tochi\Desktop\Silent Rave\tests\step5b\privacy.test.ts:39:89)
+(fail) runtime is a nonowner restricted login with append-only ledgers and no migration/DDL access [166.61ms]
+
+tests\step5b\rate-limits.test.ts:
+(pass) independent connections and cold instance share one atomic first-request window [1130.10ms]
+(pass) HMAC canonical identities hide PII; mapped IPs agree without subnet collapse [1.57ms]
+(pass) database clock resets expired windows, ignores app clock skew and clamps saturated bigint [243.84ms]
+(pass) cleanup is bounded to 1000 expired rows, skips a locked row and preserves active counters [415.08ms]
+(pass) invalid policy, missing secret and unavailable backend never fall back to memory [1023.81ms]
+
+tests\step5b\scheduler.test.ts:
+(pass) scheduler posts exactly two fixed authenticated targets with independent bounded no-redirect calls [1.12ms]
+(pass) one failed scheduler target never prevents calling the other and errors stay fixed [0.37ms]
+
+ 18 pass
+ 2 fail
+ 152 expect() calls
+Ran 20 tests across 5 files. [123.82s]
+waiting for server to shut down.......................................... done
+server stopped

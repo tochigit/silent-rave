@@ -1,9 +1,14 @@
-import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { kickEmailJobs } from "@/lib/email/kick";
 import { dispatchOwnerPush } from "@/lib/operations/push";
 import { NextResponse, type NextRequest, after } from "next/server";
 import { PROOF_IP_RATE_PER_HOUR, STATUS_TOKEN_HEADER } from "@/lib/constants";
-import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  consumeRateLimit,
+  RateLimitUnavailableError,
+  rateLimitUnavailableResponse,
+  rateLimitIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { submitProof } from "@/lib/proofs/service";
 import { OrderServiceError } from "@/lib/orders/errors";
 import { imageMultipart, UploadError } from "@/lib/uploads/multipart";
@@ -38,75 +43,124 @@ import { privateHeaders } from "@/lib/auth/policy";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ code: string }> }
+  { params }: { params: Promise<{ code: string }> },
 ) {
-  const { code } = await params;
-
-  const ip = readTrustedContextNode(request).clientIp;
-  const limited = consumeRateLimit("proof-submit-ip", ip, {
-    limit: PROOF_IP_RATE_PER_HOUR,
-    windowMs: 60 * 60 * 1000,
-  });
-  if (limited.limited) {
-    return rateLimitResponse(limited.retryAfterSec, "Too many proof uploads from this network.");
-  }
-
-  let form: FormData;
   try {
-    form = await imageMultipart(request, "proof", { transfer_reference: 128, sender_name: 200, client_submission_id: 128 });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof UploadError ? error.message : "Could not parse the upload.", code: error instanceof UploadError ? error.code : "BAD_UPLOAD" }, { status: error instanceof UploadError ? error.status : 400, headers: privateHeaders });
-  }
+    const { code } = await params;
 
-  // The status_token (header or ?t=) is resolved BEFORE the service call but
-  // NOT rejected early: an empty token flows into submitProof, where the
-  // uniform unknown-code / wrong-token / missing-token check runs — all three
-  // cases share one code path and one response (see the header comment).
-  const statusToken =
-    request.headers.get(STATUS_TOKEN_HEADER) ?? request.nextUrl.searchParams.get("t") ?? "";
-
-  const file = form.get("proof");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "proof (image file) is required." }, { status: 422 });
-  }
-  const transferReference = String(form.get("transfer_reference") ?? "");
-  const senderName = String(form.get("sender_name") ?? "");
-  const clientSubmissionId = String(form.get("client_submission_id") ?? "");
-
-  let fileBytes: Buffer;
-  try {
-    fileBytes = Buffer.from(await file.arrayBuffer());
-  } catch {
-    return NextResponse.json({ error: "Could not read the uploaded file." }, { status: 422 });
-  }
-
-  try {
-    const result = await submitProof({
-      orderCode: code,
-      statusToken,
-      transferReference,
-      senderName,
-      clientSubmissionId,
-      fileBytes,
+    const ip = rateLimitIp(request);
+    const limited = await consumeRateLimit("proof-submit-ip", ip, {
+      limit: PROOF_IP_RATE_PER_HOUR,
+      windowMs: 60 * 60 * 1000,
     });
-    after(kickEmailJobs);
-    if (!result.idempotentReplay) after(() => dispatchOwnerPush(code));
+    if (limited.limited) {
+      return rateLimitResponse(
+        limited.retryAfterSec,
+        "Too many proof uploads from this network.",
+      );
+    }
 
-    const body: Record<string, unknown> = {
-      status: result.status,
-      attempt_no: result.attemptNo,
-    };
-    if (result.late) body.late = true;
-    if (result.idempotentReplay) body.idempotent_replay = true;
-    return NextResponse.json(body, { status: 200 });
+    let form: FormData;
+    try {
+      form = await imageMultipart(request, "proof", {
+        transfer_reference: 128,
+        sender_name: 200,
+        client_submission_id: 128,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof UploadError
+              ? error.message
+              : "Could not parse the upload.",
+          code: error instanceof UploadError ? error.code : "BAD_UPLOAD",
+        },
+        {
+          status: error instanceof UploadError ? error.status : 400,
+          headers: privateHeaders,
+        },
+      );
+    }
+
+    // The status_token (header or ?t=) is resolved BEFORE the service call but
+    // NOT rejected early: an empty token flows into submitProof, where the
+    // uniform unknown-code / wrong-token / missing-token check runs — all three
+    // cases share one code path and one response (see the header comment).
+    const statusToken =
+      request.headers.get(STATUS_TOKEN_HEADER) ??
+      request.nextUrl.searchParams.get("t") ??
+      "";
+
+    const file = form.get("proof");
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: "proof (image file) is required." },
+        { status: 422 },
+      );
+    }
+    const transferReference = String(form.get("transfer_reference") ?? "");
+    const senderName = String(form.get("sender_name") ?? "");
+    const clientSubmissionId = String(form.get("client_submission_id") ?? "");
+
+    let fileBytes: Buffer;
+    try {
+      fileBytes = Buffer.from(await file.arrayBuffer());
+    } catch {
+      return NextResponse.json(
+        { error: "Could not read the uploaded file." },
+        { status: 422 },
+      );
+    }
+
+    try {
+      const result = await submitProof({
+        orderCode: code,
+        statusToken,
+        transferReference,
+        senderName,
+        clientSubmissionId,
+        fileBytes,
+      });
+      after(kickEmailJobs);
+      if (!result.idempotentReplay) after(() => dispatchOwnerPush(code));
+
+      const body: Record<string, unknown> = {
+        status: result.status,
+        attempt_no: result.attemptNo,
+      };
+      if (result.late) body.late = true;
+      if (result.idempotentReplay) body.idempotent_replay = true;
+      return NextResponse.json(body, { status: 200 });
+    } catch (error) {
+      if (
+        error instanceof StorageUnavailableError ||
+        error instanceof StorageCollisionError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Image storage is temporarily unavailable. Your fields are saved; retry with the same submission.",
+            code: "STORAGE_UNAVAILABLE",
+          },
+          { status: 503, headers: privateHeaders },
+        );
+      }
+      if (error instanceof OrderServiceError) {
+        return NextResponse.json(
+          { error: error.message, code: error.code },
+          { status: error.httpStatus },
+        );
+      }
+      console.error("[orders/proof] unexpected error");
+      return NextResponse.json(
+        { error: "Proof submission failed unexpectedly." },
+        { status: 500 },
+      );
+    }
   } catch (error) {
-    if (error instanceof StorageUnavailableError || error instanceof StorageCollisionError) {
-      return NextResponse.json({ error: "Image storage is temporarily unavailable. Your fields are saved; retry with the same submission.", code: "STORAGE_UNAVAILABLE" }, { status: 503, headers: privateHeaders });
-    }
-    if (error instanceof OrderServiceError) {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: error.httpStatus });
-    }
-    console.error("[orders/proof] unexpected error");
-    return NextResponse.json({ error: "Proof submission failed unexpectedly." }, { status: 500 });
+    if (error instanceof RateLimitUnavailableError)
+      return rateLimitUnavailableResponse();
+    throw error;
   }
 }

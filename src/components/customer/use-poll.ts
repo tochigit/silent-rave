@@ -5,10 +5,12 @@ export function usePoll<T>(
   {
     token,
     interval = 8000,
+    enabled = true,
     terminal = () => false,
   }: {
     token?: string;
-    interval?: number;
+    interval?: number | ((data: T | null) => number);
+    enabled?: boolean;
     terminal?: (data: T) => boolean;
   } = {},
 ) {
@@ -17,17 +19,28 @@ export function usePoll<T>(
   const [notFound, setNotFound] = useState(false);
   const [version, setVersion] = useState(0);
   const terminalRef = useRef(terminal);
+  const intervalRef = useRef(interval);
+  const latestRef = useRef<{ url: string; token?: string; data: T | null }>({
+    url,
+    token,
+    data: null,
+  });
   useEffect(() => {
     terminalRef.current = terminal;
-  }, [terminal]);
+    intervalRef.current = interval;
+  }, [terminal, interval]);
   const refresh = useCallback(() => setVersion((n) => n + 1), []);
   useEffect(() => {
+    if (!enabled) return;
+    if (latestRef.current.url !== url || latestRef.current.token !== token)
+      latestRef.current = { url, token, data: null };
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let controller: AbortController | undefined;
     let failures = 0;
     let stopped = false;
     let generation = 0;
+    let latest = latestRef.current.data;
     async function poll() {
       if (!active || stopped || document.hidden) return;
       const current = ++generation;
@@ -49,6 +62,8 @@ export function usePoll<T>(
         const value: T = await r.json();
         if (!active || current !== generation) return;
         setData(value);
+        latest = value;
+        latestRef.current = { url, token, data: value };
         setError("");
         setNotFound(false);
         failures = 0;
@@ -62,8 +77,16 @@ export function usePoll<T>(
         }
       } finally {
         clearTimeout(timeout);
-        if (active && current === generation && !stopped && !document.hidden)
-          timer = setTimeout(poll, Math.min(60000, interval * 2 ** failures));
+        if (active && current === generation && !stopped && !document.hidden) {
+          const base =
+            typeof intervalRef.current === "function"
+              ? intervalRef.current(latest)
+              : intervalRef.current;
+          timer = setTimeout(
+            poll,
+            Math.min(60000, Math.max(1000, base) * 2 ** failures),
+          );
+        }
       }
     }
     function visibility() {
@@ -81,6 +104,6 @@ export function usePoll<T>(
       controller?.abort();
       document.removeEventListener("visibilitychange", visibility);
     };
-  }, [url, token, interval, version]);
+  }, [url, token, enabled, version]);
   return { data, error, notFound, refresh };
 }

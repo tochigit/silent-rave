@@ -6,6 +6,6 @@
     "types": ["bun-types", "node"],
     "lib": ["dom", "dom.iterable", "dom.asynciterable", "esnext"]
   },
-  "include": ["scripts/**/*.ts", "tests/**/*.ts", "prisma/**/*.ts"],
+  "include": ["scripts/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx", "prisma/**/*.ts"],
   "exclude": ["node_modules"]
 }

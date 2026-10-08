@@ -1,9 +1,17 @@
 import "../phase3b/load-env";
-import { test, expect } from "bun:test";
-import { db } from "@/lib/db";
+import { beforeEach, test, expect } from "bun:test";
+import { db } from "../fixture-db";
 import { api } from "../phase3b/helpers";
 import { deliverContact } from "@/lib/content/contact";
 import type { EmailPayload } from "@/lib/email/transport";
+beforeEach(async () => {
+  const gate = await db.emailWorkerGate.findUniqueOrThrow({
+    where: { id: "email" },
+  });
+  const wait = gate.nextSendAt.getTime() - Date.now();
+  // Respect real shared send spacing between captured contact requests.
+  if (wait > 0 && wait <= 1000) await Bun.sleep(wait + 10);
+});
 test("public content reflects database edits, publication and exact allowlist", async () => {
   const before = await db.sitePage.findUniqueOrThrow({
     where: { slug: "about" },

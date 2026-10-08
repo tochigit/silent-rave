@@ -1,3 +1,22 @@
+# Silent Rave Batch B in progress
+
+2026-10-08, Africa/Lagos. User authorized "merge and continue next batch".
+PR #9 is squash-merged at b3e511525290c7b754ed995c77344954d1fd02c6.
+Post-merge exact-head CI 37698983388 attempt 2 passed Windows and Linux;
+first Linux attempt detected a spurious 1D barcode beside the correct PDF QR.
+Branch feat/step5c-shared-controls-release starts at the verified merge.
+Consolidated Batch B alone is authorized (5C.4/5C.5/5C.6), one focused PR.
+Shared rate controls, mail quotas, scheduler source, runtime privacy and polling
+are implemented. First control pass was 18 pass/2 fail from PrismaPromise assertion
+wrappers, now corrected; final verification is pending. Fixture setup/inspection
+and application connections are separated so HTTP and direct services run restricted.
+Type checks and additional drift/browser verification are underway. All old branches
+and Desktop preview packages remain preserved. No hosted changes or real sends.
+Finish isolated tests, required checks, PR/CI and final handoff, then stop for review.
+Do not merge Batch B or enter Batch C/D. readyForLaunch=false remains.
+
+## Historical visual polish checkpoint
+
 # Silent Rave final visual polish
 
 2026-10-07, Africa/Lagos. **FINAL POLISH LOCALLY VERIFIED; PR #9 UNMERGED.**

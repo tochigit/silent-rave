@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { buildEmailPayload } from "@/lib/email/templates";
 import { verifyStatusToken } from "@/lib/orders/status-token";
 import { approvedOrder } from "./fixtures";

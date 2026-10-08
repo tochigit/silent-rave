@@ -59,7 +59,7 @@ jobs:
       - run: bun --no-env-file scripts/verify-netlify-node.ts
       - run: bun --no-env-file run db:preflight
       - run: bun --no-env-file run db:preflight-storage
-      - run: bun --no-env-file run test:step5a
+      - run: bun --no-env-file run test:step5b
       - name: Install pinned owned browser test client
         if: matrix.platform == 'linux'
         run: npm install --prefix .test-runtime/browser-check --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright-core@1.58.2
@@ -75,15 +75,24 @@ jobs:
           export BROWSER_EXECUTABLE="$(command -v google-chrome)"
           test -n "$BROWSER_EXECUTABLE"
           node scripts/browser-client-preview.mjs
+      - name: Verify rendered polling behavior in owned Chrome
+        if: matrix.platform == 'linux'
+        run: |
+          export BROWSER_EXECUTABLE="$(command -v google-chrome)"
+          test -n "$BROWSER_EXECUTABLE"
+          node scripts/browser-polling.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: step5a-evidence-${{ matrix.platform }}
+          name: step5b-evidence-${{ matrix.platform }}
           path: |
             reports/step5c1-*-test-output.txt
             reports/step5c1-netlify-*-build.txt
             reports/step5c1-*-acceptance.json
             reports/step5a-*-test-output.txt
+            reports/step5b-*-test-output.txt
+            reports/step5b-*-measurements.json
+            reports/step5b-*-polling-browser.json
             reports/step5a-*-migration-backfill.txt
             reports/step5a-mobile-*.png
             reports/client-preview-build.json

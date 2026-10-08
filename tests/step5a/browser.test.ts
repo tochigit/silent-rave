@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { deriveStatusToken } from "@/lib/orders/status-token";
 import { orderFixture } from "../phase4/fixtures";
 import { login } from "../phase3b/helpers";

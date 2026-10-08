@@ -98,7 +98,7 @@ async function handle(
         });
       }
     } else if (request.method === "POST") {
-      const limit = consumeRateLimit("scanner", guard.user.id, {
+      const limit = await consumeRateLimit("scanner", guard.user.id, {
         limit: 300,
         windowMs: 60000,
       });

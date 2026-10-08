@@ -1,5 +1,11 @@
 # 02. Database Schema (Postgres)
 
+Batch B adds `rate_limit_windows`, `mail_quota_windows` and
+`mail_send_reservations`, plus `email_worker_gate.pause_reason`.
+Their schema, privacy, bounded maintenance and rollout contract is in
+[shared controls and release preparation](11-shared-controls-release.md).
+All original business entities and migration files are preserved.
+
 Conventions: `id` columns are UUID (`gen_random_uuid()`), timestamps are `timestamptz`, money is stored in **kobo** (integer, smallest NGN unit) to avoid floating-point currency bugs. All monetary integer columns are named `_kobo`.
 
 ## Entity overview

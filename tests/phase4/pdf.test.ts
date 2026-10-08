@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
 import { mkdir, writeFile } from "node:fs/promises";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { getTicketPdf, renderTicketPdf, ticketPdfInputs, lagosDate } from "@/lib/tickets/pdf";
 import QRCode from "qrcode";
 import { approvedOrder } from "./fixtures";

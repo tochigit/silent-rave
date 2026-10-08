@@ -1,7 +1,7 @@
 import "../phase3b/load-env";
 import { test, expect } from "bun:test";
 import { Webhook } from "svix";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { api, BASE } from "../phase3b/helpers";
 import { approvedOrder } from "./fixtures";
 async function post(event: unknown, opts: { time?: Date; invalid?: boolean; missing?: boolean } = {}) {

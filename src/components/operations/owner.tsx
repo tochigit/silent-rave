@@ -191,9 +191,18 @@ export function OwnerPanel({ section = ["payments"] }: { section?: string[] }) {
     `/api/admin/${resource}${id ? `/${id}` : ""}${query}`,
     { interval: 12000 },
   );
-  const auxiliary = usePoll<any>("/api/admin/organizers", { interval: 60000 });
-  const venues = usePoll<any>("/api/admin/venues", { interval: 60000 });
-  const events = usePoll<any>("/api/admin/events", { interval: 60000 });
+  const auxiliary = usePoll<any>("/api/admin/organizers", {
+    interval: 60000,
+    enabled: resource === "events" || resource === "pages",
+  });
+  const venues = usePoll<any>("/api/admin/venues", {
+    interval: 60000,
+    enabled: resource === "events",
+  });
+  const events = usePoll<any>("/api/admin/events", {
+    interval: 60000,
+    enabled: !id && ["orders", "reconciliation"].includes(resource),
+  });
   const notify = usePoll<any>("/api/admin/push/status", { interval: 60000 });
   const [notificationError, setNotificationError] = useState("");
   async function run(work: () => Promise<unknown>) {

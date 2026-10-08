@@ -1,11 +1,19 @@
-import { readTrustedContextNode } from "@/lib/hosting/request-context-node";
 import { kickEmailJobs } from "@/lib/email/kick";
 import { NextResponse, type NextRequest, after } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { LOOKUP_CODE_RATE_PER_HOUR, LOOKUP_IP_RATE_PER_HOUR } from "@/lib/constants";
-import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  LOOKUP_CODE_RATE_PER_HOUR,
+  LOOKUP_IP_RATE_PER_HOUR,
+} from "@/lib/constants";
+import {
+  consumeRateLimit,
+  RateLimitUnavailableError,
+  rateLimitUnavailableResponse,
+  rateLimitIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/orders/lookup (03-api-routes.md v2.1 as changed by CHANGELOG
@@ -43,58 +51,74 @@ function generic202(): NextResponse {
 }
 
 export async function POST(request: NextRequest) {
-  const ip = readTrustedContextNode(request).clientIp;
-  const ipLimited = consumeRateLimit("lookup-ip", ip, {
-    limit: LOOKUP_IP_RATE_PER_HOUR,
-    windowMs: 60 * 60 * 1000,
-  });
-  if (ipLimited.limited) {
-    return rateLimitResponse(ipLimited.retryAfterSec, "Too many lookups from this network.");
-  }
-
-  let json: unknown;
   try {
-    json = await request.json();
-  } catch {
-    return generic202(); // malformed body: same generic answer, no oracle
-  }
-  const parsed = bodySchema.safeParse(json);
-  if (!parsed.success) {
-    return generic202(); // validation failure: same generic answer
-  }
-
-  const { order_code, email } = parsed.data;
-
-  const codeLimited = consumeRateLimit("lookup-code", order_code.toUpperCase(), {
-    limit: LOOKUP_CODE_RATE_PER_HOUR,
-    windowMs: 60 * 60 * 1000,
-  });
-  if (codeLimited.limited) {
-    return rateLimitResponse(codeLimited.retryAfterSec, "Too many lookups for this order code.");
-  }
-
-  // The one and only SELECT — identical on match and non-match.
-  const order = await db.order.findUnique({
-    where: { orderCode: order_code },
-    select: { id: true, customerEmail: true },
-  });
-
-  if (order && order.customerEmail === email) {
-    // Fresh dedupe key every time (03: STATUS_LINK uses a fresh key).
-    await db.emailJob.create({
-      data: {
-        orderId: order.id,
-        kind: "STATUS_LINK",
-        dedupeKey: `statuslink-${randomUUID()}`,
-        recipientEmail: order.customerEmail,
-      },
+    const ip = rateLimitIp(request);
+    const ipLimited = await consumeRateLimit("lookup-ip", ip, {
+      limit: LOOKUP_IP_RATE_PER_HOUR,
+      windowMs: 60 * 60 * 1000,
     });
+    if (ipLimited.limited) {
+      return rateLimitResponse(
+        ipLimited.retryAfterSec,
+        "Too many lookups from this network.",
+      );
+    }
+
+    let json: unknown;
+    try {
+      json = await request.json();
+    } catch {
+      return generic202(); // malformed body: same generic answer, no oracle
+    }
+    const parsed = bodySchema.safeParse(json);
+    if (!parsed.success) {
+      return generic202(); // validation failure: same generic answer
+    }
+
+    const { order_code, email } = parsed.data;
+
+    const codeLimited = await consumeRateLimit(
+      "lookup-code",
+      order_code.toUpperCase(),
+      {
+        limit: LOOKUP_CODE_RATE_PER_HOUR,
+        windowMs: 60 * 60 * 1000,
+      },
+    );
+    if (codeLimited.limited) {
+      return rateLimitResponse(
+        codeLimited.retryAfterSec,
+        "Too many lookups for this order code.",
+      );
+    }
+
+    // The one and only SELECT — identical on match and non-match.
+    const order = await db.order.findUnique({
+      where: { orderCode: order_code },
+      select: { id: true, customerEmail: true },
+    });
+
+    if (order && order.customerEmail === email) {
+      // Fresh dedupe key every time (03: STATUS_LINK uses a fresh key).
+      await db.emailJob.create({
+        data: {
+          orderId: order.id,
+          kind: "STATUS_LINK",
+          dedupeKey: `statuslink-${randomUUID()}`,
+          recipientEmail: order.customerEmail,
+        },
+      });
+    }
+
+    // Flatten the timing difference the INSERT introduces (~1–3 ms) so the
+    // response time does not act as a match/non-match oracle.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    after(kickEmailJobs);
+    return generic202();
+  } catch (error) {
+    if (error instanceof RateLimitUnavailableError)
+      return rateLimitUnavailableResponse();
+    throw error;
   }
-
-  // Flatten the timing difference the INSERT introduces (~1–3 ms) so the
-  // response time does not act as a match/non-match oracle.
-  await new Promise((resolve) => setTimeout(resolve, 50));
-
-  after(kickEmailJobs);
-  return generic202();
 }

@@ -7,6 +7,11 @@ private order status/recovery, calendars and content/contact pages. Step 4 adds
 owner operations, invite-only staff and an online scanner with required offline
 preparation, signature verification and durable sync. Hosted integration and
 deployment remain Step 5. See
+ [.docs/11-shared-controls-release.md](.docs/11-shared-controls-release.md) for
+ shared limits, quota deferral, restricted database access and the current release
+ gates. `bun --no-env-file run test:step5b` runs the complete regression with each
+ app group using a restricted login and a fresh owned database; fixture setup
+ uses a separate operator connection. Hosted operation remains unverified. See
 [CHECKPOINT.md](CHECKPOINT.md) and [.docs/STEP4_REPORT.md](.docs/STEP4_REPORT.md)
 for verification and review status; [.docs/PHASE4_REPORT.md](.docs/PHASE4_REPORT.md)
 preserves the completed backend evidence and launch checklist.
@@ -20,6 +25,8 @@ are checked by CI. Then run:
 
 ```sh
 bun --no-env-file run test:step4
+ bun --no-env-file run test:step5b-controls
+ bun --no-env-file run test:step5b
 bun run lint
 bun run typecheck
 bun run build

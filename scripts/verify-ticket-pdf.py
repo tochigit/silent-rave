@@ -16,5 +16,6 @@ for page in doc:
     # ImageView borrows the buffer; retain the Python bytes for the decode.
     samples = pix.samples
     pixels = zxingcpp.ImageView(memoryview(samples), pix.width, pix.height, zxingcpp.ImageFormat.RGB)
-    decoded.extend(barcode.text for barcode in zxingcpp.read_barcodes(pixels))
+    # Verify the ticket QR contract; text can resemble unrelated 1D barcodes.
+    decoded.extend(barcode.text for barcode in zxingcpp.read_barcodes(pixels, formats=zxingcpp.BarcodeFormat.QRCode))
 print(json.dumps({"text": text, "embedded": bool(embedded), "decoded": decoded, "links": links, "pages": len(doc)}))
