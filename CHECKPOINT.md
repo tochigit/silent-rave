@@ -1,3 +1,48 @@
+# Silent Rave Batch C preparation checkpoint
+
+2026-10-08, Africa/Lagos. Authorized: ONLY 5D.1 preparation and the narrowly
+scoped mail-quota test observer follow-up. Main/origin/main/GitHub main verified
+at 783893b829597c18d2558f146e4cadbf858f39f3; PR #10 is merged. Exact-main
+CI 37753142674 attempt 2 passed Windows/Linux. Its first Linux observation
+failure is retained and motivates this follow-up, not a worker behavior change.
+
+Branch: fix/batch-c-lock-observer from verified main. Snapshot priming/refresh
+and blocker identity make the concurrency observer current while keeping all
+locking/reservation/SENT assertions and the original deadline. Guarded local
+controls passed 24 tests, zero failures, 210 assertions and owned DB cleanup.
+Fresh evidence: reports/batch-c-controls-win32.txt and
+reports/batch-c-measurements-win32.json. Changed-file Bun ESLint and both Node24
+TypeScript configs passed. PR #11 is OPEN/UNMERGED against main. Implementation
+CI 37760474626 is running; the byte-manifest documentation follow-up requires
+new exact-head CI. Record final head/checks in the Desktop preparation review.
+
+Reviewable hosted package: .docs/12-batch-c-preparation.md. It records resource
+discovery/DNS, credential scopes, eight unchanged Git migration fingerprints,
+history reconciliation, separate encrypted backups/key custody/isolated restore,
+usage assumptions, frozen deployment/rollback, smoke tests and separate gates.
+reports/batch-c-migration-manifest.json separately records Git LF and Windows
+CRLF hashes. Committed migration bytes match main; SQL content is identical.
+Use reviewed archive bytes for a future operator freeze; no migration rewrite
+or hosted checksum/history repair is performed or inferred from this finding.
+The local source freeze and all eight archive payloads passed byte acceptance;
+reports/batch-c-source-freeze.json records its checksum. Plain git archive also
+converted endings and failed the first byte check; that archive/log are kept.
+The verified archive uses only a per-command core.autocrlf=false override.
+Production/site/account identities and hosted evidence remain incomplete.
+Configured Supabase candidate gztouoategejatykacqx is not a confirmed target;
+separate lsvafnayemozvowjqymz is not adopted. No usable provider tools or browser
+session was discovered. Next input: existing Netlify site/team dashboard URL and
+Silent Rave Supabase project confirmation, then remaining provider/recovery IDs.
+
+No hosted SQL/data queries, configuration/provisioning, migration/seed/history
+repair, DNS/provider change, deployment, scheduler enablement, real mail/push,
+purchase, branch deletion or permanent owner/password change. No Batch D.
+All runtime source, migration bytes, dependencies, client references/styles,
+preview packages and historical branches are preserved. readyForLaunch=false.
+Stop for target/PR review; approval must name the next hosted target and action.
+
+## Historical Batch B checkpoint (merged; review status superseded)
+
 # Silent Rave Batch B complete for code review
 
 2026-10-08, Africa/Lagos. User authorized "merge and continue next batch".
