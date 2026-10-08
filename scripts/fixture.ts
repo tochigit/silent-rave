@@ -13,6 +13,7 @@ import { createServer } from "node:net";
 import path from "node:path";
 
 const runtimeRoot = path.resolve(".test-runtime");
+let fixtureClientGeneration: Promise<void> | undefined;
 
 export function assertFixtureEnvironment(env = process.env): void {
   if (env.NODE_ENV === "production") {
@@ -285,7 +286,10 @@ export async function startFixture(
     } else {
       await postgres.createDatabase("silentrave_test");
     }
-    await runCommand(
+    // Generate once before this process imports the native client. Windows
+    // keeps its DLL loaded after disconnect, so later fresh databases must
+    // reuse this same-schema client rather than replace the loaded library.
+    fixtureClientGeneration ??= runCommand(
       [
         "node",
         "node_modules/prisma/build/index.js",
@@ -294,6 +298,7 @@ export async function startFixture(
       env,
       capture,
     );
+    await fixtureClientGeneration;
     const { PrismaClient } = await import("@prisma/client");
     if (!legacyStorage) {
       const operator = new PrismaClient({ datasourceUrl: databaseUrl });
