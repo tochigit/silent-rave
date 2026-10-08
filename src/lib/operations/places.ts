@@ -13,7 +13,7 @@ export async function placeOperation(
     !["autocomplete", "details"].includes(parts[1])
   )
     throw new OperationError(404, "Route not found.");
-  const rate = consumeRateLimit("places", actorId, {
+  const rate = await consumeRateLimit("places", actorId, {
     limit: 60,
     windowMs: 60000,
   });

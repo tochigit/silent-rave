@@ -1,0 +1,10 @@
+{
+  "mode": "DISPOSABLE_LOCAL_FIXTURE",
+  "tickets": 10,
+  "recipients": 1,
+  "attachmentBase64Bytes": 253300,
+  "preparationMs": 11981,
+  "databaseBytes": 10229439,
+  "hostedPerformanceVerified": false,
+  "providerUsageVerified": false
+}

@@ -1,5 +1,5 @@
 import { beforeAll, test, expect } from "bun:test";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { api, login, createStaffUser, OWNER_EMAIL, OWNER_PASSWORD, type Session } from "../phase3b/helpers";
 import { deriveStatusToken } from "@/lib/orders/status-token";
 import { processEmailJobs } from "@/lib/email/worker";

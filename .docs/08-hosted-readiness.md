@@ -1,5 +1,11 @@
 # Step 5 hosted readiness and launch plan
 
+Current Batch B work (2026-10-08) follows the authorized PR #9 merge.
+[The shared-controls contract](11-shared-controls-release.md) supersedes the
+historical process-local limiter and unimplemented privacy/quota blockers below.
+Code verification is in progress; hosted preparation and rollout remain separate
+Batch C work. `readyForLaunch=false` remains intentional.
+
 Current status (2026-10-06): PR #5 is merged and Netlify is selected for local
 preparation; the user says the domain is ready. Hosted runtime/DNS are unverified.
 The historical Step 5 plan below is preserved. The Step 5B Desktop plan governs

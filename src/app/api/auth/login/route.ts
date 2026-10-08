@@ -2,8 +2,17 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { fakeVerify, verifyPassword } from "@/lib/auth/password";
-import { createSession, SESSION_COOKIE_NAME, sessionCookieOptions } from "@/lib/auth/session";
-import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  createSession,
+  SESSION_COOKIE_NAME,
+  sessionCookieOptions,
+} from "@/lib/auth/session";
+import {
+  consumeRateLimit,
+  RateLimitUnavailableError,
+  rateLimitUnavailableResponse,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { originCheck } from "@/lib/auth/origin";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,82 +48,102 @@ const LoginSchema = z.object({
 });
 
 function invalidCredentials(): NextResponse {
-  return NextResponse.json({ ok: false, error: "Invalid email or password" }, { status: 401 });
+  return NextResponse.json(
+    { ok: false, error: "Invalid email or password" },
+    { status: 401 },
+  );
 }
 
 export async function POST(request: NextRequest) {
-  // Origin check first (Task 0e — login NOT exempted; see header comment).
-  const origin = originCheck(request, "auth");
-  if (!origin.ok) return origin.response;
-
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
-  }
+    // Origin check first (Task 0e — login NOT exempted; see header comment).
+    const origin = originCheck(request, "auth");
+    if (!origin.ok) return origin.response;
 
-  const parsed = LoginSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { ok: false, error: "Expected { email, password, intent? }" },
-      { status: 400 }
-    );
-  }
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "Invalid JSON body" },
+        { status: 400 },
+      );
+    }
 
-  const email = parsed.data.email.trim().toLowerCase();
-  const { password, intent } = parsed.data;
+    const parsed = LoginSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { ok: false, error: "Expected { email, password, intent? }" },
+        { status: 400 },
+      );
+    }
 
-  // 10 attempts / 10 min / per email (state: in-process Map — see lib/rate-limit.ts).
-  const { limited, retryAfterSec } = consumeRateLimit("login", email, {
-    limit: 10,
-    windowMs: 10 * 60 * 1000,
-  });
-  if (limited) {
-    return rateLimitResponse(retryAfterSec, "Too many attempts — try again in a few minutes");
-  }
+    const email = parsed.data.email.trim().toLowerCase();
+    const { password, intent } = parsed.data;
 
-  const user = await db.staffUser.findUnique({ where: { email } });
+    // 10 attempts / 10 min / per email (shared configured backend — see lib/rate-limit.ts).
+    const { limited, retryAfterSec } = await consumeRateLimit("login", email, {
+      limit: 10,
+      windowMs: 10 * 60 * 1000,
+    });
+    if (limited) {
+      return rateLimitResponse(
+        retryAfterSec,
+        "Too many attempts — try again in a few minutes",
+      );
+    }
 
-  // Timing-equalized rejection for unknown emails.
-  if (!user) {
-    await fakeVerify(password);
-    return invalidCredentials();
-  }
+    const user = await db.staffUser.findUnique({ where: { email } });
 
-  const passwordOk = await verifyPassword(password, user.passwordHash);
-  if (!passwordOk || !user.isActive) {
-    return invalidCredentials();
-  }
+    // Timing-equalized rejection for unknown emails.
+    if (!user) {
+      await fakeVerify(password);
+      return invalidCredentials();
+    }
 
-  // Role/intent compatibility (UX layer only — real enforcement is per-request).
-  if (intent === "admin" && user.role !== "OWNER") {
-    return NextResponse.json(
-      { ok: false, error: "This account does not have admin access" },
-      { status: 403 }
-    );
-  }
+    const passwordOk = await verifyPassword(password, user.passwordHash);
+    if (!passwordOk || !user.isActive) {
+      return invalidCredentials();
+    }
 
-  const { token, expiresAt } = await createSession(user.id);
+    // Role/intent compatibility (UX layer only — real enforcement is per-request).
+    if (intent === "admin" && user.role !== "OWNER") {
+      return NextResponse.json(
+        { ok: false, error: "This account does not have admin access" },
+        { status: 403 },
+      );
+    }
 
-  await db.staffUser.update({
-    where: { id: user.id },
-    data: { lastLoginAt: new Date() },
-  });
+    const { token, expiresAt } = await createSession(user.id);
 
-  const redirectTo = user.mustChangePassword ? "/staff/password" :
-    intent === "staff"
-      ? "/staff"
-      : intent === "admin"
-        ? "/admin"
-        : user.role === "OWNER"
+    await db.staffUser.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    const redirectTo = user.mustChangePassword
+      ? "/staff/password"
+      : intent === "staff"
+        ? "/staff"
+        : intent === "admin"
           ? "/admin"
-          : "/staff";
+          : user.role === "OWNER"
+            ? "/admin"
+            : "/staff";
 
-  const response = NextResponse.json(
-    { ok: true, role: user.role, redirectTo },
-    { status: 200 }
-  );
-  response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions(expiresAt));
-  return response;
+    const response = NextResponse.json(
+      { ok: true, role: user.role, redirectTo },
+      { status: 200 },
+    );
+    response.cookies.set(
+      SESSION_COOKIE_NAME,
+      token,
+      sessionCookieOptions(expiresAt),
+    );
+    return response;
+  } catch (error) {
+    if (error instanceof RateLimitUnavailableError)
+      return rateLimitUnavailableResponse();
+    throw error;
+  }
 }

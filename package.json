@@ -11,6 +11,8 @@
     "check:route-policy": "bun --no-env-file scripts/check-route-policy.ts",
     "test:step5c1": "bun --no-env-file scripts/run-step5c1.ts",
     "test:step5a": "bun --no-env-file scripts/run-step5a.ts",
+    "test:step5b": "bun --no-env-file scripts/run-step5b.ts",
+    "test:step5b-controls": "bun --no-env-file scripts/run-step5b-controls.ts",
     "verify:netlify-build": "bun --no-env-file scripts/build-netlify-offline.ts",
     "scanner:build": "bun scripts/build-scanner.ts",
     "test:step4": "bun --no-env-file scripts/run-step4.ts",

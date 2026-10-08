@@ -1,6 +1,6 @@
 import "../phase3b/load-env";
 import { test, expect, beforeAll, afterAll } from "bun:test";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { nextUpcoming, publicEvent } from "@/lib/events/catalog";
 import { api } from "../phase3b/helpers";
 let saved: { id: string; status: "DRAFT" | "PUBLISHED" | "CANCELLED" }[] = [];

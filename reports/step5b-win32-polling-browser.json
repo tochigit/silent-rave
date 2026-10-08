@@ -1,0 +1,18 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Disabled hook makes no request",
+    "Inline interval and terminal callbacks do not restart polling on rerender",
+    "Active orders poll at 8 seconds and approval switches to 60 seconds",
+    "Failed manual refresh retains the approved 60-second cadence and saved status",
+    "Approved order observes refund and terminal status stops automatic polling",
+    "Manual refresh still works after terminal status",
+    "Expired reservations continue polling for late-proof transitions",
+    "Failures retain saved data and use bounded exponential backoff",
+    "Hidden pages pause requests; visibility resumes immediately and clears backoff",
+    "Disabling aborts an in-flight request, clears timers and prevents stale-generation updates"
+  ],
+  "browser": "owned isolated Chrome",
+  "externalRequests": 0,
+  "errors": []
+}

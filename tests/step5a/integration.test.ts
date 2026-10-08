@@ -1,6 +1,6 @@
 import { beforeAll, test, expect } from "bun:test";
 import { createHash, randomUUID } from "node:crypto";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { api, login, createStaffUser, makeJpeg, submitProof } from "../phase3b/helpers";
 import { orderFixture, approvedOrder } from "../phase4/fixtures";
 import { deriveStatusToken } from "@/lib/orders/status-token";

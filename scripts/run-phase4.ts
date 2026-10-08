@@ -11,12 +11,23 @@ const step3 = process.env.SILENT_RAVE_TEST_STEP3 === "1";
 const step4 = process.env.SILENT_RAVE_TEST_STEP4 === "1";
 const step5c1 = process.env.SILENT_RAVE_TEST_STEP5C1 === "1";
 const step5a = process.env.SILENT_RAVE_TEST_STEP5A === "1";
-const suite = step5a ? "step5a" : step5c1 ? "step5c1" : step4 ? "step4" : step3 ? "step3" : "phase4";
+const step5b = process.env.SILENT_RAVE_TEST_STEP5B === "1";
+const suite = step5b
+  ? "step5b"
+  : step5a
+    ? "step5a"
+    : step5c1
+      ? "step5c1"
+      : step4
+        ? "step4"
+        : step3
+          ? "step3"
+          : "phase4";
 if (
   focus.some(
     (p) =>
       !new RegExp(
-        `^tests/${step5a ? "(?:step5a|step5c1|step4|step3|phase4)" : step5c1 ? "(?:step5c1|step4|step3|phase4)" : step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
+        `^tests/${step5b ? "(?:step5b|step5a|step5c1|step4|step3|phase4)" : step5a ? "(?:step5a|step5c1|step4|step3|phase4)" : step5c1 ? "(?:step5c1|step4|step3|phase4)" : step4 ? "(?:step4|step3|phase4)" : step3 ? "(?:step3|phase4)" : "phase4"}/[a-z-]+\\.test\\.ts$`,
       ).test(p),
   )
 )
@@ -73,18 +84,37 @@ try {
       ? `${suite} focused: ${focus.join(", ")}; isolated PostgreSQL/HTTP; fake transport/time.`
       : `${suite}: baseline + Phase 4${step3 ? " + Step 3" : ""}; real HTTP/PostgreSQL/sharp/PDF; capture/fake transport; injected clock/backdated rows.`,
   );
-  fixture = await startFixture((chunk) => {
-    output.write(chunk);
-  });
+  fixture = await startFixture(
+    (chunk) => {
+      output.write(chunk);
+    },
+    false,
+    step5b,
+  );
   const unavailableUrl = "postgresql://fixture@127.0.0.1:1/silentrave_test";
-  const outageEnvironment = { DATABASE_URL: unavailableUrl, DIRECT_URL: unavailableUrl, TEST_DATABASE_URL: unavailableUrl };
+  const outageEnvironment = {
+    DATABASE_URL: unavailableUrl,
+    DIRECT_URL: unavailableUrl,
+    TEST_DATABASE_URL: unavailableUrl,
+  };
   const startApp = async (
     overrides: Record<string, string> = {},
-    mode: "baseline" | "phase4" | "customer" | "operations" | "runtime" = "phase4",
+    mode:
+      | "baseline"
+      | "phase4"
+      | "customer"
+      | "operations"
+      | "runtime" = "phase4",
   ) => {
     const port = await freePort();
     const env: Record<string, string> = {
       ...fixture!.env,
+      ...(fixture!.appDatabaseUrl
+        ? {
+            DATABASE_URL: fixture!.appDatabaseUrl,
+            DIRECT_URL: fixture!.appDatabaseUrl,
+          }
+        : {}),
       ...overrides,
       TEST_BASE_URL: `http://127.0.0.1:${port}`,
       AUTH_INTERNAL_BASE_URL: `http://127.0.0.1:${port}`,
@@ -135,8 +165,12 @@ try {
         /* Root readiness probe only; failed warmup contracts below fail immediately. */
       }
       if (probe?.ok) {
-        const brokerWarm = await fetch(env.TEST_BASE_URL + "/api/internal/session-decision", { method: "POST", signal: AbortSignal.timeout(120_000) });
-        if (brokerWarm.status !== 401) throw new Error("Fixture broker warmup failed closed check.");
+        const brokerWarm = await fetch(
+          env.TEST_BASE_URL + "/api/internal/session-decision",
+          { method: "POST", signal: AbortSignal.timeout(120_000) },
+        );
+        if (brokerWarm.status !== 401)
+          throw new Error("Fixture broker warmup failed closed check.");
         // Compile login before the original 30s authz setup hook starts.
         // Empty body is rejected before login/session creation; no credentials.
         const warm = await fetch(env.TEST_BASE_URL + "/api/auth/login", {
@@ -231,20 +265,63 @@ try {
         log(
           "Fixture app ready; login compiled; strict Origin checks; dedicated app port.",
         );
-        if (step4 && (mode === "operations" || focus.some(p => p.includes("/step4/")))) {
-          const login = await fetch(env.TEST_BASE_URL + "/api/auth/login", { method: "POST", headers: { host: "localhost:3000", origin: "http://localhost:3000", "content-type": "application/json" }, body: JSON.stringify({ email: env.OWNER_EMAIL, password: env.OWNER_PASSWORD }), signal: AbortSignal.timeout(120000) });
+        if (
+          step4 &&
+          (mode === "operations" || focus.some((p) => p.includes("/step4/")))
+        ) {
+          const login = await fetch(env.TEST_BASE_URL + "/api/auth/login", {
+            method: "POST",
+            headers: {
+              host: "localhost:3000",
+              origin: "http://localhost:3000",
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              email: env.OWNER_EMAIL,
+              password: env.OWNER_PASSWORD,
+            }),
+            signal: AbortSignal.timeout(120000),
+          });
           const cookie = login.headers.get("set-cookie")?.split(";")[0];
-          if (login.status !== 200 || !cookie) throw new Error("Step 4 warmup login failed.");
+          if (login.status !== 200 || !cookie)
+            throw new Error("Step 4 warmup login failed.");
           for (const target of ["/api/admin/events", "/api/staff/session"]) {
-            const response = await fetch(env.TEST_BASE_URL + target, { headers: { cookie }, signal: AbortSignal.timeout(120000) });
-            if (response.status !== 200) throw new Error(`Step 4 warmup failed: ${target}`); await response.arrayBuffer();
+            const response = await fetch(env.TEST_BASE_URL + target, {
+              headers: { cookie },
+              signal: AbortSignal.timeout(120000),
+            });
+            if (response.status !== 200)
+              throw new Error(`Step 4 warmup failed: ${target}`);
+            await response.arrayBuffer();
           }
-          for (const target of ["/api/admin/orders/issue", "/api/auth/password"]) {
-            const response = await fetch(env.TEST_BASE_URL + target, { method: "POST", headers: { cookie, host: "admin.localhost:3000", origin: "http://admin.localhost:3000", "content-type": "application/json" }, body: "{}", signal: AbortSignal.timeout(120000) });
-            if (response.status !== 400) throw new Error(`Step 4 controller warmup failed: ${target}`); await response.arrayBuffer();
+          for (const target of [
+            "/api/admin/orders/issue",
+            "/api/auth/password",
+          ]) {
+            const response = await fetch(env.TEST_BASE_URL + target, {
+              method: "POST",
+              headers: {
+                cookie,
+                host: "admin.localhost:3000",
+                origin: "http://admin.localhost:3000",
+                "content-type": "application/json",
+              },
+              body: "{}",
+              signal: AbortSignal.timeout(120000),
+            });
+            if (response.status !== 400)
+              throw new Error(`Step 4 controller warmup failed: ${target}`);
+            await response.arrayBuffer();
           }
         }
-        return env;
+        return {
+          ...env,
+          DATABASE_URL:
+            overrides.DATABASE_URL ??
+            fixture!.appDatabaseUrl ??
+            fixture!.env.DATABASE_URL,
+          DIRECT_URL: overrides.DIRECT_URL ?? fixture!.env.DIRECT_URL,
+        };
       }
       await Bun.sleep(250);
     }
@@ -291,26 +368,62 @@ try {
   };
   let exitCode = 0;
   const groups = focus.length
-    ? [{ paths: focus, mode: focus.some(p => p.includes("/step5c1/") || p.includes("/step5a/")) ? "runtime" as const : "phase4" as const }]
+    ? [
+        {
+          paths: focus,
+          mode: focus.some(
+            (p) =>
+              p.includes("/step5c1/") ||
+              p.includes("/step5a/") ||
+              p.includes("/step5b/"),
+          )
+            ? ("runtime" as const)
+            : ("phase4" as const),
+        },
+      ]
     : [
         { paths: ["tests/phase3b/"], mode: "baseline" as const },
         { paths: ["tests/phase4/"], mode: "phase4" as const },
         ...(step3
           ? [{ paths: ["tests/step3/"], mode: "customer" as const }]
           : []),
-        ...(step4 ? [{ paths: ["tests/step4/"], mode: "operations" as const }] : []),
-        ...(step5c1 ? [{ paths: ["tests/step5c1/runtime.test.ts"], mode: "runtime" as const }] : []),
-        ...(step5a ? [{ paths: ["tests/step5a/"], mode: "runtime" as const }] : []),
+        ...(step4
+          ? [{ paths: ["tests/step4/"], mode: "operations" as const }]
+          : []),
+        ...(step5c1
+          ? [
+              {
+                paths: ["tests/step5c1/runtime.test.ts"],
+                mode: "runtime" as const,
+              },
+            ]
+          : []),
+        ...(step5a
+          ? [{ paths: ["tests/step5a/"], mode: "runtime" as const }]
+          : []),
+        ...(step5b
+          ? [{ paths: ["tests/step5b/"], mode: "runtime" as const }]
+          : []),
       ];
   let firstGroup = true;
   for (const group of groups) {
-    if (!firstGroup && (group.mode === "customer" || group.mode === "operations" || group.mode === "runtime")) {
+    if (
+      !firstGroup &&
+      (step5b ||
+        group.mode === "customer" ||
+        group.mode === "operations" ||
+        group.mode === "runtime")
+    ) {
       // Legacy tests deliberately alter order/counter rows. Their short holds
       // can lapse during a slow local run; the customer's real global expiry
       // sweep must start from a consistent fresh database, not those leftovers.
       await fixture.cleanup();
       fixture = undefined;
-      fixture = await startFixture((chunk) => output.write(chunk));
+      fixture = await startFixture(
+        (chunk) => output.write(chunk),
+        false,
+        step5b,
+      );
       log(
         `${group.mode} group: fresh owned database; prior fixture cleanup passed.`,
       );
@@ -333,18 +446,49 @@ try {
         (chunk) => output.write(chunk),
       );
     }
-    const storageGroup = group.paths.some(p => p.startsWith("tests/step5a/"));
+    const storageGroup = group.paths.some((p) => p.startsWith("tests/step5a/"));
     if (storageGroup) storageFixture = startFakeStorage();
-    const env = await startApp(group.paths.includes("tests/step5c1/unavailable.test.ts") ? outageEnvironment : storageGroup ? storageFixture!.env : {}, group.mode);
+    const env = await startApp(
+      group.paths.includes("tests/step5c1/unavailable.test.ts")
+        ? outageEnvironment
+        : group.paths.includes("tests/step5b/unavailable.test.ts")
+          ? { RATE_LIMIT_DRIVER: "invalid" }
+          : storageGroup
+            ? storageFixture!.env
+            : {},
+      group.mode,
+    );
     exitCode = await runTests(group.paths, env);
     await stopApp();
-    if (storageGroup) { storageFixture!.server.stop(true); storageFixture = undefined; }
+    if (storageGroup) {
+      storageFixture!.server.stop(true);
+      storageFixture = undefined;
+    }
     if (exitCode !== 0) break;
   }
   if (step5c1 && !focus.length && exitCode === 0) {
-    log("Runtime outage acceptance: unreachable loopback database; no hosted connections.");
+    log(
+      "Runtime outage acceptance: unreachable loopback database; no hosted connections.",
+    );
     const unavailable = await startApp(outageEnvironment, "runtime");
-    exitCode = await runTests(["tests/step5c1/unavailable.test.ts"], unavailable);
+    exitCode = await runTests(
+      ["tests/step5c1/unavailable.test.ts"],
+      unavailable,
+    );
+    await stopApp();
+  }
+  if (step5b && !focus.length && exitCode === 0) {
+    log(
+      "Shared limiter outage: valid owned database with invalid limiter configuration; mutations must fail before writes.",
+    );
+    const unavailable = await startApp(
+      { RATE_LIMIT_DRIVER: "invalid" },
+      "runtime",
+    );
+    exitCode = await runTests(
+      ["tests/step5b/unavailable.test.ts"],
+      unavailable,
+    );
     await stopApp();
   }
   if (!focus.length && exitCode === 0) {

@@ -1,5 +1,5 @@
 import "../phase3b/load-env";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { approveOrder } from "@/lib/orders/review";
 export async function orderFixture(qty = 2, approved = true) {
   const organizer = await db.organizer.findFirstOrThrow();

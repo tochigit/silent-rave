@@ -578,6 +578,7 @@ model EmailWorkerGate {
   owner       String?  @db.Uuid
   leaseUntil  DateTime @default(dbgenerated("'epoch'::timestamptz")) @map("lease_until") @db.Timestamptz(3)
   nextSendAt  DateTime @default(dbgenerated("'epoch'::timestamptz")) @map("next_send_at") @db.Timestamptz(3)
+  pauseReason String? @map("pause_reason")
   @@map("email_worker_gate")
 }
 
@@ -598,4 +599,38 @@ model StorageObject {
   @@index([state, createdAt], map: "storage_objects_state_created_at_idx")
   @@index([linkedEntityType, linkedEntityId], map: "storage_objects_linked_entity_type_linked_entity_id_idx")
   @@map("storage_objects")
+}
+
+model RateLimitWindow {
+  bucketName String @map("bucket_name")
+  keyHmac String @map("key_hmac")
+  count BigInt
+  resetAt DateTime @map("reset_at") @db.Timestamptz(3)
+  @@id([bucketName, keyHmac])
+  @@index([resetAt], map: "rate_limit_windows_reset_at_idx")
+  @@map("rate_limit_windows")
+}
+
+model MailQuotaWindow {
+  kind String
+  startsAt DateTime @map("starts_at") @db.Timestamptz(3)
+  resetAt DateTime @map("reset_at") @db.Timestamptz(3)
+  reserved Int @default(0)
+  reservations MailSendReservation[]
+  @@id([kind, startsAt])
+  @@index([resetAt], map: "mail_quota_windows_reset_at_idx")
+  @@map("mail_quota_windows")
+}
+model MailSendReservation {
+  sendId String @map("send_id") @db.Uuid
+  kind String
+  startsAt DateTime @map("starts_at") @db.Timestamptz(3)
+  amount Int
+  state String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  window MailQuotaWindow @relation(fields:[kind,startsAt], references:[kind,startsAt], onDelete:Cascade)
+  @@id([sendId,kind,startsAt])
+  @@index([createdAt], map:"mail_send_reservations_created_at_idx")
+  @@map("mail_send_reservations")
 }

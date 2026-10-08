@@ -1,5 +1,16 @@
 # Changelog
 
+## Batch B (shared controls and release preparation)
+
+Awaited PostgreSQL rate windows now persist HMAC identities across instances.
+Contact/order mail share database UTC day/month reservations and a fenced gate;
+quota refusal defers untouched jobs without consuming attempts. Scheduler source
+calls only expiry and mail endpoints. Additive privacy migrations restrict the
+runtime role and deny public table/sequence/routine access. Approved buyer polling
+slows to 60 seconds; irrelevant owner auxiliary requests are disabled.
+See [the operational contract](11-shared-controls-release.md) for verification,
+launch gates, backup and usage boundaries. No hosted rollout is included.
+
 ## v2.1.2 (Phase 4 specification)
 
 1. **Uniform 404 on order routes (`03`).** Unknown code, wrong token and missing token are indistinguishable on the proof, status and PDF routes (matches the Phase 3 build).

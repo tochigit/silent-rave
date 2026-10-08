@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import { api, login, createStaffUser, OWNER_EMAIL, OWNER_PASSWORD, type Session } from "../phase3b/helpers";
 import { createSession, validateSessionToken, extendSessionIfNeeded } from "@/lib/auth/session";
 import { privateHeaders } from "@/lib/auth/policy";

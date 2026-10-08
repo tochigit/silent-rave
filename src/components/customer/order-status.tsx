@@ -45,6 +45,8 @@ export function OrderStatusPage({
     `/api/orders/${encodeURIComponent(code)}/status`,
     {
       token,
+      enabled: !!token,
+      interval: (d) => (d?.status === "APPROVED" ? 60000 : 8000),
       terminal: (d) => d.status === "REJECTED" || d.status === "REFUNDED",
     },
   );

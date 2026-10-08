@@ -1,6 +1,6 @@
 import "../phase3b/load-env";
 import { test, expect } from "bun:test";
-import { db } from "@/lib/db";
+import { db } from "../fixture-db";
 import {
   api,
   createTestTier,
