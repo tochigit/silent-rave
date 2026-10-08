@@ -23,7 +23,10 @@ Expiry deletes at most 1,000 expired limiter rows with indexed SKIP LOCKED.
 Mail reserves one recipient message in both database UTC day and month windows.
 Defaults are `EMAIL_DAILY_BUDGET=90` and `EMAIL_MONTHLY_BUDGET=2700`; lower positive
 budgets are allowed. These limits leave a margin, not a guarantee about provider
-account usage. Reservation rows store only opaque IDs, window identity, amount,
+account usage: inbound mail, other applications and additional recipients also
+consume provider quota. Review peak-day volume and accept delayed mail before
+launch; approval and ticket downloads remain independent of email delivery.
+Reservation rows store only opaque IDs, window identity, amount,
 state and timestamps. Retry keys reuse reservations. Quota denial precedes job
 claim/attempt increments and defers QUEUED jobs to UTC reset plus 60 seconds.
 The owner sees fixed QUOTA_DAY/QUOTA_MONTH reasons in existing email-job views.
@@ -104,6 +107,13 @@ two production deploys, 300k requests, 2 GB delivered and 8 GB-hours compute
 total 210 credits, below the 225-credit planning target. Verify actual dashboards
 and revise the operating plan before launch. Do not assume local test timing or
 CDN hits establish billed usage. No automatic plan upgrade or paid overage.
+Review account usage at 50%, 70% and 80%, including a manual pre-event check.
+At 80%, halt unnecessary builds/previews and recalculate essential traffic while
+preserving authentication, proof intake and queued jobs. The 225-credit target
+reserves at least 75 of the Free plan's 300 credits for event-day bursts and
+other account usage; essential traffic that cannot fit remains a launch blocker.
+The formula and provider quota references were checked against their official
+documentation on 2026-10-08; actual account dashboards remain unverified.
 
 Before any hosted migration, record exact approved head/build and eight migration
 fingerprints; read-only inventory must confirm project identity, ownership,

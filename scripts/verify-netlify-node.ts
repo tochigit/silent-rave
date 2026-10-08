@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import path from "node:path";
 import { startFixture, runCommand } from "./fixture";
 import { buildCanaries } from "./build-canaries";
-const fixture = await startFixture();
+const fixture = await startFixture(undefined, false, true);
 const original = { ...process.env };
 const functionRoot = await mkdtemp(path.join(tmpdir(), "silent-rave-step5c1-"));
 try {
@@ -49,7 +49,7 @@ try {
     pdfPath: `/api/orders/${approved.order.orderCode}/tickets/${approved.tickets[0].id}/pdf`, pdfToken: deriveStatusToken(approved.order.id, approved.order.statusTokenVersion), qrToken: approved.tickets[0].qrToken,
     proofPath: `/api/orders/${pending.order.orderCode}/proof`, proofToken: deriveStatusToken(pending.order.id, pending.order.statusTokenVersion), proofOrderId: pending.order.id }), { mode: 0o600 });
   await db.$disconnect();
-  const env = { ...fixture.env, NODE_ENV: "production", HOST_PLATFORM: "netlify", ROOT_DOMAIN: "silent-rave.example.test", PUBLIC_BASE_URL: "https://silent-rave.example.test",
+  const env = { ...fixture.env, DATABASE_URL: fixture.appDatabaseUrl!, DIRECT_URL: fixture.appDatabaseUrl!, NODE_ENV: "production", HOST_PLATFORM: "netlify", ROOT_DOMAIN: "silent-rave.example.test", PUBLIC_BASE_URL: "https://silent-rave.example.test",
     DEPLOY_ID: "fixture", AUTH_INTERNAL_BASE_URL: "https://fixture--silent-rave-fixture.netlify.app", NETLIFY_INGRESS_SECRET: randomBytes(32).toString("base64url"), NODE_PATH: "" };
   await runCommand(["node", path.resolve("scripts/netlify-node-acceptance.mjs"), input], env);
   const check = Bun.spawn(["python", "scripts/verify-ticket-pdf.py", pdf], { stdout: "pipe", stderr: "pipe" });
