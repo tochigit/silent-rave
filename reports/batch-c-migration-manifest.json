@@ -1,0 +1,73 @@
+{
+  "mode": "LOCAL_ONLY",
+  "sourceBaseline": "783893b829597c18d2558f146e4cadbf858f39f3",
+  "readyForLaunch": false,
+  "runtimeAndPreviewDiff": false,
+  "rolloutByteAuthority": "GIT_BLOB_LF",
+  "migrations": [
+    {
+      "name": "20260930000000_v2_1_baseline",
+      "gitSha256": "04fa814984ddd86f735a32a365db6c78ecb09639632003e18cdcaaffa1318985",
+      "windowsWorktreeSha256": "b6ea0ecd75d2288935c6ed5529cae09a3aa69a6afd4da72e9b2e7f79ed585aec",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261002000000_phase4_email_state",
+      "gitSha256": "0dec5e0af801bb216d37c74903ea36589aee9180f0c4df9087661e3a8cbb5463",
+      "windowsWorktreeSha256": "ff4d125d1eda2d254bc26a2c8dc57f50ad4ad3c3cbb55bfaf829fbc0414aea4e",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261002010000_step3_content_payment_snapshot",
+      "gitSha256": "e73c1792d34d4a8b914ad8fbcc81305d1215793041f1d602cb1c5577f5d84bce",
+      "windowsWorktreeSha256": "dae87fcc6ab227bc5d535f5a669bc0e1619675c3591c779baa419a2d9d411c2e",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261003000000_step4_staff_password",
+      "gitSha256": "03ff7ea94a34bc1c2bd125e49ae4162c98de3744a3fcedd4ca5efcb576a95a9d",
+      "windowsWorktreeSha256": "9f2233a0ba17ef53bc4a59636efcc539d279a367eab41e10ef619dcb0391ca93",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261006000000_step5_storage_accounting",
+      "gitSha256": "e15c46c9df069f0c621c6d2ed7d6759ec0ca50354667968a7ff302d5afa6345f",
+      "windowsWorktreeSha256": "74eefb75351acf35a2849d896e3da3aebe5b706d4f83a4bba40b19128f825229",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261008000000_step5_shared_rate_limits",
+      "gitSha256": "68e8d95bc5b1a675267e1c9ca6af0020932834263c2e7225a8a2a62bb2e9bf73",
+      "windowsWorktreeSha256": "b7786e6659635250db6ecb6cde707135ae9fd0c11e7f37445eb4fedc56a16f8d",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261008000100_step5_mail_quotas",
+      "gitSha256": "0f3c4dfb30ce22b31bbe96425deb17af1e8f5d4aec680a294db198f3c5917824",
+      "windowsWorktreeSha256": "2f39c4f89c94e45018a4ae7d28c5ab92274e7aa67593c271fd28a98fcbe58994",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    },
+    {
+      "name": "20261008000200_step5_private_runtime",
+      "gitSha256": "0eb3901304ed926e84a51ecae75a95acb0d77916f9026a54a25cb0f313f96002",
+      "windowsWorktreeSha256": "414371b0d1d9fb9440a43f7323e86c4cfa12b17dcbc75397289674671f81c28e",
+      "committedBytesMatchMain": true,
+      "worktreeBytesMatchGit": false,
+      "worktreeMatchesAfterCRLFNormalization": true
+    }
+  ]
+}

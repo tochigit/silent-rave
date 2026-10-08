@@ -105,19 +105,35 @@ define the provider boundaries; actual availability is unverified.
 
 ## Frozen migration inventory and reconciliation decision
 
-SHA-256 of exact local migration.sql bytes, recomputed in preparation. All eight
-match main; this follow-up changes no SQL or migration history.
+SHA-256 of exact **Git blob (LF)** migration.sql bytes at verified main,
+recomputed in preparation. All eight committed blobs match main; this follow-up
+changes no SQL or migration history. Windows autocrlf produces different CRLF
+worktree fingerprints despite identical content. The
+[byte manifest](../reports/batch-c-migration-manifest.json) records both sets and
+the independently checked content/committed-byte comparisons. Initial raw-byte
+equality inspection failed on all eight; explicit CRLF-only comparison then
+passed. Do not use an OS checkout's unreviewed checksums as the release freeze.
 
 | Migration | SHA-256 |
 | --- | --- |
-| 20260930000000_v2_1_baseline | b6ea0ecd75d2288935c6ed5529cae09a3aa69a6afd4da72e9b2e7f79ed585aec |
-| 20261002000000_phase4_email_state | ff4d125d1eda2d254bc26a2c8dc57f50ad4ad3c3cbb55bfaf829fbc0414aea4e |
-| 20261002010000_step3_content_payment_snapshot | dae87fcc6ab227bc5d535f5a669bc0e1619675c3591c779baa419a2d9d411c2e |
-| 20261003000000_step4_staff_password | 9f2233a0ba17ef53bc4a59636efcc539d279a367eab41e10ef619dcb0391ca93 |
-| 20261006000000_step5_storage_accounting | 74eefb75351acf35a2849d896e3da3aebe5b706d4f83a4bba40b19128f825229 |
-| 20261008000000_step5_shared_rate_limits | b7786e6659635250db6ecb6cde707135ae9fd0c11e7f37445eb4fedc56a16f8d |
-| 20261008000100_step5_mail_quotas | 2f39c4f89c94e45018a4ae7d28c5ab92274e7aa67593c271fd28a98fcbe58994 |
-| 20261008000200_step5_private_runtime | 414371b0d1d9fb9440a43f7323e86c4cfa12b17dcbc75397289674671f81c28e |
+| 20260930000000_v2_1_baseline | 04fa814984ddd86f735a32a365db6c78ecb09639632003e18cdcaaffa1318985 |
+| 20261002000000_phase4_email_state | 0dec5e0af801bb216d37c74903ea36589aee9180f0c4df9087661e3a8cbb5463 |
+| 20261002010000_step3_content_payment_snapshot | e73c1792d34d4a8b914ad8fbcc81305d1215793041f1d602cb1c5577f5d84bce |
+| 20261003000000_step4_staff_password | 03ff7ea94a34bc1c2bd125e49ae4162c98de3744a3fcedd4ca5efcb576a95a9d |
+| 20261006000000_step5_storage_accounting | e15c46c9df069f0c621c6d2ed7d6759ec0ca50354667968a7ff302d5afa6345f |
+| 20261008000000_step5_shared_rate_limits | 68e8d95bc5b1a675267e1c9ca6af0020932834263c2e7225a8a2a62bb2e9bf73 |
+| 20261008000100_step5_mail_quotas | 0f3c4dfb30ce22b31bbe96425deb17af1e8f5d4aec680a294db198f3c5917824 |
+| 20261008000200_step5_private_runtime | 0eb3901304ed926e84a51ecae75a95acb0d77916f9026a54a25cb0f313f96002 |
+
+Future operator execution must materialize the approved Git archive bytes in
+an isolated directory and verify all eight raw hashes before Prisma runs.
+On this Windows configuration plain git archive also converts line endings;
+use the per-command `git -c core.autocrlf=false archive` override and inspect
+the archive payload. This changes no global/repository config or source bytes.
+Keep the normal checkout and historical migrations unchanged. An existing host
+may have recorded CRLF fingerprints; compare both captured variants, but do
+not relabel/repair an applied migration automatically. That discrepancy still
+requires a separately reviewed history decision before applying any suffix.
 
 After specific inventory approval, use a read-only operator transaction on the
 named target to collect engine, project/DB identity, exact applied names/checksums,
@@ -242,6 +258,16 @@ runtime source or dependencies. Record generated Edge ordering/ESZIP, Node ZIP,
 build/native manifests, commit and SHA-256s, runtime environment version,
 Netlify deploy ID, immutable broker origin and tested rollback candidate.
 Changing adapter, dependencies or runtime config invalidates borrowed evidence.
+
+A concrete local source freeze now exists at
+`.test-runtime/batch-c-source-783893b.tar`: 27,893,760 bytes, SHA-256
+`2d761b165c681c9e9f72558c9e0292e69a0404bd0dcbff82664dce814aceee59`.
+It materializes verified main with the per-command autocrlf override. All eight
+archived migration payloads were independently hashed and match the Git table.
+[Source freeze manifest](../reports/batch-c-source-freeze.json) records that
+acceptance. The initial plain archive failed byte acceptance and is preserved
+under ignored `.test-runtime/batch-c-source-783893b-crlf.tar`, with its failed
+check log. Neither archive is a packaged production deploy or a hosted rollback.
 
 Passing baseline CI artifacts are **evidence**, not a production deploy artifact:
 

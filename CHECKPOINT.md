@@ -11,13 +11,23 @@ and blocker identity make the concurrency observer current while keeping all
 locking/reservation/SENT assertions and the original deadline. Guarded local
 controls passed 24 tests, zero failures, 210 assertions and owned DB cleanup.
 Fresh evidence: reports/batch-c-controls-win32.txt and
-reports/batch-c-measurements-win32.json. Local lint/types and follow-up PR/CI
-are pending; record their final results in the Desktop Batch C handoff.
+reports/batch-c-measurements-win32.json. Changed-file Bun ESLint and both Node24
+TypeScript configs passed. PR #11 is OPEN/UNMERGED against main. Implementation
+CI 37760474626 is running; the byte-manifest documentation follow-up requires
+new exact-head CI. Record final head/checks in the Desktop preparation review.
 
 Reviewable hosted package: .docs/12-batch-c-preparation.md. It records resource
-discovery/DNS, credential scopes, eight unchanged migration fingerprints,
+discovery/DNS, credential scopes, eight unchanged Git migration fingerprints,
 history reconciliation, separate encrypted backups/key custody/isolated restore,
 usage assumptions, frozen deployment/rollback, smoke tests and separate gates.
+reports/batch-c-migration-manifest.json separately records Git LF and Windows
+CRLF hashes. Committed migration bytes match main; SQL content is identical.
+Use reviewed archive bytes for a future operator freeze; no migration rewrite
+or hosted checksum/history repair is performed or inferred from this finding.
+The local source freeze and all eight archive payloads passed byte acceptance;
+reports/batch-c-source-freeze.json records its checksum. Plain git archive also
+converted endings and failed the first byte check; that archive/log are kept.
+The verified archive uses only a per-command core.autocrlf=false override.
 Production/site/account identities and hosted evidence remain incomplete.
 Configured Supabase candidate gztouoategejatykacqx is not a confirmed target;
 separate lsvafnayemozvowjqymz is not adopted. No usable provider tools or browser

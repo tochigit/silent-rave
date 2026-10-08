@@ -1,0 +1,52 @@
+{
+  "mode": "LOCAL_SOURCE_ARCHIVE_ONLY",
+  "sourceCommit": "783893b829597c18d2558f146e4cadbf858f39f3",
+  "sourceTree": "cfe8ec416a0b51c82792b42613f7040f4f670097",
+  "archive": ".test-runtime/batch-c-source-783893b.tar",
+  "bytes": 27893760,
+  "sha256": "2d761b165c681c9e9f72558c9e0292e69a0404bd0dcbff82664dce814aceee59",
+  "productionDeployArtifact": false,
+  "hostedRollbackVerified": false,
+  "migrations": [
+    {
+      "name": "20260930000000_v2_1_baseline",
+      "sha256": "04fa814984ddd86f735a32a365db6c78ecb09639632003e18cdcaaffa1318985",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261002000000_phase4_email_state",
+      "sha256": "0dec5e0af801bb216d37c74903ea36589aee9180f0c4df9087661e3a8cbb5463",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261002010000_step3_content_payment_snapshot",
+      "sha256": "e73c1792d34d4a8b914ad8fbcc81305d1215793041f1d602cb1c5577f5d84bce",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261003000000_step4_staff_password",
+      "sha256": "03ff7ea94a34bc1c2bd125e49ae4162c98de3744a3fcedd4ca5efcb576a95a9d",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261006000000_step5_storage_accounting",
+      "sha256": "e15c46c9df069f0c621c6d2ed7d6759ec0ca50354667968a7ff302d5afa6345f",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261008000000_step5_shared_rate_limits",
+      "sha256": "68e8d95bc5b1a675267e1c9ca6af0020932834263c2e7225a8a2a62bb2e9bf73",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261008000100_step5_mail_quotas",
+      "sha256": "0f3c4dfb30ce22b31bbe96425deb17af1e8f5d4aec680a294db198f3c5917824",
+      "matchesFrozenGitBytes": true
+    },
+    {
+      "name": "20261008000200_step5_private_runtime",
+      "sha256": "0eb3901304ed926e84a51ecae75a95acb0d77916f9026a54a25cb0f313f96002",
+      "matchesFrozenGitBytes": true
+    }
+  ]
+}
