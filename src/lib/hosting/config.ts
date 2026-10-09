@@ -1,9 +1,11 @@
+import buildIdentity from "./build-identity.json";
+
 export type HostingEnv = Record<string, string | undefined>;
 function netlifyIdentity(env: HostingEnv) {
-  // Next replaces these two direct accesses with public build-time literals.
-  // DEPLOY_ID is not automatically available in Netlify's Node functions.
-  const builtId = process.env.SR_NETLIFY_DEPLOY_ID || env.SR_NETLIFY_DEPLOY_ID;
-  const builtSite = process.env.SR_NETLIFY_SITE_NAME || env.SR_NETLIFY_SITE_NAME;
+  // The build wrapper compiles only public identity into this module. The
+  // tracked empty template is restored after building for local source tests.
+  const builtId = buildIdentity.id || env.SR_NETLIFY_DEPLOY_ID;
+  const builtSite = buildIdentity.site || env.SR_NETLIFY_SITE_NAME;
   if (!!builtId !== !!builtSite) throw new Error("Incomplete deployment metadata");
   const id = builtId || env.DEPLOY_ID;
   const site = builtSite || env.SITE_NAME;

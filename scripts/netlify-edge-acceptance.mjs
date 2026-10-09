@@ -1,6 +1,9 @@
 // Executed by the adapter's supported Deno CLI, against the generated handlers.
 // Platform context and broker replies are synthetic; no hosted requests occur.
 const [rootUrl, transferFile] = Deno.args;
+for (const key of ["DEPLOY_ID", "SR_NETLIFY_DEPLOY_ID", "SR_NETLIFY_SITE_NAME", "AUTH_INTERNAL_BASE_URL"]) {
+  if (Deno.env.get(key)) throw new Error("Edge acceptance requires compiled identity without runtime overrides");
+}
 const file = path => new URL(path, rootUrl);
 const final = JSON.parse(await Deno.readTextFile(file(".netlify/edge-functions-dist/manifest.json")));
 const ingressName = "silent-rave-request-context";
