@@ -8,6 +8,9 @@ import { sanitizedBuildEnvironment } from "./build-netlify-env";
 import { buildCanaries } from "./build-canaries";
 import { assertBundledIngress } from "../netlify/plugins/ingress/integration.mjs";
 const root = process.cwd();
+const identity = JSON.parse(await readFile("reports/netlify-public-build-identity.json", "utf8"));
+assert.deepEqual(identity,
+  { id: "fixture", site: "silent-rave-fixture" }, "Compiled public identity must match the owned acceptance deployment");
 const fingerprint = await assertBundledIngress(root);
 const trace = JSON.parse(await readFile(".next/server/middleware.js.nft.json", "utf8"));
 assert(trace.files.length > 0);
@@ -33,14 +36,15 @@ const { DenoBridge } = await import(pathToFileURL(modulePath).href);
 const bridge = new DenoBridge({ useGlobal: true });
 const transferFile = path.resolve(".test-runtime/step5c1-edge-node-transfers.json");
 const env = { ...sanitizedBuildEnvironment(process.env), NODE_ENV: "production", HOST_PLATFORM: "netlify", ROOT_DOMAIN: "silent-rave.example.test",
-  PUBLIC_BASE_URL: "https://silent-rave.example.test", DEPLOY_ID: "fixture", AUTH_INTERNAL_BASE_URL: "https://fixture--silent-rave-fixture.netlify.app",
+  PUBLIC_BASE_URL: "https://silent-rave.example.test",
   PROXY_AUTH_SECRET: "synthetic-runtime-broker-0000000000000000", NETLIFY_INGRESS_SECRET: "synthetic-runtime-ingress-0000000000000000" };
 const result = await bridge.run(["run", "-A", "--no-check", "--unstable-sloppy-imports", path.resolve("scripts/netlify-edge-acceptance.mjs"), pathToFileURL(root + path.sep).href, transferFile], { env, extendEnv: false });
 const edge = JSON.parse(result.stdout.trim().split("\n").at(-1)!);
 const transfers = JSON.parse(await readFile(transferFile, "utf8")) as { url: string; method: string; headers: [string, string][] }[];
 assert(transfers.length >= 2);
 for (const value of transfers) {
-  const context = readTrustedContextNode(new Request(value.url, { method: value.method, headers: value.headers }), env);
+  const context = readTrustedContextNode(new Request(value.url, { method: value.method, headers: value.headers }),
+    { ...env, SR_NETLIFY_DEPLOY_ID: identity.id, SR_NETLIFY_SITE_NAME: identity.site });
   assert.equal(context.clientIp, "203.0.113.7"); assert.equal(context.deploymentId, "fixture");
 }
 await writeFile(`reports/step5c1-${process.platform}-edge-acceptance.json`, JSON.stringify({ fingerprint, proxyTraceFingerprint: createHash("sha256").update(JSON.stringify(trace)).digest("hex"),

@@ -100,6 +100,13 @@ export function inspectLaunchConfig(env: Env) {
   );
   const direct = databaseUrl(env.DIRECT_URL);
   check(
+    "hosted-database-ca",
+    env.HOST_PLATFORM === "netlify" && env.DATABASE_CA_PROVIDER === "supabase" &&
+      runtime?.searchParams.get("sslaccept") === "strict" &&
+      !["sslcert", "sslrootcert", "sslidentity", "sslpassword", "host"].some(key => runtime?.searchParams.has(key)),
+    "Select the bundled Netlify/Supabase CA adapter and strict TLS; hosted runtime URLs must not carry local certificate paths.",
+  );
+  check(
     "migration-database",
     !!direct && direct.port !== "6543" && !direct.searchParams.has("pgbouncer"),
     "Migration URL must use a TLS direct/session connection, never transaction pooling.",

@@ -1,5 +1,11 @@
 # Step 5C.1 Netlify runtime/auth compatibility
 
+Current runtime configuration changes are documented in
+[NETLIFY_RUNTIME_CONFIGURATION.md](NETLIFY_RUNTIME_CONFIGURATION.md). Netlify's
+public build identity is now embedded in Node and Edge handlers, so hosted Node
+functions do not need a runtime DEPLOY_ID or AUTH_INTERNAL_BASE_URL setting.
+The results and stop boundary below describe the historical Step 5C.1 milestone.
+
 Status: **COMPLETE; STOPPED FOR PR REVIEW**, 2026-10-06. The approved build
 integration and runtime adaptation are implemented on
 `feat/step5c1-netlify-runtime-auth`, [PR #6](https://github.com/tochigit/silent-rave/pull/6).
@@ -78,8 +84,10 @@ output scans check secret removal; proxy traces must remain native-free.
 [Offline CLI build](https://cli.netlify.com/commands/build/)
 
 Runtime requires HOST_PLATFORM=netlify, HTTPS PUBLIC_BASE_URL and ROOT_DOMAIN,
-DEPLOY_ID, immutable AUTH_INTERNAL_BASE_URL for that deployment, PROXY_AUTH_SECRET
-and distinct NETLIFY_INGRESS_SECRET. Missing configuration denies. Edge and Node
+public DEPLOY_ID/SITE_NAME captured during the build, PROXY_AUTH_SECRET
+and distinct NETLIFY_INGRESS_SECRET. The broker origin is derived from the embedded
+identity. An optional AUTH_INTERNAL_BASE_URL must match that exact deployment.
+Missing configuration denies. Edge and Node
 runtime scopes require later hosted setup and smoke tests; TOML build variables
 alone do not supply runtime secrets. Local mode is nonproduction loopback only.
 [Edge variables](https://docs.netlify.com/build/edge-functions/environment-variables/)
