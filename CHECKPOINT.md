@@ -1,3 +1,30 @@
+# Silent Rave normal setup: runtime deployment package
+
+9 October 2026. The owner deferred Backblaze and authorized normal Supabase,
+Storage, email and domain setup, then approved finishing runtime configuration
+and preparing deployment. This supersedes the earlier preparation-only boundary.
+Batch B PR #10 is merged; the current branch starts from main
+783893b829597c18d2558f146e4cadbf858f39f3.
+
+Branch: feat/netlify-runtime-configuration. The change bundles Supabase's pinned
+public database CA for strict Prisma TLS and embeds public Netlify build identity
+for same-deployment Node/Edge authentication. No migration, visual or scanner
+changes. Read .docs/NETLIFY_RUNTIME_CONFIGURATION.md and the current Desktop
+Silent Rave - Normal setup continuation.md for checks and publication state.
+
+All 29 production runtime variables were applied to the NEW silentrave-app site
+and privately read back exactly. The actual Resend callback/signing secret is
+configured; its webhook remains disabled. No DIRECT_URL/operator/owner/fixture
+variables were supplied to the site. Netlify Free default all scopes are used;
+no paid Secrets Controller or per-variable scope restrictions are claimed.
+
+readyForLaunch=false. The app is unpublished. HTTPS is awaiting automatic Netlify
+provisioning. No scheduler, owner seed/reset, real email, PR merge or deployment
+is authorized by this preparation step. Preserve PR #11, all branches and the
+older preview. Backblaze remains deferred.
+
+## Historical Batch B code review checkpoint
+
 # Silent Rave Batch B complete for code review
 
 2026-10-08, Africa/Lagos. User authorized "merge and continue next batch".

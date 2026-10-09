@@ -165,7 +165,8 @@ as the settled domain example. The offline checker accepts inherited candidates.
 | Variables | Production requirement |
 |---|---|
 | ROOT_DOMAIN / PUBLIC_BASE_URL | `silentrave.space` / `https://silentrave.space`; admin/staff are exact subdomains. Preview must use an isolated root plus both subdomains and independent secrets/data, or stay local-only. |
-| DATABASE_URL | Provider Connect dialog's runtime transaction pooler, TLS (`sslmode=require` or verify-full), `pgbouncer=true`, initial connection_limit=1. Project identity verified manually. |
+| DATABASE_URL | Restricted runtime login through the Supabase transaction pooler: `sslmode=require&sslaccept=strict&pgbouncer=true&connection_limit=1`. No local certificate path. Project identity verified separately. |
+| DATABASE_CA_PROVIDER | `supabase` selects the pinned public CA bundled with the Netlify runtime; it materializes an absolute certificate path on temporary disk. |
 | DIRECT_URL | Matching direct or session pooler, TLS, no transaction pooling. Migrator credentials only in an approved operator environment. Build generation needs a syntactically valid placeholder; migration is separate from build. |
 | STATUS_TOKEN_SECRET / TICKET_SIGNING_PRIVATE_KEY / TICKET_SIGNING_KID / optional old public keys | Preserve any existing production identity; for new isolated setup generate random secret and Ed25519 seed/key ID. Retain historic public keys for existing tickets. |
 | STORAGE_DRIVER / STORAGE_SIGNING_SECRET | Batch A implements bounded Supabase HTTP and application-signed private reads. Server-only SUPABASE_URL / SUPABASE_STORAGE_SERVER_KEY and SR_PRIVATE_BUCKET / SR_BANNER_BUCKET are specified in [doc 10](10-uploads-durable-storage.md). Provisioning, legacy reconciliation and hosted acceptance remain separate. |

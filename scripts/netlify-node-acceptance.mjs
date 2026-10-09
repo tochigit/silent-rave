@@ -7,6 +7,7 @@ import { strict as assert } from "node:assert";
 const input = JSON.parse(await readFile(process.argv[2], "utf8"));
 assert(process.versions.node.startsWith("24."), "Packaged runtime requires Node 24");
 assert(process.env.SILENT_RAVE_ISOLATED_FIXTURE === "1" && new URL(process.env.DATABASE_URL).hostname === "127.0.0.1", "Owned loopback fixture required");
+assert(!process.env.DEPLOY_ID && !process.env.AUTH_INTERNAL_BASE_URL, "Compiled deployment identity must supply the Node broker origin");
 process.chdir(input.functionRoot);
 // This harness has no provider credentials and must never contact a provider.
 const originalFetch = globalThis.fetch;
@@ -85,7 +86,7 @@ try {
   await db.staffUser.update({ where: { id: input.staffId }, data: { mustChangePassword: false, isActive: false } });
   const inactive = await call("/api/staff/session", { headers: staff }); assert.equal(inactive.status, 401); await inactive.arrayBuffer(); privateResponse(inactive);
   const brokerBody = { v: 1, token: input.ownerToken, surface: "admin", method: "GET", originalPathname: "/admin/future", effectivePathname: "/admin/future", publicOrigin: root };
-  const broker = await call("/api/internal/session-decision", { method: "POST", headers: { "content-type": "application/json", "x-proxy-auth": process.env.PROXY_AUTH_SECRET }, body: JSON.stringify(brokerBody) }, true, process.env.AUTH_INTERNAL_BASE_URL);
+  const broker = await call("/api/internal/session-decision", { method: "POST", headers: { "content-type": "application/json", "x-proxy-auth": process.env.PROXY_AUTH_SECRET }, body: JSON.stringify(brokerBody) }, true, "https://fixture--silent-rave-fixture.netlify.app");
   assert.equal(broker.status, 200); privateResponse(broker);
   const decision = await broker.json(); assert.equal(decision.decision, "ALLOW"); assert.equal(decision.deploymentId, "fixture"); assert(!("user" in decision) && !("token" in decision));
   const pdf = await call(input.pdfPath, { headers: { "x-status-token": input.pdfToken } }); assert.equal(pdf.status, 200, "Packaged PDF endpoint"); assert.equal(pdf.headers.get("content-type"), "application/pdf");
@@ -113,7 +114,7 @@ try {
   const revokedToken = await call(input.pdfPath, { headers: { "x-status-token": input.pdfToken } }); assert.equal(revokedToken.status, 404); privateResponse(revokedToken); await revokedToken.arrayBuffer();
   await Promise.all(backgrounds);
   await writeFile(input.output, JSON.stringify({ node: process.version, platform: process.platform, finalZipIsolation: true, functionZipFingerprint: input.functionZipFingerprint, packagedPrismaQuery: true, packagedSharpUpload: true, exifRemoved: true,
-    independentLiveGuards: true, secretGatedBroker: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, permissionChangesDuringStorageRead: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
+    independentLiveGuards: true, secretGatedBroker: true, compiledDeploymentIdentity: true, nodeDeployIdAbsent: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, permissionChangesDuringStorageRead: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
   console.log("Packaged Node handler and native dependency checks passed.");
   await db.$disconnect(); process.exit(0);
 } catch (error) {

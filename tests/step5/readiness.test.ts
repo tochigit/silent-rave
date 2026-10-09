@@ -8,10 +8,12 @@ import { assertFixtureEnvironment } from "../../scripts/fixture";
 const secret = Buffer.alloc(32, 7).toString("base64url");
 const candidate = {
   NODE_ENV: "production",
+  HOST_PLATFORM: "netlify",
+  DATABASE_CA_PROVIDER: "supabase",
   ROOT_DOMAIN: "silentrave.space",
   PUBLIC_BASE_URL: "https://silentrave.space",
   DATABASE_URL:
-    "postgresql://candidate:dummy-secret@pooler.example.test:6543/postgres?sslmode=require&pgbouncer=true&connection_limit=1",
+    "postgresql://candidate:dummy-secret@pooler.example.test:6543/postgres?sslmode=require&sslaccept=strict&pgbouncer=true&connection_limit=1",
   DIRECT_URL:
     "postgresql://migration_operator:dummy-secret@pooler.example.test:5432/postgres?sslmode=require",
   RATE_LIMIT_DRIVER: "postgres",
@@ -74,6 +76,8 @@ test("rejects unsafe origins, parent domains and preview-host buyer links", () =
   blocked({ ALLOW_DEV_ORIGIN: "1" }, "production-origin-policy");
 });
 test("requires TLS, bounded runtime connections and migration-safe pooler split", () => {
+  blocked({ DATABASE_CA_PROVIDER: "" }, "hosted-database-ca");
+  blocked({ DATABASE_URL: candidate.DATABASE_URL + "&sslcert=C%3A%2Foperator%2Fca.pem" }, "hosted-database-ca");
   blocked(
     {
       DATABASE_URL: candidate.DATABASE_URL.replace(

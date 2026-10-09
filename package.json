@@ -8,6 +8,7 @@
     "build": "bun run scanner:build && prisma generate && next build",
     "build:netlify": "bun --no-env-file scripts/build-netlify.ts",
     "test:runtime-policy": "bun --no-env-file test tests/step5c1/policy.test.ts",
+    "test:runtime-configuration": "bun --no-env-file test tests/step5c1/policy.test.ts tests/step5c1/runtime-configuration.test.ts",
     "check:route-policy": "bun --no-env-file scripts/check-route-policy.ts",
     "test:step5c1": "bun --no-env-file scripts/run-step5c1.ts",
     "test:step5a": "bun --no-env-file scripts/run-step5a.ts",

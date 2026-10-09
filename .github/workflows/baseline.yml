@@ -46,7 +46,7 @@ jobs:
       - name: Build isolated client preview
         run: bun --no-env-file run preview:build
       - run: bun --no-env-file run test:readiness
-      - run: bun --no-env-file run test:runtime-policy
+      - run: bun --no-env-file run test:runtime-configuration
       - run: bun --no-env-file run check:route-policy
       - uses: actions/setup-python@v5
         with:

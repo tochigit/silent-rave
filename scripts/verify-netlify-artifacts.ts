@@ -33,7 +33,7 @@ const { DenoBridge } = await import(pathToFileURL(modulePath).href);
 const bridge = new DenoBridge({ useGlobal: true });
 const transferFile = path.resolve(".test-runtime/step5c1-edge-node-transfers.json");
 const env = { ...sanitizedBuildEnvironment(process.env), NODE_ENV: "production", HOST_PLATFORM: "netlify", ROOT_DOMAIN: "silent-rave.example.test",
-  PUBLIC_BASE_URL: "https://silent-rave.example.test", DEPLOY_ID: "fixture", AUTH_INTERNAL_BASE_URL: "https://fixture--silent-rave-fixture.netlify.app",
+  PUBLIC_BASE_URL: "https://silent-rave.example.test", SR_NETLIFY_DEPLOY_ID: "fixture", SR_NETLIFY_SITE_NAME: "silent-rave-fixture",
   PROXY_AUTH_SECRET: "synthetic-runtime-broker-0000000000000000", NETLIFY_INGRESS_SECRET: "synthetic-runtime-ingress-0000000000000000" };
 const result = await bridge.run(["run", "-A", "--no-check", "--unstable-sloppy-imports", path.resolve("scripts/netlify-edge-acceptance.mjs"), pathToFileURL(root + path.sep).href, transferFile], { env, extendEnv: false });
 const edge = JSON.parse(result.stdout.trim().split("\n").at(-1)!);

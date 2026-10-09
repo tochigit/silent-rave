@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
+import { publicDeploymentEnvironment } from "./scripts/build-netlify-env";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Only public provider metadata is inlined. Runtime secrets stay out of env.
+  env: publicDeploymentEnvironment(process.env),
   // Tokens belong only in private links, never in development request logs.
   logging: { incomingRequests: false },
   async headers() {

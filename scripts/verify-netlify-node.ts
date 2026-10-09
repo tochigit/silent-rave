@@ -50,7 +50,7 @@ try {
     proofPath: `/api/orders/${pending.order.orderCode}/proof`, proofToken: deriveStatusToken(pending.order.id, pending.order.statusTokenVersion), proofOrderId: pending.order.id }), { mode: 0o600 });
   await db.$disconnect();
   const env = { ...fixture.env, DATABASE_URL: fixture.appDatabaseUrl!, DIRECT_URL: fixture.appDatabaseUrl!, NODE_ENV: "production", HOST_PLATFORM: "netlify", ROOT_DOMAIN: "silent-rave.example.test", PUBLIC_BASE_URL: "https://silent-rave.example.test",
-    DEPLOY_ID: "fixture", AUTH_INTERNAL_BASE_URL: "https://fixture--silent-rave-fixture.netlify.app", NETLIFY_INGRESS_SECRET: randomBytes(32).toString("base64url"), NODE_PATH: "" };
+    DEPLOY_ID: "", SITE_NAME: "silent-rave-fixture", AUTH_INTERNAL_BASE_URL: "", NETLIFY_INGRESS_SECRET: randomBytes(32).toString("base64url"), NODE_PATH: "" };
   await runCommand(["node", path.resolve("scripts/netlify-node-acceptance.mjs"), input], env);
   const check = Bun.spawn(["python", "scripts/verify-ticket-pdf.py", pdf], { stdout: "pipe", stderr: "pipe" });
   const text = await new Response(check.stdout).text(); await new Response(check.stderr).text();
