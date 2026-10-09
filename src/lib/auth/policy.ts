@@ -5,6 +5,11 @@ export const SESSION_REFRESH_THRESHOLD_MS = 3 * 60 * 60 * 1000;
 export const ADMIN_API_ROLES = ["OWNER"] as const;
 export const STAFF_API_ROLES = ["STAFF", "OWNER"] as const;
 export type Surface = "admin" | "staff";
+// Public, first-party PWA shell only. Ticket data and sync remain guarded APIs.
+export const SCANNER_ASSETS = [
+  "/scanner.html", "/scanner.js", "/scanner.css", "/scanner-sw.js",
+  "/scanner.webmanifest", "/scanner-icon.svg", "/scanner-icon-192.png", "/scanner-icon-512.png",
+] as const;
 export const privateHeaders = {
   "Cache-Control": "private, no-store",
   "CDN-Cache-Control": "no-store",
@@ -33,7 +38,7 @@ export function routePolicy(hostname: string, pathname: string, rootDomain = pro
   const crossSurface = hostSurface === "admin" && (under(pathname, "/staff") || under(pathname, "/api/staff")) ||
     hostSurface === "staff" && (under(pathname, "/admin") || under(pathname, "/api/admin"));
   const apiSurface = under(pathname, "/api/admin") ? "admin" : under(pathname, "/api/staff") ? "staff" : null;
-  const effectivePathname = hostSurface && !under(pathname, "/api") && !under(pathname, `/${hostSurface}`)
+  const effectivePathname = hostSurface && !SCANNER_ASSETS.some(path => path === pathname) && !under(pathname, "/api") && !under(pathname, `/${hostSurface}`)
     ? `/${hostSurface}${pathname === "/" ? "" : pathname}` : pathname;
   const pageSurface = under(effectivePathname, "/admin") ? "admin" : under(effectivePathname, "/staff") ? "staff" : null;
   const surface: Surface | null = apiSurface ?? pageSurface;

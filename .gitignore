@@ -64,3 +64,11 @@ public/scanner.js
 public/scanner-sw.js
 public/scanner-icon-192.png
 public/scanner-icon-512.png
+
+# Generated verification output; preserve local files and publish CI artifacts.
+/reports/
+
+
+
+#reference
+references

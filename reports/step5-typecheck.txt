@@ -1,8 +1,0 @@
-bun : $ tsc --noEmit && tsc --noEmit -p tsconfig.tooling.json
-At line:2 char:1
-+ bun --no-env-file run typecheck *> 'reports\step5-typecheck.txt'; $co ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: ($ tsc --noEmit ...ig.tooling.json:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
-
-Exit code: 0. Both application and tooling TypeScript configurations passed.

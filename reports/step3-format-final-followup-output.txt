@@ -1,6 +1,0 @@
-src/components/customer/event-detail.tsx 1849ms
-src/components/customer/order-status.tsx 713ms
-scripts/browser-step3.ts 238ms
-scripts/run-phase4.ts 165ms
-tests/step3/status.test.ts 124ms
-tests/step3/catalog.test.ts 82ms

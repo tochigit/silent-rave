@@ -34,8 +34,8 @@ export function LoginForm({ intent }: { intent: "admin" | "staff" }) {
       }
 
       // Full navigation (not router.push) so the new cookie is guaranteed to
-      // be attached to the page request. "/admin" and "/staff" work both on
-      // the subdomains (proxy double-prefix guard) and as direct dev paths.
+      // be attached to the page request. The server selects the configured
+      // admin/staff origin in production and direct paths in local fixtures.
       window.location.assign(data.redirectTo ?? "/");
     } catch {
       setError("Network error — please try again");

@@ -8,8 +8,12 @@ const file = path => new URL(path, rootUrl);
 const final = JSON.parse(await Deno.readTextFile(file(".netlify/edge-functions-dist/manifest.json")));
 const ingressName = "silent-rave-request-context";
 const proxyName = "___netlify-edge-handler-node-middleware";
+// The adapter omits the proxy for these exact public files. Ingress still signs
+// their requests. Protected pages, APIs and scanner.html require both handlers.
+const staticShell = new Set(["/scanner.js", "/scanner.css", "/scanner-sw.js", "/scanner.webmanifest",
+  "/scanner-icon.svg", "/scanner-icon-192.png", "/scanner-icon-512.png"]);
 const transfers = [];
-let decision = "UNAUTHENTICATED", malformed = false, renewal;
+let decision = "UNAUTHENTICATED", malformed = false, renewal, brokerCalls = 0;
 let context;
 globalThis.Netlify = { env: { get: name => Deno.env.get(name) }, get context() { return context; } };
 const { default: ingress } = await import(file(`.netlify/edge-functions/${ingressName}/index.ts`));
@@ -17,6 +21,7 @@ const { default: proxy } = await import(file(`.netlify/edge-functions/${proxyNam
 const handlers = { [ingressName]: ingress, [proxyName]: proxy };
 const key = Deno.env.get("PROXY_AUTH_SECRET");
 globalThis.fetch = async (url, options) => {
+  brokerCalls++;
   check(String(url) === "https://fixture--silent-rave-fixture.netlify.app/api/internal/session-decision", "fixed broker destination");
   check(options.redirect === "error" && options.credentials === "omit" && options.cache === "no-store", "broker fetch controls");
   check(new Headers(options.headers).get("x-proxy-auth") === key, "broker header key");
@@ -29,10 +34,11 @@ function privateResponse(response) {
   for (const [name, value] of Object.entries({ "cache-control": "private, no-store", "cdn-cache-control": "no-store", "netlify-cdn-cache-control": "no-store", "referrer-policy": "no-referrer", "x-robots-tag": "noindex, nofollow" })) check(response.headers.get(name) === value, `private ${name}`);
   check(!response.headers.has("x-sr-context") && !response.headers.has("x-sr-signature") && !response.headers.has("x-proxy-auth"), "internal headers stay private");
 }
-async function execute(url, init = {}) {
+async function execute(url, init = {}, expectPrivate = true) {
   const request = new Request(url, init);
   const order = final.routes.filter(route => new RegExp(route.pattern).test(new URL(url).pathname)).map(route => route.function);
-  check(order[0] === ingressName && order[1] === proxyName, "final manifest order");
+  const expectedOrder = staticShell.has(new URL(url).pathname) ? [ingressName] : [ingressName, proxyName];
+  check(JSON.stringify(order) === JSON.stringify(expectedOrder), "final manifest order for protected routes and exact public shell");
   const trace = [];
   const dispatch = async (current, index) => {
     if (index === order.length) {
@@ -47,8 +53,8 @@ async function execute(url, init = {}) {
     return result ?? dispatch(current, index + 1);
   };
   const response = await dispatch(request, 0);
-  check(trace[0] === ingressName && trace[1] === proxyName, "actual ingress/proxy execution order");
-  privateResponse(response); return response;
+  check(JSON.stringify(trace) === JSON.stringify(expectedOrder), "actual ingress/proxy execution order");
+  if (expectPrivate) privateResponse(response); return response;
 }
 const root = "https://silent-rave.example.test";
 for (const path of ["/admin/future.feature", "/%61dmin/future", "/admin/future?_rsc=fixture"]) {
@@ -57,9 +63,20 @@ for (const path of ["/admin/future.feature", "/%61dmin/future", "/admin/future?_
     // Isolated synthetic requests only; expose the public failure category.
     console.error(JSON.stringify({ check: "protected future path", status: response.status, error: (await response.clone().text()).slice(0, 256) }));
   }
-  check(response.status === 307 && new URL(response.headers.get("location"), root).pathname === "/admin/login", "protected future path");
+  const destination = new URL(response.headers.get("location"), root);
+  check(response.status === 307 && destination.origin === "https://admin.silent-rave.example.test" &&
+    destination.pathname === decodeURIComponent(path.split("?")[0]), "root operations canonical destination");
+  const protectedPage = await execute(destination.href);
+  check(protectedPage.status === 307 && new URL(protectedPage.headers.get("location"), destination).pathname === "/login", "protected future path");
 }
 check((await execute(root + "/api/admin/future.feature")).status === 401, "protected future API");
+check(brokerCalls === 0, "empty sessions reject without a remote broker request");
+for (const path of ["/scanner.html", "/scanner.css", "/scanner.webmanifest", "/scanner-icon.svg"]) {
+  const response = await execute("https://staff.silent-rave.example.test" + path, {}, false);
+  check(response.status === 200 && transfers.at(-1).url === "https://staff.silent-rave.example.test" + path, "staff PWA asset path retained");
+}
+const scannerRedirect = await execute(root + "/scanner.html");
+check(scannerRedirect.status === 307 && scannerRedirect.headers.get("location") === "https://staff.silent-rave.example.test/scanner.html", "scanner canonical staff host");
 decision = "FORBIDDEN";
 check((await execute(root + "/api/admin/events", { headers: { cookie: `sr_session=${"A".repeat(43)}` } })).status === 403, "wrong role denied");
 decision = "ALLOW";
@@ -73,7 +90,7 @@ const renewed = await execute(root + "/api/staff/session", { headers: { cookie: 
 for (const value of ["HttpOnly", "Secure", "SameSite=lax", "Domain=.silent-rave.example.test", "Path=/"]) check(renewed.headers.get("set-cookie")?.includes(value), `renewal cookie ${value}`);
 renewal = undefined;
 malformed = true;
-check((await execute(root + "/api/staff/session")).status === 503, "malformed broker reply fails closed");
+check((await execute(root + "/api/staff/session", { headers: { cookie: `sr_session=${"A".repeat(43)}` } })).status === 503, "malformed broker reply fails closed");
 malformed = false;
 check((await execute("https://evil.test/admin")).status === 421, "unknown host denied");
 check((await execute(root + "/.netlify/functions/___netlify-server-handler")).status === 404, "direct function path denied");

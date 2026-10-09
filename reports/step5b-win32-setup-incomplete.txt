@@ -1,8 +1,0 @@
-step5b: baseline + Phase 4 + Step 3; real HTTP/PostgreSQL/sharp/PDF; capture/fake transport; injected clock/backdated rows.
-Fixture: isolated loopback PostgreSQL; root .env is untouched.
-waiting for server to start...... done
-server started
-waiting for server to shut down............................................................................................... done
-server stopped
-Phase 4 + Phase 3b runner failed: Command failed (255): --no-env-file node_modules/prisma/build/index.js generate
-Cleanup complete: owned app and database stopped; temporary fixture removed.

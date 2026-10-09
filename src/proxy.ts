@@ -3,6 +3,7 @@ import { readTrustedContext } from "@/lib/hosting/request-context";
 import { routePolicy, privateHeaders, SESSION_COOKIE_NAME, sessionCookieOptions } from "@/lib/auth/policy";
 import { sessionDecision } from "@/lib/auth/proxy-client";
 import { publicOrigins } from "@/lib/hosting/config";
+import { canonicalPageUrl } from "@/lib/auth/navigation";
 
 function privateResponse(response: NextResponse) {
   for (const [key, value] of Object.entries(privateHeaders)) response.headers.set(key, value);
@@ -20,12 +21,18 @@ export default async function proxy(request: NextRequest) {
   if (policy.crossSurface) return privateResponse(NextResponse.json({ error: "Forbidden" }, { status: 403 }));
   // Only the fixed secret-gated broker is reachable via the immutable service host.
   if (originalPathname === "/api/internal/session-decision") return privateResponse(NextResponse.next());
+  const canonical = canonicalPageUrl(context.hostname, originalPathname, request.nextUrl.search, request.method);
+  if (canonical) return privateResponse(NextResponse.redirect(canonical));
   const target = new URL(context.origin + request.nextUrl.pathname + request.nextUrl.search);
   target.pathname = policy.effectivePathname;
   const response = policy.effectivePathname !== originalPathname ? NextResponse.rewrite(target) : NextResponse.next();
   if (!policy.surface || policy.login) return policy.surface ? privateResponse(response) : response;
   try {
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value ?? "";
+    // No session can be authorized without a token. Avoid a remote broker round trip.
+    if (!token) return privateResponse(policy.api
+      ? NextResponse.json({ error: "Authentication required" }, { status: 401 })
+      : NextResponse.redirect(new URL(policy.loginPath, context.origin)));
     const decision = await sessionDecision({ v: 1, token, surface: policy.surface, method: request.method,
       originalPathname, effectivePathname: policy.effectivePathname, publicOrigin: context.origin });
     if (decision.decision === "UNAUTHENTICATED" || decision.decision === "FORBIDDEN") {
@@ -44,5 +51,5 @@ export default async function proxy(request: NextRequest) {
 }
 export const config = {
   // Dotted protected paths and RSC/prefetch are covered. No client skip header.
-  matcher: ["/((?!_next/static(?:/|$)|_next/image$|favicon\\.ico$|scanner\\.js$|scanner-sw\\.js$|scanner-icon-(?:192|512)\\.png$|manifest\\.webmanifest$|scanner\\.html$).*)"],
+  matcher: ["/((?!_next/static(?:/|$)|_next/image$|favicon\\.ico$|scanner\\.(?:js|css|webmanifest)$|scanner-sw\\.js$|scanner-icon\\.svg$|scanner-icon-(?:192|512)\\.png$|manifest\\.webmanifest$).*)"],
 };
