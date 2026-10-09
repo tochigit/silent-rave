@@ -269,6 +269,9 @@ try {
   await page.getByRole("button", { name: "Buy tickets", exact: true }).click();
   await page.waitForURL(/\/event\/nusa-evangel-silent-rave\/?#tickets/);
   await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  // React applies the ticket focus in an effect after the heading renders.
+  // Wait for that observable result before asserting it on slower CI runners.
+  await page.waitForFunction(() => document.activeElement?.id === "tickets");
   assert.equal(await page.locator(":focus").getAttribute("id"), "tickets");
   checks.push("Menu links navigate and close the menu, active page is marked and Buy tickets opens the event ticket section");
   await page.getByText("Add to calendar", { exact: false }).click();

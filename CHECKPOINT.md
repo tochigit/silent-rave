@@ -1,4 +1,33 @@
-# Silent Rave Nitro-inspired redesign: local owner review
+# Silent Rave: approved design and GitHub release preparation
+
+Latest user instruction: the current Nitro-inspired design is approved and will
+be used. Finish the remaining work promptly; the user wants deployment through
+GitHub. The earlier prohibition on deployments until styling is settled has had
+its styling condition satisfied. Specific PR merge approval is still required
+by the branch workflow; no merge or new deployment has occurred in this step.
+
+Release candidate: `feat/nitro-inspired-redesign`, PR #14, based on routing fixes
+PR #13 (`931b12be854ad6680ce57c0dde80661a5fb463b7`). Merge those in order after
+specific authorization and passing current checks. Preserve all branches.
+Use the EXISTING `silentrave-app` Netlify project, not the old static preview or
+a new project. `netlify.toml` already supplies the full Next.js build command;
+the sanitized build wrapper already captures native `DEPLOY_ID`/`SITE_NAME`.
+GitHub linking therefore needs no application or provider credential changes.
+
+CI 37998433378 passed Windows, GitGuardian and the Linux backend/build checks,
+but failed Linux static-preview acceptance: it sampled ticket focus after the
+heading became visible, before React's focus effect ran. The browser check now
+waits for the actual ticket focus before preserving the same assertion. Styling
+and application behavior are unchanged. Recheck the replacement commit's CI;
+the failed attempt is not a pass. Local lint/types and 60 preview checks passed
+before this harness correction. Record its new local result in the Desktop
+`Silent Rave - GitHub release continuation.md` and use that handoff next.
+
+Email processing/scheduler and real delivery/device acceptance remain separate
+unfinished work. Backblaze stays deferred. Do not call the website launch-ready
+from a successful build alone; `readyForLaunch=false`.
+
+## Historical first redesign review
 
 9 October 2026. The owner rejected the blended styling. The user requested a
 complete public-site makeover following https://www.nitroexperience.ng/ and the
