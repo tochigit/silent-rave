@@ -49,6 +49,18 @@ test("central policy covers future/dotted/encoded/RSC pages and API prefixes, ho
   const unknown = await api("/api/staff/session", { host: "evil.test", cookies: owner.cookies }); expect(unknown.status).toBe(421); isPrivate(unknown);
   const hidden = await api("/.netlify/functions/___netlify-server-handler", { cookies: owner.cookies }); expect(hidden.status).toBe(404); isPrivate(hidden);
 }, 90_000);
+test("staff scanner CSS, manifest and icon remain usable without a login or path rewrite", async () => {
+  for (const [path, type] of [["/scanner.css", "text/css"], ["/scanner.webmanifest", "application/manifest+json"], ["/scanner-icon.svg", "image/svg+xml"]]) {
+    const response = await api(path, { host: "staff.localhost:3000" });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain(type);
+    expect(response.headers.get("location")).toBeNull();
+    const text = await response.text();
+    expect(text).not.toContain("Sign in");
+    if (path === "/scanner.css") expect(text).toContain(":root");
+    if (path === "/scanner.webmanifest") expect(JSON.parse(text).start_url).toBe("/scanner.html");
+  }
+});
 test("full Origins reject scheme, port, sibling and forwarded-header spoofing", async () => {
   for (const origin of ["https://localhost:3000", "http://localhost:444", "http://staff.localhost:3000", "http://evil.test"]) {
     const plain = await api("/api/auth/login", { host: "localhost:3000", origin, body: {} });

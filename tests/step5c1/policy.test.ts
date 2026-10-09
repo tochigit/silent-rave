@@ -1,7 +1,12 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { routePolicy, canonicalPath, sessionCookieOptions } from "../../src/lib/auth/policy";
+import { routePolicy, canonicalPath, sessionCookieOptions, SCANNER_ASSETS } from "../../src/lib/auth/policy";
+import { surfaceUrl, canonicalPageUrl } from "../../src/lib/auth/navigation";
+import { originCheck } from "../../src/lib/auth/origin";
+import proxy, { config as proxyConfig } from "../../src/proxy";
+import { NextRequest } from "next/server";
+import { createHmac } from "node:crypto";
 import { publicOrigins, internalOrigin } from "../../src/lib/hosting/config";
 import { readTrustedContext } from "../../src/lib/hosting/request-context";
 import { readTrustedContextNode } from "../../src/lib/hosting/request-context-node";
@@ -26,6 +31,79 @@ test("pure policy protects dotted, encoded and host-rewritten future routes", ()
   for (const value of ["/admin%2fpayments", "/%2561dmin", "/staff%5cfoo"]) expect(() => canonicalPath(value)).toThrow();
   expect(sessionCookieOptions(new Date()).domain).toBe(".silentrave.space");
   expect(sessionCookieOptions(new Date()).secure).toBe(true);
+});
+test("every scanner shell asset retains its public staff path; lookalikes stay protected", () => {
+  const matcher = new RegExp(`^${proxyConfig.matcher[0]}$`);
+  for (const asset of SCANNER_ASSETS) {
+    const policy = routePolicy("staff.silentrave.space", asset);
+    expect(policy.effectivePathname).toBe(asset);
+    expect(policy.surface).toBeNull();
+    expect(matcher.test(asset)).toBe(asset === "/scanner.html");
+  }
+  for (const path of ["/scanner.css.map", "/scanner.webmanifest/private", "/staff/scanner.css", "/api/staff/scanner.js"]) {
+    expect(routePolicy("staff.silentrave.space", path).surface).toBe("staff");
+    expect(matcher.test(path)).toBe(true);
+  }
+});
+test("hosted auth destinations use the correct origin and local fixtures retain direct paths", () => {
+  expect(surfaceUrl("admin", "/admin")).toBe("https://admin.silentrave.space/admin");
+  expect(surfaceUrl("staff", "/staff/password")).toBe("https://staff.silentrave.space/staff/password");
+  expect(surfaceUrl("staff", "/staff")).toBe("https://staff.silentrave.space/staff");
+  expect(() => surfaceUrl("admin", "/staff")).toThrow();
+  expect(() => surfaceUrl("admin", "//evil.test")).toThrow();
+  const local = { HOST_PLATFORM: "local", NODE_ENV: "test", ROOT_DOMAIN: "localhost" };
+  expect(surfaceUrl("admin", "/admin", local)).toBe("/admin");
+  expect(canonicalPageUrl("localhost", "/admin", "", "GET", local)).toBeNull();
+});
+test("root operations and scanner pages canonicalize without changing API origins", () => {
+  expect(canonicalPageUrl("silentrave.space", "/admin/payment-accounts", "?page=2", "GET")?.href)
+    .toBe("https://admin.silentrave.space/admin/payment-accounts?page=2");
+  expect(canonicalPageUrl("silentrave.space", "/staff/password", "", "HEAD")?.href)
+    .toBe("https://staff.silentrave.space/staff/password");
+  expect(canonicalPageUrl("silentrave.space", "/scanner.html", "", "GET")?.href)
+    .toBe("https://staff.silentrave.space/scanner.html");
+  for (const [host, path, method] of [
+    ["staff.silentrave.space", "/scanner.html", "GET"], ["evil.test", "/admin", "GET"],
+    ["silentrave.space", "/api/admin/payment-accounts", "POST"], ["silentrave.space", "/admin", "POST"],
+  ]) expect(canonicalPageUrl(host, path, "", method)).toBeNull();
+});
+function signedRequest(url: string, method = "GET", origin?: string, cookie?: string) {
+  const target = new URL(url);
+  const raw = JSON.stringify({ v: 1, hostname: target.hostname, origin: target.origin, clientIp: "203.0.113.7",
+    method, originalPathname: target.pathname, deploymentId: "fixture", issuedAt: Date.now() });
+  const headers = new Headers({ "x-sr-context": raw,
+    "x-sr-signature": createHmac("sha256", process.env.NETLIFY_INGRESS_SECRET!).update(raw).digest("hex") });
+  if (origin) headers.set("origin", origin);
+  if (cookie) headers.set("cookie", cookie);
+  return new NextRequest(url, { method, headers });
+}
+test("owner navigation satisfies the bank origin check without relaxing cross-site rejection", () => {
+  const origin = new URL(surfaceUrl("admin", "/admin")).origin;
+  const bank = `${origin}/api/admin/payment-accounts`;
+  expect(originCheck(signedRequest(bank, "POST", origin), "admin").ok).toBe(true);
+  for (const wrong of ["https://silentrave.space", "https://staff.silentrave.space", "https://evil.test"]) {
+    expect(originCheck(signedRequest(bank, "POST", wrong), "admin").ok).toBe(false);
+  }
+  expect(originCheck(signedRequest(bank, "POST"), "admin").ok).toBe(false);
+});
+test("empty sessions and canonical redirects do not wait on the broker", async () => {
+  const previous = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (() => { calls++; throw new Error("Broker should not be contacted"); }) as unknown as typeof fetch;
+  try {
+    const page = await proxy(signedRequest("https://staff.silentrave.space/staff"));
+    expect(page.status).toBe(307);
+    expect(page.headers.get("location")).toBe("https://staff.silentrave.space/login");
+    const api = await proxy(signedRequest("https://admin.silentrave.space/api/admin/payment-accounts", "POST"));
+    expect(api.status).toBe(401);
+    const canonical = await proxy(signedRequest("https://silentrave.space/admin/payment-accounts?page=2"));
+    expect(canonical.headers.get("location")).toBe("https://admin.silentrave.space/admin/payment-accounts?page=2");
+    for (const response of [page, api, canonical]) expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(calls).toBe(0);
+    const hasToken = await proxy(signedRequest("https://admin.silentrave.space/api/admin/events", "GET", undefined, `sr_session=${"A".repeat(43)}`));
+    expect(hasToken.status).toBe(503);
+    expect(calls).toBe(1);
+  } finally { globalThis.fetch = previous; }
 });
 test("hosting configuration binds full origins and the immutable same-deploy broker", () => {
   expect(publicOrigins()).toEqual(["https://silentrave.space", "https://admin.silentrave.space", "https://staff.silentrave.space"]);

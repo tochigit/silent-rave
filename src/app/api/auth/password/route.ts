@@ -12,6 +12,7 @@ import {
   rateLimitResponse,
 } from "@/lib/rate-limit";
 import { writeAudit } from "@/lib/audit";
+import { surfaceUrl } from "@/lib/auth/navigation";
 export async function POST(request: NextRequest) {
   try {
     const session = await getSessionUserFromRequest(request);
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       });
       return reply({
         ok: true,
-        redirectTo: user.role === "OWNER" ? "/admin" : "/staff",
+        redirectTo: user.role === "OWNER" ? surfaceUrl("admin", "/admin") : surfaceUrl("staff", "/staff"),
       });
     } catch (error) {
       return failure(error);

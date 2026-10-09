@@ -14,6 +14,7 @@ import {
   rateLimitResponse,
 } from "@/lib/rate-limit";
 import { originCheck } from "@/lib/auth/origin";
+import { surfaceUrl } from "@/lib/auth/navigation";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/auth/login — shared login endpoint for both OWNER and STAFF
@@ -122,14 +123,14 @@ export async function POST(request: NextRequest) {
     });
 
     const redirectTo = user.mustChangePassword
-      ? "/staff/password"
+      ? surfaceUrl("staff", "/staff/password")
       : intent === "staff"
-        ? "/staff"
+        ? surfaceUrl("staff", "/staff")
         : intent === "admin"
-          ? "/admin"
+          ? surfaceUrl("admin", "/admin")
           : user.role === "OWNER"
-            ? "/admin"
-            : "/staff";
+            ? surfaceUrl("admin", "/admin")
+            : surfaceUrl("staff", "/staff");
 
     const response = NextResponse.json(
       { ok: true, role: user.role, redirectTo },

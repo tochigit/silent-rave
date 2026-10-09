@@ -80,6 +80,33 @@ try {
   const ownerRead = await call("/api/admin/events", { headers: owner }); assert.equal(ownerRead.status, 200); await ownerRead.arrayBuffer(); privateResponse(ownerRead);
   const denied = await call("/api/admin/events", { headers: staff }); assert.equal(denied.status, 403); await denied.arrayBuffer(); privateResponse(denied);
   const untrusted = await call("/api/admin/events", { headers: owner }, false); assert.equal(untrusted.status, 421); await untrusted.arrayBuffer(); privateResponse(untrusted);
+  // Regression: real production auth navigation must land on the same admin
+  // origin required by bank writes. Every mutation below is owned fixture data.
+  const ownerIdentity = await db.staffUser.findUniqueOrThrow({ where: { email: process.env.OWNER_EMAIL } });
+  assert(process.env.OWNER_PASSWORD, "Owned fixture password required");
+  const adminOrigin = "https://admin.silent-rave.example.test", staffOrigin = "https://staff.silent-rave.example.test";
+  const loggedIn = await call("/api/auth/login", { method: "POST", headers: { origin: root, "content-type": "application/json" },
+    body: JSON.stringify({ email: ownerIdentity.email, password: process.env.OWNER_PASSWORD, intent: "admin" }) });
+  assert.equal(loggedIn.status, 200); assert.equal((await loggedIn.json()).redirectTo, adminOrigin + "/admin");
+  const bankBody = JSON.stringify({ bank_name: "Native routing fixture", account_number: "0000000000",
+    account_name: "Synthetic fixture only", is_active: false, password: process.env.OWNER_PASSWORD });
+  const badOrigin = await call("/api/admin/payment-accounts", { method: "POST", headers: { ...owner, origin: root, "content-type": "application/json" }, body: bankBody });
+  assert.equal(badOrigin.status, 403); assert.equal((await badOrigin.json()).error, "Origin not allowed");
+  const bank = await call("/api/admin/payment-accounts", { method: "POST", headers: { ...owner, origin: adminOrigin, "content-type": "application/json" }, body: bankBody }, true, adminOrigin);
+  assert.equal(bank.status, 201, "Password-confirmed bank creation from canonical admin origin");
+  const createdBank = await bank.json(); assert.equal(createdBank.is_active, false);
+  assert.equal((await db.paymentAccount.findUniqueOrThrow({ where: { id: createdBank.id } })).bankName, "Native routing fixture");
+  const firstLoginUser = await db.staffUser.create({ data: { name: "Native navigation fixture", email: `navigation-${crypto.randomUUID()}@example.test`,
+    passwordHash: ownerIdentity.passwordHash, role: "STAFF", mustChangePassword: true } });
+  const firstLogin = await call("/api/auth/login", { method: "POST", headers: { origin: adminOrigin, "content-type": "application/json" },
+    body: JSON.stringify({ email: firstLoginUser.email, password: process.env.OWNER_PASSWORD }) }, true, adminOrigin);
+  assert.equal(firstLogin.status, 200); assert.equal((await firstLogin.json()).redirectTo, staffOrigin + "/staff/password");
+  const firstCookie = firstLogin.headers.get("set-cookie")?.match(/^sr_session=([^;]+)/);
+  assert(firstCookie, "Fixture first login cookie");
+  const changed = await call("/api/auth/password", { method: "POST", headers: { origin: staffOrigin, "content-type": "application/json", cookie: `sr_session=${firstCookie[1]}` },
+    body: JSON.stringify({ current_password: process.env.OWNER_PASSWORD, new_password: "native-navigation-fixture-password" }) }, true, staffOrigin);
+  assert.equal(changed.status, 200); assert.equal((await changed.json()).redirectTo, staffOrigin + "/staff");
+  assert.equal((await db.staffUser.findUniqueOrThrow({ where: { id: firstLoginUser.id } })).mustChangePassword, false);
   const staffRead = await call("/api/staff/session", { headers: staff }); assert.equal(staffRead.status, 200); await staffRead.arrayBuffer(); privateResponse(staffRead);
   await db.staffUser.update({ where: { id: input.staffId }, data: { mustChangePassword: true } });
   const temporary = await call("/api/staff/session", { headers: staff }); assert.equal(temporary.status, 403); await temporary.arrayBuffer(); privateResponse(temporary);
@@ -114,7 +141,7 @@ try {
   const revokedToken = await call(input.pdfPath, { headers: { "x-status-token": input.pdfToken } }); assert.equal(revokedToken.status, 404); privateResponse(revokedToken); await revokedToken.arrayBuffer();
   await Promise.all(backgrounds);
   await writeFile(input.output, JSON.stringify({ node: process.version, platform: process.platform, finalZipIsolation: true, functionZipFingerprint: input.functionZipFingerprint, packagedPrismaQuery: true, packagedSharpUpload: true, exifRemoved: true,
-    independentLiveGuards: true, secretGatedBroker: true, compiledDeploymentIdentity: true, nodeDeployIdAbsent: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, permissionChangesDuringStorageRead: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
+    independentLiveGuards: true, canonicalAuthNavigation: true, passwordConfirmedBankOrigin: true, firstLoginSurfaceRedirect: true, secretGatedBroker: true, compiledDeploymentIdentity: true, nodeDeployIdAbsent: true, syntheticFrameworkCache: true, fakeStorageHttp: true, linkedStorageAccounting: true, applicationSignedProof: true, permissionChangesDuringStorageRead: true, packagedPdf: true, fonts: input.fonts }, null, 2) + "\n");
   console.log("Packaged Node handler and native dependency checks passed.");
   await db.$disconnect(); process.exit(0);
 } catch (error) {
