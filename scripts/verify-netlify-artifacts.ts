@@ -8,6 +8,9 @@ import { sanitizedBuildEnvironment } from "./build-netlify-env";
 import { buildCanaries } from "./build-canaries";
 import { assertBundledIngress } from "../netlify/plugins/ingress/integration.mjs";
 const root = process.cwd();
+const nextBuild = JSON.parse(await readFile(".next/required-server-files.json", "utf8"));
+assert.deepEqual({ id: nextBuild.config.env.SR_NETLIFY_DEPLOY_ID, site: nextBuild.config.env.SR_NETLIFY_SITE_NAME },
+  { id: "fixture", site: "silent-rave-fixture" }, "Compiled public identity must match the owned acceptance deployment");
 const fingerprint = await assertBundledIngress(root);
 const trace = JSON.parse(await readFile(".next/server/middleware.js.nft.json", "utf8"));
 assert(trace.files.length > 0);

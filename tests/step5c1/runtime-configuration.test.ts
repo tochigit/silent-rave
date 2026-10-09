@@ -20,6 +20,9 @@ test("public build metadata supplies the immutable broker without a Node DEPLOY_
   expect(Object.values(env)).not.toContain("private-runtime-url");
   expect(Object.values(env)).not.toContain("private-mail-key");
   expect(Object.values(env)).not.toContain("private-auth-key");
+  const nested = sanitizedBuildEnvironment({ ...env, DEPLOY_ID: "offline-cli-deploy", SITE_NAME: "offline-cli-site" });
+  expect(nested.SR_NETLIFY_DEPLOY_ID).toBe("review123");
+  expect(nested.SR_NETLIFY_SITE_NAME).toBe("silentrave-app");
 });
 test("partial, malformed and conflicting public deployment identities fail closed", () => {
   for (const env of [{ DEPLOY_ID: "review123" }, { SITE_NAME: "silentrave-app" },

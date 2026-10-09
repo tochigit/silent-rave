@@ -1,8 +1,10 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 export function publicDeploymentEnvironment(input: Record<string, string | undefined>) {
-  const id = input.DEPLOY_ID || input.SR_NETLIFY_DEPLOY_ID;
-  const site = input.SITE_NAME || input.SR_NETLIFY_SITE_NAME;
+  // A second build wrapper preserves the identity captured by the first one.
+  // Offline Netlify CLI adds its own synthetic platform values afterwards.
+  const id = input.SR_NETLIFY_DEPLOY_ID || input.DEPLOY_ID;
+  const site = input.SR_NETLIFY_SITE_NAME || input.SITE_NAME;
   if (!id && !site) return {};
   if (!id || !site || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(id) ||
     !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(site)) {
