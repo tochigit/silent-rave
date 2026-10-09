@@ -50,7 +50,8 @@ The user also requested repository cleanup and removal of Netlify's badge.
 Generated `reports/` outputs are ignored and removed from the Git index; every
 local report remains on disk and historical commits retain the earlier evidence.
 Verification scripts create their output directories and CI continues uploading
-fresh reports as artifacts. Source, scripts, migrations, specifications, lockfiles
+fresh reports as artifacts. ESLint also excludes these generated reports rather
+than scanning retained historical artifacts. Source, scripts, migrations, specifications, lockfiles
 and required tracked client references remain. The user's reference-ignore rule
 is preserved; tracked reference files still belong to the repository and CI.
 
@@ -61,6 +62,8 @@ both Browser and Windows Computer Use are unavailable, so the user was given
 the exact setting once. The user confirmed saving it off. A subsequent native
 HTTPS readback failed its TLS handshake; that attempt proves no page state.
 Current successful readback, if any, is recorded in the Desktop handoff.
+Fresh owned Chrome then verified the public homepage returned 200 without any
+iframe, badge marker or badge text, with no local dismissal applied.
 Reference: https://docs.netlify.com/manage/projects/powered-by-netlify-badge/.
 
 ## Verification
@@ -93,6 +96,11 @@ it parsed the valid same-origin relative `/login` header without a URL base.
 The harness now resolves that header against the canonical target. Application
 redirect behavior was valid; assertions are retained. The changed head must pass
 the complete checks independently.
+CI `37987042410` then identified another new harness assumption: exact public
+files correctly have ingress alone in the generated route manifest, whereas
+protected pages/APIs and scanner.html require ingress followed by the proxy.
+Acceptance now checks these exact expected orders separately; protected routes
+still require both handlers. This failed run is retained as failed evidence.
 
 Generated-runtime acceptance covers the exact scanner transfer paths and
 canonical redirects, cookie-free rejection without a broker request, real

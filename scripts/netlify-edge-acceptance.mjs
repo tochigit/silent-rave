@@ -8,6 +8,10 @@ const file = path => new URL(path, rootUrl);
 const final = JSON.parse(await Deno.readTextFile(file(".netlify/edge-functions-dist/manifest.json")));
 const ingressName = "silent-rave-request-context";
 const proxyName = "___netlify-edge-handler-node-middleware";
+// The adapter omits the proxy for these exact public files. Ingress still signs
+// their requests. Protected pages, APIs and scanner.html require both handlers.
+const staticShell = new Set(["/scanner.js", "/scanner.css", "/scanner-sw.js", "/scanner.webmanifest",
+  "/scanner-icon.svg", "/scanner-icon-192.png", "/scanner-icon-512.png"]);
 const transfers = [];
 let decision = "UNAUTHENTICATED", malformed = false, renewal, brokerCalls = 0;
 let context;
@@ -33,7 +37,8 @@ function privateResponse(response) {
 async function execute(url, init = {}, expectPrivate = true) {
   const request = new Request(url, init);
   const order = final.routes.filter(route => new RegExp(route.pattern).test(new URL(url).pathname)).map(route => route.function);
-  check(order[0] === ingressName && order[1] === proxyName, "final manifest order");
+  const expectedOrder = staticShell.has(new URL(url).pathname) ? [ingressName] : [ingressName, proxyName];
+  check(JSON.stringify(order) === JSON.stringify(expectedOrder), "final manifest order for protected routes and exact public shell");
   const trace = [];
   const dispatch = async (current, index) => {
     if (index === order.length) {
@@ -48,7 +53,7 @@ async function execute(url, init = {}, expectPrivate = true) {
     return result ?? dispatch(current, index + 1);
   };
   const response = await dispatch(request, 0);
-  check(trace[0] === ingressName && trace[1] === proxyName, "actual ingress/proxy execution order");
+  check(JSON.stringify(trace) === JSON.stringify(expectedOrder), "actual ingress/proxy execution order");
   if (expectPrivate) privateResponse(response); return response;
 }
 const root = "https://silent-rave.example.test";
