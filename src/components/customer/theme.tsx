@@ -2,14 +2,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 type Theme = "dark" | "light";
-const ThemeContext = createContext({ theme: "dark" as Theme, toggle: () => {} });
+const ThemeContext = createContext({ theme: "light" as Theme, toggle: () => {} });
 const preferenceKey = "sr-color-theme";
 
 export function PublicTheme({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
     try {
-      if (localStorage.getItem(preferenceKey) === "light") queueMicrotask(() => setTheme("light"));
+      const saved = localStorage.getItem(preferenceKey);
+      if (saved === "dark" || saved === "light") queueMicrotask(() => setTheme(saved));
     } catch { /* Theme switching still works when browser storage is unavailable. */ }
   }, []);
   function toggle() {

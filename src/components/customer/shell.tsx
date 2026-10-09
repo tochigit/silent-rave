@@ -41,7 +41,7 @@ export function BuyTickets({ className = "button" }: { className?: string }) {
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const ticker = "THE MOST ANTICIPATED EVENT IN EUA - ".repeat(3);
+  const ticker = "THE MOST ANTICIPATED MUSIC EVENT — ".repeat(3);
   const pathname = usePathname();
   const links = [
     ["/", "Home"], ["/events", "Events"], ["/about", "About"],
@@ -50,13 +50,20 @@ export function Header() {
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
+      <div className="ticker-wrapper" aria-label="The most anticipated music event">
+        <div className="ticker-content" aria-hidden="true">
+          <span className="ticker-item">{ticker}</span>
+          <span className="ticker-item">{ticker}</span>
+        </div>
+      </div>
+      <div className="header-band">
       <header className="site-header" onKeyDown={(event) => {
         if (event.key === "Escape" && menuOpen) {
           setMenuOpen(false);
           menuButton.current?.focus();
         }
       }}>
-        <Link className="brand" href="/" aria-label="Silent Rave home">SILENT<span>RAVE</span><i className="brand-dot" aria-hidden="true" /></Link>
+        <Link className="brand" href="/" aria-label="Silent Rave home">SILENT<span>RAVE</span></Link>
         <nav id="main-navigation" aria-label="Main navigation" data-open={menuOpen} onClick={(event) => {
           if ((event.target as HTMLElement).closest("a")) setMenuOpen(false);
         }}>
@@ -76,11 +83,6 @@ export function Header() {
           </svg>
         </button>
       </header>
-      <div className="ticker-wrapper" aria-label="The most anticipated event in EUA">
-        <div className="ticker-content" aria-hidden="true">
-          <span className="ticker-item">{ticker}</span>
-          <span className="ticker-item">{ticker}</span>
-        </div>
       </div>
     </>
   );
@@ -88,7 +90,6 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="site-footer">
-      <div className="footer-brand"><Link className="brand" href="/">SILENT<span>RAVE</span></Link><p>Choose your night. Bring your people.</p></div>
       <nav aria-label="Footer">
         <Link href="/events">Events</Link>
         <Link href="/about">About</Link>

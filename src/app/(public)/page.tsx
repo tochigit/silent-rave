@@ -1,12 +1,13 @@
 ﻿import Link from "next/link";
-import { EventDetailPage } from "@/components/customer/event-detail";
-import { EventCard } from "@/components/customer/event-card";
+import { EventList } from "@/components/customer/event-list";
 import { listEvents, catalogQuery } from "@/lib/events/catalog";
+import { lagosDay } from "@/lib/customer/format";
 export const dynamic = "force-dynamic";
 export default async function Home() {
   const listing = await listEvents(
     catalogQuery.parse({ filter: "upcoming" }),
   ).catch(() => null);
+  const today = lagosDay(new Date());
   return (
     <>
       {listing === null ? (
@@ -23,14 +24,22 @@ export default async function Home() {
           <Link className="button" href="/events">Explore events</Link>
         </section>
       ) : (
-        <EventDetailPage slug={listing.events[0].slug} featured />
-      )}
-      {listing && listing.events.length > 1 && (
         <section className="stack">
-          <h2>More upcoming events</h2>
-          <div className="event-grid">
-            {listing.events.slice(1, 3).map((event) => <EventCard key={event.id} event={event} />)}
+          <div className="catalog-toolbar">
+            <form action="/events" className="catalog-search">
+              <input type="hidden" name="filter" value="upcoming" />
+              <label><span className="sr-only">Search events</span><input name="search" type="search" maxLength={100} placeholder="Search for events" /></label>
+              <button type="submit">Find events</button>
+            </form>
+            <nav className="view-links" aria-label="Event views">
+              <Link href="/events?filter=upcoming&view=list" aria-current="page">List</Link>
+              <Link href={`/events?view=month&date=${today.slice(0, 7)}`}>Month</Link>
+              <Link href={`/events?view=day&date=${today}`}>Day</Link>
+            </nav>
           </div>
+          <div className="section-heading catalog-heading"><h1>Upcoming events</h1><Link href="/events">All events <span aria-hidden="true">↗</span></Link></div>
+          <p className="muted">Find your next night. All event times are in WAT.</p>
+          <EventList events={listing.events} />
         </section>
       )}
     </>
