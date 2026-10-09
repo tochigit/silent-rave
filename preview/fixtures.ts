@@ -7,7 +7,7 @@ export const previewEvents: EventDetail[] = [{
   starts_at: "2026-11-11T16:00:00+01:00", ends_at: "2026-11-11T21:00:00+01:00",
   is_date_confirmed: true, sold_out: false, status: "PUBLISHED",
   price_range: { min_kobo: 50000, max_kobo: 200000 },
-  description: "Nitro Experience is bringing the ultimate Jersey Rave to the city. Wear your favorite jersey, grab your crew, and experience an unforgettable silent disco with multiple DJs, non-stop vibes, games, great music, glowing lights, and an electric atmosphere.\n\nWhether you're repping your favorite football, basketball, or custom jersey, this is where music, energy, and style come together.\n\nDon't miss the biggest Jersey Rave in Abakaliki! Secure your ticket now and be part of the experience.",
+  description: "Silent Rave is coming to Evangel University. Bring your friends, slip on a pair of headphones and choose your favourite sound.\n\nAn evening of music, dancing and good company, with multiple channels so you can find your own frequency.\n\nChoose your ticket below and get ready for the experience. This event information is sample content for design review.",
   venue: { name: "Evangel University Akaeze", city: "Akaeze", address: "KM 48, Enugu-Abakaliki Expressway, Okpoto\nEbonyi State, Nigeria", latitude: null, longitude: null, directions_url: null, map_embed_url: null },
   organizer: { name: "Intelligent Minds", description: null },
   ticket_tiers: [

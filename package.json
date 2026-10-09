@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "preview:build": "bun --no-env-file scripts/build-client-preview.ts",
+    "preview:serve": "node scripts/serve-client-preview.mjs",
     "dev": "bun run scanner:build && next dev -p 3000",
     "build": "bun run scanner:build && prisma generate && next build",
     "build:netlify": "bun --no-env-file scripts/build-netlify.ts",

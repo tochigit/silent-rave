@@ -1,4 +1,92 @@
-# Silent Rave hosted routing fixes in review
+# Silent Rave: approved design and GitHub release preparation
+
+Latest user instruction: the current Nitro-inspired design is approved and will
+be used. Finish the remaining work promptly; the user wants deployment through
+GitHub. The earlier prohibition on deployments until styling is settled has had
+its styling condition satisfied. Specific PR merge approval is still required
+by the branch workflow; no merge or new deployment has occurred in this step.
+
+Release candidate: `feat/nitro-inspired-redesign`, PR #14, based on routing fixes
+PR #13 (`931b12be854ad6680ce57c0dde80661a5fb463b7`). Merge those in order after
+specific authorization and passing current checks. Preserve all branches.
+Use the EXISTING `silentrave-app` Netlify project, not the old static preview or
+a new project. `netlify.toml` already supplies the full Next.js build command;
+the sanitized build wrapper already captures native `DEPLOY_ID`/`SITE_NAME`.
+GitHub linking therefore needs no application or provider credential changes.
+
+CI 37998433378 passed Windows, GitGuardian and the Linux backend/build checks,
+but failed Linux static-preview acceptance: it sampled ticket focus after the
+heading became visible, before React's focus effect ran. The browser check now
+waits for the actual ticket focus before preserving the same assertion. Styling
+and application behavior are unchanged. Recheck the replacement commit's CI;
+the failed attempt is not a pass. Local lint/types and 60 preview checks passed
+before this harness correction. Record its new local result in the Desktop
+`Silent Rave - GitHub release continuation.md` and use that handoff next.
+
+Email processing/scheduler and real delivery/device acceptance remain separate
+unfinished work. Backblaze stays deferred. Do not call the website launch-ready
+from a successful build alone; `readyForLaunch=false`.
+
+## Historical first redesign review
+
+9 October 2026. The owner rejected the blended styling. The user requested a
+complete public-site makeover following https://www.nitroexperience.ng/ and the
+client reference folder. The user reports 238 Netlify credits and explicitly
+prohibits deployments until the design is settled. This instruction supersedes
+all earlier deployment next steps, including the Desktop routing handoff.
+
+Review branch: `feat/nitro-inspired-redesign`. Prerequisite/base branch:
+`fix/hosted-scanner-owner-routing`, PR #13, head
+`931b12be854ad6680ce57c0dde80661a5fb463b7`. PR #13 remains unmerged and undeployed;
+its final Windows/Linux/GitGuardian CI 37987848073 passed. Preserve it, PR #11,
+all historical branches and the older preview. Do not merge either PR or deploy
+without separate authorization. If PR #13 merges later, retarget the design PR
+to main and review the resulting diff.
+
+Read the Desktop `Silent Rave - Nitro redesign continuation.md` for the exact
+design PR, commit, current CI state and next action. This is the first design
+proposal, with owner visual approval pending; technical checks cannot supply it.
+
+Inspected Nitro's current homepage and Enugu event page in an owned, fresh
+browser using public HTML/assets fetched with curl. Ordinary browser navigation
+timed out, so read-only curl responses supplied the same public pages; lazy
+poster images were explicitly loaded for inspection. No login, purchase or
+third-party artwork import. Appearance now uses the observed off-white canvas,
+black header, mint ticker, Krona One/Kumbh Sans typography, pale purple controls,
+month/date event rows and a single-column full-poster event page. Font files are
+self-hosted, with their OFL licences. Existing dark/light switching remains;
+new visitors default to light while saved choices are respected.
+
+Background follow-up: Nitro's animated grain was missing from the first proposal.
+An original self-hosted SVG tile now textures the complete page and dark header,
+behind content and controls. Reduced motion freezes both layers. The preview
+builder, local server and package include this asset without external requests.
+Contrast checks use the worst possible grain pixel in both themes; review the
+refreshed Desktop screenshots and local preview before approving the appearance.
+
+The implementation updates the real public components and their shared preview,
+including cart, checkout, contact and order recovery styling. Backend payment,
+email, storage, authentication, domain routing and scanner logic remain unchanged.
+All sale states, attendee names, the ten-ticket order limit and approval-required
+ticket issuance retain their existing behavior. Sample preview submissions are
+removed and its network policy forbids backend connections.
+
+Local preview build, full lint and app/tooling types passed. Final owned Chrome
+acceptance passed 60 checks over 8 pages, 320–1920px widths, landscape, 200% zoom,
+keyboard/dialog controls, filtering, cart persistence, theme storage and
+independent 4.5:1 light/dark text contrast. Zero API/POST/external requests or JS
+errors. Earlier 320px spacing and transparent-row contrast failures were fixed;
+the final build has its own passing browser evidence. Current-head CI status is
+recorded separately in the Desktop handoff; it is not inferred from PR #13.
+
+Open the sample preview with `bun --no-env-file run preview:build`, then
+`bun --no-env-file run preview:serve` and http://127.0.0.1:4173. Read
+`preview/REVIEW_STEPS.md`; Desktop review screenshots are shareable with a remote
+owner. No new deployment, production database mutation, real email, scheduler,
+owner reset or backup setup. Netlify's badge was separately verified absent
+after the user switched it off. Backblaze remains deferred; `readyForLaunch=false`.
+
+## Historical hosted routing fixes in review
 
 9 October 2026. The user reported an unstyled staff scanner, slow page loading
 and `Origin not allowed` when saving bank details. This checkpoint supersedes

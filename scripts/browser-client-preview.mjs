@@ -9,7 +9,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { createHash } from "node:crypto";
 
 const root = path.resolve("out/client-preview");
-const evidence = path.resolve("reports/polished-design");
+const evidence = path.resolve("reports/nitro-redesign");
 const runtime = path.resolve(".test-runtime");
 await mkdir(runtime, { recursive: true }); await mkdir(evidence, { recursive: true });
 const profile = await mkdtemp(path.join(runtime, "preview-browser-"));
@@ -24,8 +24,16 @@ function contrast(foreground, background) {
   const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
   return (values[0] + .05) / (values[1] + .05);
 }
+function grainContrastBound(pair, opacity, theme) {
+  if (!pair.grain) return;
+  pair.nominalBackground = pair.background;
+  const channels = pair.background.match(/\d+/g).slice(0, 3).map(Number);
+  // The grayscale tile can range from black to white. Check the least favourable
+  // background even though most pixels are less extreme than this bound.
+  pair.background = `rgb(${channels.map(value => Math.round(value * (1 - opacity) + (theme === "dark" ? 255 : 0) * opacity)).join(", ")})`;
+}
 const build = { bundleSha256: hash(await readFile(path.join(root, "assets/preview.js"))), cssSha256: hash(await readFile(path.join(root, "assets/preview.css"))) };
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".jpeg": "image/jpeg", ".txt": "text/plain; charset=utf-8" };
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".ttf": "font/ttf", ".txt": "text/plain; charset=utf-8" };
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url, "http://127.0.0.1").pathname;
   requests.push({ pathname, method: req.method });
@@ -55,6 +63,7 @@ const server = createServer(async (req, res) => {
 });
 await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
+const eventUrl = `${base}/event/nusa-evangel-silent-rave/`;
 const port = await new Promise((resolve, reject) => {
   const probe = createPortProbe(); probe.once("error", reject); probe.listen(0, "127.0.0.1", () => {
     const port = probe.address().port; probe.close(error => error ? reject(error) : resolve(port));
@@ -105,57 +114,77 @@ try {
     accent: getComputedStyle(document.querySelector(".ticket-card")).borderLeftColor,
     calendar: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor,
   }));
-  step = "home and keyboard";
-  await page.goto(base); await page.getByRole("heading", { name: "NUSA Evangel - Silent Rave", exact: true }).waitFor();
+  step = "Nitro-inspired homepage and event composition";
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(base); await page.getByRole("heading", { name: "Upcoming events", exact: true }).waitFor();
+  assert.equal(await page.getByRole("navigation", { name: "Event views" }).getByRole("link").count(), 3);
+  assert.equal(await page.getByRole("button", { name: "Find events", exact: true }).count(), 1);
+  await page.evaluate(() => document.fonts.ready);
+  await page.getByAltText("NUSA Evangel - Silent Rave poster").evaluate(image => image.decode());
+  assert.equal(await page.locator(".public-site").getAttribute("data-theme"), "light", "New visitors see the reference's light canvas");
+  assert.equal(await page.locator(".ticket-modal").count(), 0, "Homepage is an event listing");
+  await widthCheck("375px event-list homepage without overflow");
+  await page.screenshot({ path: path.join(evidence, "mobile-home.png"), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const homeLayout = await page.evaluate(() => {
+    const ticker = document.querySelector(".ticker-wrapper").getBoundingClientRect();
+    const header = document.querySelector(".header-band").getBoundingClientRect();
+    const poster = document.querySelector(".poster-link").getBoundingClientRect();
+    const copy = document.querySelector(".event-card-copy").getBoundingClientRect();
+    return { tickerBottom: ticker.bottom, headerTop: header.top, posterLeft: poster.left, copyRight: copy.right, headerColor: getComputedStyle(document.querySelector(".header-band")).backgroundColor };
+  });
+  assert(homeLayout.tickerBottom <= homeLayout.headerTop && homeLayout.copyRight < homeLayout.posterLeft);
+  assert.equal(homeLayout.headerColor, "rgb(17, 19, 26)");
+  await page.screenshot({ path: path.join(evidence, "desktop-home.png"), fullPage: true });
+  await page.screenshot({ path: path.join(evidence, "desktop-home-viewport.png") });
+  checks.push("Mint ticker above black header; dated event rows with copy left and full posters right on desktop");
+  await page.getByRole("link", { name: "Get tickets", exact: true }).click();
+  await page.waitForURL(/\/event\/nusa-evangel-silent-rave\/?#tickets/);
+  await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  await page.goto(eventUrl); await page.getByRole("heading", { name: "NUSA Evangel - Silent Rave", exact: true }).waitFor();
+  await page.evaluate(() => document.fonts.ready);
   await page.getByAltText("NUSA Evangel - Silent Rave poster").evaluate(image => image.decode());
   const actual = await page.evaluate(() => ({
     outer: getComputedStyle(document.querySelector(".public-site")).backgroundColor,
-    card: getComputedStyle(document.querySelector(".poster-container")).backgroundColor,
     width: document.querySelector(".site-main").getBoundingClientRect().width,
     titleSize: getComputedStyle(document.querySelector(".event-title")).fontSize,
     titleTransform: getComputedStyle(document.querySelector(".event-title")).textTransform,
-    posterWidth: document.querySelector(".poster-container img").getBoundingClientRect().width,
-    ticket: getComputedStyle(document.querySelector(".ticket-card")).backgroundColor,
-    accent: getComputedStyle(document.querySelector(".ticket-card")).borderLeftColor,
+    font: getComputedStyle(document.querySelector(".event-title")).fontFamily,
+    mastheadBackground: getComputedStyle(document.querySelector(".event-header")).backgroundColor,
     calendar: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor,
+    grain: [".public-site", ".header-band"].map(selector => {
+      const style = getComputedStyle(document.querySelector(selector), "::before");
+      return { image: style.backgroundImage, opacity: Number(style.opacity), animation: style.animationName, pointerEvents: style.pointerEvents, zIndex: style.zIndex };
+    }),
   }));
-  for (const key of ["card", "ticket", "accent", "titleTransform"]) {
-    assert.equal(actual[key], reference[key], `Keep the reference's ${key} styling`);
-  }
-  assert.equal(actual.outer, "rgb(13, 15, 20)", "Restore the earlier dark brand background");
-  assert.equal(actual.width, 1180, "Use available desktop space");
-  assert.equal(actual.titleSize, "60px", "Keep expressive typography with a more compact desktop masthead");
-  const accessiblePurple = actual.calendar;
-  const channels = accessiblePurple.match(/\d+/g).map(Number).map(value => value / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
-  const purpleContrast = 1.05 / (0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2] + 0.05);
-  assert(purpleContrast >= 4.5, "White calendar labels need accessible text contrast");
-  checks.push("Reference purple enhanced to at least 4.5:1 white-label contrast");
-  assert.equal(await page.locator(".home-hero, .hero-art, .frequency-ring, .detail-grid").count(), 0);
+  assert.equal(actual.outer, "rgb(248, 248, 248)");
+  assert.equal(actual.width, 1320);
+  assert.equal(actual.titleTransform, "uppercase");
+  assert.equal(actual.titleSize, "38px");
+  assert.match(actual.font, /SR Display/);
+  assert.equal(actual.mastheadBackground, "rgba(0, 0, 0, 0)");
+  assert.equal(actual.calendar, "rgb(198, 153, 251)");
+  assert(actual.grain.every(layer => layer.image.includes("/grain.svg") && layer.opacity > 0 && layer.opacity <= .13 && layer.animation === "rave-grain" && layer.pointerEvents === "none" && layer.zIndex === "-1"));
+  await page.evaluate(async () => { const image = new Image(); image.src = "/grain.svg"; await image.decode(); });
+  assert(await page.evaluate(() => document.fonts.check('16px "SR Display"') && document.fonts.check('16px "SR Sans"')), "Self-hosted reference fonts load");
   const desktop = await page.evaluate(() => {
     const poster = document.querySelector(".poster-container").getBoundingClientRect();
     const copy = document.querySelector(".event-content").getBoundingClientRect();
     const image = document.querySelector(".detail-poster");
-    return { posterRight: poster.right, copyLeft: copy.left, topDifference: Math.abs(poster.top - copy.top), imageRatio: image.width / image.height, naturalRatio: image.naturalWidth / image.naturalHeight };
+    return { posterBottom: poster.bottom, copyTop: copy.top, imageRatio: image.width / image.height, naturalRatio: image.naturalWidth / image.naturalHeight };
   });
-  assert(desktop.posterRight < desktop.copyLeft && desktop.topDifference < 2, "Poster and ticket content sit side by side on PCs");
-  assert(Math.abs(desktop.imageRatio - desktop.naturalRatio) < .005, "Keep the complete original poster without cropping");
-  checks.push("Reference poster, dark cards, mint ticket accent and uppercase title preserved in the blended design");
-  checks.push("1180px PC layout with polished title and uncropped poster beside ticket content");
-  const desktopBalance = await page.evaluate(() => {
-    const masthead = document.querySelector(".event-header").getBoundingClientRect();
-    const buttons = [...document.querySelectorAll(".buy-btn")].map(button => button.getBoundingClientRect().bottom);
-    const description = document.querySelector(".event-description").getBoundingClientRect();
-    return { mastheadHeight: masthead.height, ticketButtonsBottom: buttons, descriptionWidth: description.width, posterBottom: document.querySelector(".poster-container").getBoundingClientRect().bottom };
-  });
-  await page.screenshot({ path: path.join(evidence, "desktop-home.png"), fullPage: true });
-  await page.screenshot({ path: path.join(evidence, "desktop-home-viewport.png") });
-  console.log("Desktop balance:", JSON.stringify(desktopBalance));
-  assert(desktopBalance.mastheadHeight < 240, "Masthead leaves room for the original event content");
-  assert(desktopBalance.ticketButtonsBottom.every(bottom => bottom <= desktopBalance.posterBottom), "Ticket actions fit alongside the complete poster without a long empty column");
-  assert(desktopBalance.descriptionWidth < 670, "Keep readable desktop line lengths");
-  checks.push("Compact PC masthead, readable description and ticket actions balanced alongside the complete poster");
-  await page.screenshot({ path: path.join(evidence, "desktop-home.png"), fullPage: true });
-  await page.screenshot({ path: path.join(evidence, "desktop-home-viewport.png") });
+  assert(desktop.posterBottom < desktop.copyTop, "Event copy and tickets follow the full poster on desktop");
+  assert(Math.abs(desktop.imageRatio - desktop.naturalRatio) < .005, "Complete original poster remains uncropped");
+  checks.push("Textured light canvas and dark header load a local grain tile behind controls; display type and pale purple calendar follow Nitro");
+  checks.push("Single-column event page retains the complete client poster before description and ticket selection");
+  const desktopBalance = await page.evaluate(() => ({
+    mastheadHeight: document.querySelector(".event-header").getBoundingClientRect().height,
+    descriptionWidth: document.querySelector(".event-description").getBoundingClientRect().width,
+    ticketsWidth: document.querySelector(".tickets-section").getBoundingClientRect().width,
+  }));
+  assert(desktopBalance.mastheadHeight < 240 && desktopBalance.descriptionWidth < 950 && desktopBalance.ticketsWidth <= 720);
+  await page.screenshot({ path: path.join(evidence, "desktop-event.png"), fullPage: true });
+  await page.screenshot({ path: path.join(evidence, "desktop-event-viewport.png") });
   await page.setViewportSize({ width: 375, height: 812 });
   const order = await page.evaluate(() => [".event-header", ".poster-container", ".event-description", ".calendar-dropdown", ".tickets-section", ".details-grid", ".venue-group"].map(selector => document.querySelector(selector).getBoundingClientRect().top));
   assert(order.every((value, index) => index === 0 || value > order[index - 1]), "Keep the reference's mobile event section order");
@@ -164,7 +193,7 @@ try {
   checks.push("Keyboard skip link and loaded first-party poster");
   await page.locator("body").click({ position: { x: 2, y: 2 } });
   await widthCheck("375px home without overflow");
-  await page.screenshot({ path: path.join(evidence, "mobile-home.png"), fullPage: true });
+  await page.screenshot({ path: path.join(evidence, "mobile-event.png"), fullPage: true });
   for (const width of [320, 360, 390, 480, 768, 960, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 }); await widthCheck(`${width}px home without overflow`);
     const navigation = page.getByRole("navigation", { name: "Main navigation" });
@@ -173,7 +202,7 @@ try {
         const brand = header.querySelector(".brand").getBoundingClientRect();
         const buy = header.querySelector(".cta").getBoundingClientRect();
         return brand.right <= buy.left - 7 && getComputedStyle(header.querySelector(".brand")).whiteSpace === "nowrap";
-      }), "The mobile wordmark stays on one line without colliding with Buy tickets");
+      }), `The mobile wordmark stays on one line without colliding with Buy tickets at ${width}px`);
       assert(await navigation.isHidden(), `Mobile navigation starts collapsed at ${width}px`);
       const toggle = page.getByRole("button", { name: "Open navigation", exact: true });
       assert.equal(await toggle.getAttribute("aria-expanded"), "false");
@@ -216,6 +245,8 @@ try {
   assert(await page.getByRole("navigation", { name: "Main navigation" }).isHidden());
   await page.getByRole("button", { name: "Open navigation", exact: true }).click();
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Home", exact: true }).click();
+  await page.getByRole("heading", { name: "Upcoming events", exact: true }).waitFor();
+  await page.getByRole("link", { name: "Get tickets", exact: true }).click();
   await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   // Fail only a delayed in-memory lookup to inspect busy/error feedback.
   // The original fixture fetch is restored before retry; no API traffic.
@@ -238,6 +269,9 @@ try {
   await page.getByRole("button", { name: "Buy tickets", exact: true }).click();
   await page.waitForURL(/\/event\/nusa-evangel-silent-rave\/?#tickets/);
   await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  // React applies the ticket focus in an effect after the heading renders.
+  // Wait for that observable result before asserting it on slower CI runners.
+  await page.waitForFunction(() => document.activeElement?.id === "tickets");
   assert.equal(await page.locator(":focus").getAttribute("id"), "tickets");
   checks.push("Menu links navigate and close the menu, active page is marked and Buy tickets opens the event ticket section");
   await page.getByText("Add to calendar", { exact: false }).click();
@@ -327,7 +361,8 @@ try {
   await page.getByRole("button", { name: "Close navigation", exact: true }).click();
   checks.push("Short landscape keeps mobile menu links reachable through natural page scrolling");
   assert.equal(await page.locator(".ticker-content").evaluate(ticker => getComputedStyle(ticker).animationName), "none");
-  checks.push("Reduced-motion ticker respects the visitor preference");
+  assert(await page.evaluate(() => [".public-site", ".header-band"].every(selector => getComputedStyle(document.querySelector(selector), "::before").animationName === "none")));
+  checks.push("Reduced-motion preference stops both grain layers and the ticker while retaining the texture");
   const reducedTransitions = await page.locator(".buy-btn, .calendar-btn").evaluateAll(controls => controls.map(control => getComputedStyle(control).transitionDuration));
   assert(reducedTransitions.every(duration => duration === "0s"));
   checks.push("Reduced motion disables button and calendar transitions as well as the ticker");
@@ -348,7 +383,7 @@ try {
     }
   }
   checks.push("Home, listings, information, contact, recovery, cart and checkout fit at 320px and 1440px");
-  await page.goto(base); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  await page.goto(eventUrl); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   const buy = page.getByRole("button", { name: "Buy Early Bird Ticket", exact: true });
   const desktopPointer = await page.evaluate(() => ({ hover: matchMedia("(hover: hover)").matches, fine: matchMedia("(pointer: fine)").matches }));
   assert.deepEqual(desktopPointer, { hover: true, fine: true }, "Desktop pointer checks require an emulated mouse");
@@ -366,30 +401,44 @@ try {
   await page.mouse.up(); await page.getByRole("dialog").waitFor();
   await page.keyboard.press("Escape"); await page.getByRole("dialog").waitFor({ state: "hidden" });
   assert.notEqual(restColor, hoverColor); assert.notEqual(hoverColor, pressedColor);
-  checks.push("Mint ticket buttons give distinct hover and pressed feedback without moving layout");
+  checks.push("Purple ticket buttons give distinct hover and pressed feedback without moving layout");
   step = "light theme and remembered preference";
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Switch to dark theme", exact: true }).click();
+  const darkContrasts = await page.evaluate(() => {
+    const site = document.querySelector(".public-site");
+    const background = getComputedStyle(site).backgroundColor;
+    return [
+      { label: "Dark body", foreground: getComputedStyle(site).color, background, grain: true },
+      { label: "Dark description", foreground: getComputedStyle(document.querySelector(".event-description")).color, background, grain: true },
+      { label: "Dark ticket availability", foreground: getComputedStyle(document.querySelector(".ticket-card .subtext")).color, background: getComputedStyle(document.querySelector(".ticket-card")).backgroundColor },
+      { label: "Dark calendar", foreground: getComputedStyle(document.querySelector(".calendar-btn")).color, background: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor },
+    ];
+  });
+  for (const pair of darkContrasts) { grainContrastBound(pair, actual.grain[0].opacity, "dark"); pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
+  await page.screenshot({ path: path.join(evidence, "desktop-dark-event.png"), fullPage: true });
+  checks.push("Dark theme independently maintains at least 4.5:1 body, description, availability and calendar contrast");
   await page.getByRole("button", { name: "Switch to light theme", exact: true }).click();
   await page.waitForFunction(() => document.querySelector(".public-site").dataset.theme === "light");
   const themeContrasts = await page.evaluate(() => {
     const site = document.querySelector(".public-site");
     const background = getComputedStyle(site).backgroundColor;
     return [
-      { label: "Light body", foreground: getComputedStyle(site).color, background },
-      ...[".event-description", ".experience-title", ".tickets-title"].map(selector => ({ label: selector, foreground: getComputedStyle(document.querySelector(selector)).color, background })),
+      { label: "Light body", foreground: getComputedStyle(site).color, background, grain: true },
+      ...[".event-description", ".event-title", ".tickets-title"].map(selector => ({ label: selector, foreground: getComputedStyle(document.querySelector(selector)).color, background, grain: true })),
       { label: "Light ticket availability", foreground: getComputedStyle(document.querySelector(".ticket-card .subtext")).color, background: getComputedStyle(document.querySelector(".ticket-card")).backgroundColor },
       { label: "Purple calendar", foreground: getComputedStyle(document.querySelector(".calendar-btn")).color, background: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor },
       { label: "Light preview label", foreground: getComputedStyle(document.querySelector(".preview-banner strong")).color, background: getComputedStyle(document.querySelector(".preview-banner")).backgroundColor },
     ];
   });
-  for (const pair of themeContrasts) { pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
+  for (const pair of themeContrasts) { grainContrastBound(pair, actual.grain[0].opacity, "light"); pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
   await page.screenshot({ path: path.join(evidence, "desktop-light-home.png"), fullPage: true });
   await page.screenshot({ path: path.join(evidence, "desktop-light-home-viewport.png") });
-  checks.push("Light theme keeps mint/purple identity with at least 4.5:1 body, muted, ticket and calendar contrast");
+  checks.push("Light theme keeps reference colors with at least 4.5:1 body, muted, ticket and calendar contrast");
   await page.goto(`${base}/about/`); await page.getByRole("heading", { name: "About Silent Rave" }).waitFor();
   assert.equal(await page.locator(".public-site").getAttribute("data-theme"), "light");
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto(base); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  await page.goto(eventUrl); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   await page.screenshot({ path: path.join(evidence, "mobile-light-home.png"), fullPage: true });
   await page.getByRole("button", { name: "Open navigation", exact: true }).click();
   await page.getByRole("button", { name: "Switch to dark theme", exact: true }).focus();
@@ -420,7 +469,7 @@ try {
     }
   }
   checks.push("All supporting pages inherit the remembered light theme and fit at 320px and 1440px");
-  await page.goto(base); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  await page.goto(eventUrl); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   await page.getByRole("button", { name: "Switch to dark theme", exact: true }).click();
   await page.reload(); await page.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   assert.equal(await page.locator(".public-site").getAttribute("data-theme"), "dark");
@@ -428,10 +477,10 @@ try {
   await blockedStorage.addInitScript(() => Object.defineProperty(window, "localStorage", { get() { throw new DOMException("Disabled for acceptance", "SecurityError"); } }));
   const blockedPage = await blockedStorage.newPage();
   blockedPage.on("pageerror", error => errors.push(error.message));
-  await blockedPage.goto(base); await blockedPage.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
+  await blockedPage.goto(eventUrl); await blockedPage.getByRole("heading", { name: "Tickets", exact: true }).waitFor();
   await blockedPage.getByRole("button", { name: "Open navigation", exact: true }).click();
-  await blockedPage.getByRole("button", { name: "Switch to light theme", exact: true }).click();
-  assert.equal(await blockedPage.locator(".public-site").getAttribute("data-theme"), "light");
+  await blockedPage.getByRole("button", { name: "Switch to dark theme", exact: true }).click();
+  assert.equal(await blockedPage.locator(".public-site").getAttribute("data-theme"), "dark");
   await blockedStorage.close();
   checks.push("Dark preference survives reload; theme switching remains usable when local storage is blocked");
   step = "excluded routes and network isolation";
@@ -442,7 +491,7 @@ try {
   checks.push("No HTTP API calls, POSTs, external requests or JavaScript errors; admin route excluded");
   assert.equal(hash(await readFile(path.join(root, "assets/preview.js"))), build.bundleSha256);
   assert.equal(hash(await readFile(path.join(root, "assets/preview.css"))), build.cssSha256);
-  await writeFile(path.join(evidence, "acceptance.json"), JSON.stringify({ result: "PASS", checks, reference, actual, desktop, desktopBalance, themeContrasts, build, errors, externalRequests: external.length, apiRequests: 0, pages: 8, browser: "isolated owned Chrome", viewports: [320, 360, 375, 390, 480, 768, 812, 960, 1024, 1440, 1920] }, null, 2) + "\n");
+  await writeFile(path.join(evidence, "acceptance.json"), JSON.stringify({ result: "PASS", checks, reference, actual, desktop, desktopBalance, themeContrasts, darkContrasts, build, errors, externalRequests: external.length, apiRequests: 0, pages: 8, browser: "isolated owned Chrome", viewports: [320, 360, 375, 390, 480, 768, 812, 960, 1024, 1440, 1920] }, null, 2) + "\n");
   console.log(`PASS: ${checks.length} client-preview acceptance checks; no backend traffic.`);
 } catch (error) {
   await writeFile(path.join(evidence, "failure.json"), JSON.stringify({ result: "FAIL", step, message: String(error), errors }, null, 2) + "\n");

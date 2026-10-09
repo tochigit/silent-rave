@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { EventCard } from "./event-card";
+import { EventList } from "./event-list";
 import type { CatalogEvent } from "@/lib/customer/types";
 import { lagosDay } from "@/lib/customer/format";
 type Listing = {
@@ -76,12 +76,7 @@ export function EventsBrowser() {
   return (
     <section className="stack">
       <div className="page-heading">
-        <p className="eyebrow">FIND YOUR FREQUENCY</p>
-        <h1>
-          Upcoming nights
-          <br />
-          <span>and good company.</span>
-        </h1>
+        <h1>Events</h1>
         <p className="muted">
           All event times are in Africa/Lagos (WAT, UTC+1).
         </p>
@@ -230,11 +225,7 @@ export function EventsBrowser() {
               </div>
             </section>
           ) : (
-            <div className="event-grid">
-              {data.events.map((e) => (
-                <EventCard key={e.id} event={e} />
-              ))}
-            </div>
+            <EventList events={data.events} />
           )}
           <nav className="pagination" aria-label="Event pages">
             {data.pagination.page > 1 && (

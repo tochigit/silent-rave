@@ -100,6 +100,6 @@ jobs:
             reports/client-preview/
             reports/reference-design/
             reports/blended-design/
-            reports/polished-design/
+            reports/nitro-redesign/
             out/client-preview/
             reports/step5-*-db-preflight.txt

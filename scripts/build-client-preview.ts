@@ -76,6 +76,20 @@ sourceHashes["src/app/reference-rave.css"] = hash(referenceStyles);
 for (const file of ["references/Rave.html", "references/Rave.css"]) sourceHashes[file] = hash(await readFile(path.join(root, file)));
 await writeFile(path.join(output, "assets", "preview.css"), css);
 await copyFile(path.join(root, "public", "fixture-poster.jpeg"), path.join(output, "assets", "poster.jpeg"));
+const designAssets = ["grain.svg"];
+for (const asset of designAssets) {
+  const relative = `public/${asset}`;
+  sourceHashes[relative] = hash(await readFile(path.join(root, relative)));
+  await copyFile(path.join(root, relative), path.join(output, asset));
+}
+const fonts = ["krona-one.ttf", "kumbh-sans-regular.ttf", "kumbh-sans-bold.ttf", "OFL-Krona-One.txt", "OFL-Kumbh-Sans.txt"];
+await mkdir(path.join(output, "fonts"), { recursive: true });
+for (const font of fonts) {
+  const relative = `public/fonts/${font}`;
+  const bytes = await readFile(path.join(root, relative));
+  sourceHashes[relative] = hash(bytes);
+  await copyFile(path.join(root, relative), path.join(output, "fonts", font));
+}
 const policy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; font-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'";
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="description" content="Silent Rave website design preview with sample content."><title>Silent Rave · Design preview</title><link rel="stylesheet" href="/assets/preview.css"><script src="/assets/preview.js" defer></script></head><body><div id="root"></div><noscript><p>This design preview needs JavaScript enabled.</p></noscript></body></html>\n`;
@@ -93,7 +107,7 @@ for (const forbidden of ["/api/checkout/initialize", "/api/contact", "/api/order
 }
 await mkdir(path.join(root, "reports"), { recursive: true });
 await writeFile(path.join(root, "reports", "client-preview-build.json"), JSON.stringify({
-  output: "out/client-preview", routes, sourceHashes, bundleBytes: Buffer.byteLength(bundle),
+  output: "out/client-preview", routes, fonts, designAssets, sourceHashes, bundleBytes: Buffer.byteLength(bundle),
   bundleSha256: hash(bundle), cssSha256: hash(css), backend: "none", submissions: "removed", networkConnections: "blocked",
 }, null, 2) + "\n");
 console.log(`Built static client preview: ${routes.length} pages, ${Buffer.byteLength(bundle)} JS bytes. No backend or submission endpoints.`);
