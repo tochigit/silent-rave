@@ -88,6 +88,7 @@ jobs:
           path: |
             reports/step5c1-*-test-output.txt
             reports/step5c1-netlify-*-build.txt
+            reports/netlify-public-build-identity.json
             reports/step5c1-*-acceptance.json
             reports/step5a-*-test-output.txt
             reports/step5b-*-test-output.txt

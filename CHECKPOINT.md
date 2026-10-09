@@ -11,6 +11,9 @@ public database CA for strict Prisma TLS and embeds public Netlify build identit
 for same-deployment Node/Edge authentication. No migration, visual or scanner
 changes. Read .docs/NETLIFY_RUNTIME_CONFIGURATION.md and the current Desktop
 Silent Rave - Normal setup continuation.md for checks and publication state.
+PR #12: https://github.com/tochigit/silent-rave/pull/12, base main, unmerged.
+Corrected runtime implementation passed full Windows/Linux CI 37937929996 and
+GitGuardian; final publication-head checks are recorded in the Desktop handoff.
 
 All 29 production runtime variables were applied to the NEW silentrave-app site
 and privately read back exactly. The actual Resend callback/signing secret is
