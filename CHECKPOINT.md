@@ -28,6 +28,13 @@ month/date event rows and a single-column full-poster event page. Font files are
 self-hosted, with their OFL licences. Existing dark/light switching remains;
 new visitors default to light while saved choices are respected.
 
+Background follow-up: Nitro's animated grain was missing from the first proposal.
+An original self-hosted SVG tile now textures the complete page and dark header,
+behind content and controls. Reduced motion freezes both layers. The preview
+builder, local server and package include this asset without external requests.
+Contrast checks use the worst possible grain pixel in both themes; review the
+refreshed Desktop screenshots and local preview before approving the appearance.
+
 The implementation updates the real public components and their shared preview,
 including cart, checkout, contact and order recovery styling. Backend payment,
 email, storage, authentication, domain routing and scanner logic remain unchanged.

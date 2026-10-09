@@ -24,8 +24,16 @@ function contrast(foreground, background) {
   const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
   return (values[0] + .05) / (values[1] + .05);
 }
+function grainContrastBound(pair, opacity, theme) {
+  if (!pair.grain) return;
+  pair.nominalBackground = pair.background;
+  const channels = pair.background.match(/\d+/g).slice(0, 3).map(Number);
+  // The grayscale tile can range from black to white. Check the least favourable
+  // background even though most pixels are less extreme than this bound.
+  pair.background = `rgb(${channels.map(value => Math.round(value * (1 - opacity) + (theme === "dark" ? 255 : 0) * opacity)).join(", ")})`;
+}
 const build = { bundleSha256: hash(await readFile(path.join(root, "assets/preview.js"))), cssSha256: hash(await readFile(path.join(root, "assets/preview.css"))) };
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".jpeg": "image/jpeg", ".ttf": "font/ttf", ".txt": "text/plain; charset=utf-8" };
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".ttf": "font/ttf", ".txt": "text/plain; charset=utf-8" };
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url, "http://127.0.0.1").pathname;
   requests.push({ pathname, method: req.method });
@@ -144,6 +152,10 @@ try {
     font: getComputedStyle(document.querySelector(".event-title")).fontFamily,
     mastheadBackground: getComputedStyle(document.querySelector(".event-header")).backgroundColor,
     calendar: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor,
+    grain: [".public-site", ".header-band"].map(selector => {
+      const style = getComputedStyle(document.querySelector(selector), "::before");
+      return { image: style.backgroundImage, opacity: Number(style.opacity), animation: style.animationName, pointerEvents: style.pointerEvents, zIndex: style.zIndex };
+    }),
   }));
   assert.equal(actual.outer, "rgb(248, 248, 248)");
   assert.equal(actual.width, 1320);
@@ -152,6 +164,8 @@ try {
   assert.match(actual.font, /SR Display/);
   assert.equal(actual.mastheadBackground, "rgba(0, 0, 0, 0)");
   assert.equal(actual.calendar, "rgb(198, 153, 251)");
+  assert(actual.grain.every(layer => layer.image.includes("/grain.svg") && layer.opacity > 0 && layer.opacity <= .13 && layer.animation === "rave-grain" && layer.pointerEvents === "none" && layer.zIndex === "-1"));
+  await page.evaluate(async () => { const image = new Image(); image.src = "/grain.svg"; await image.decode(); });
   assert(await page.evaluate(() => document.fonts.check('16px "SR Display"') && document.fonts.check('16px "SR Sans"')), "Self-hosted reference fonts load");
   const desktop = await page.evaluate(() => {
     const poster = document.querySelector(".poster-container").getBoundingClientRect();
@@ -161,7 +175,7 @@ try {
   });
   assert(desktop.posterBottom < desktop.copyTop, "Event copy and tickets follow the full poster on desktop");
   assert(Math.abs(desktop.imageRatio - desktop.naturalRatio) < .005, "Complete original poster remains uncropped");
-  checks.push("Light canvas, uppercase display type, unboxed centered masthead and pale purple calendar match the Nitro direction");
+  checks.push("Textured light canvas and dark header load a local grain tile behind controls; display type and pale purple calendar follow Nitro");
   checks.push("Single-column event page retains the complete client poster before description and ticket selection");
   const desktopBalance = await page.evaluate(() => ({
     mastheadHeight: document.querySelector(".event-header").getBoundingClientRect().height,
@@ -344,7 +358,8 @@ try {
   await page.getByRole("button", { name: "Close navigation", exact: true }).click();
   checks.push("Short landscape keeps mobile menu links reachable through natural page scrolling");
   assert.equal(await page.locator(".ticker-content").evaluate(ticker => getComputedStyle(ticker).animationName), "none");
-  checks.push("Reduced-motion ticker respects the visitor preference");
+  assert(await page.evaluate(() => [".public-site", ".header-band"].every(selector => getComputedStyle(document.querySelector(selector), "::before").animationName === "none")));
+  checks.push("Reduced-motion preference stops both grain layers and the ticker while retaining the texture");
   const reducedTransitions = await page.locator(".buy-btn, .calendar-btn").evaluateAll(controls => controls.map(control => getComputedStyle(control).transitionDuration));
   assert(reducedTransitions.every(duration => duration === "0s"));
   checks.push("Reduced motion disables button and calendar transitions as well as the ticker");
@@ -391,13 +406,13 @@ try {
     const site = document.querySelector(".public-site");
     const background = getComputedStyle(site).backgroundColor;
     return [
-      { label: "Dark body", foreground: getComputedStyle(site).color, background },
-      { label: "Dark description", foreground: getComputedStyle(document.querySelector(".event-description")).color, background },
+      { label: "Dark body", foreground: getComputedStyle(site).color, background, grain: true },
+      { label: "Dark description", foreground: getComputedStyle(document.querySelector(".event-description")).color, background, grain: true },
       { label: "Dark ticket availability", foreground: getComputedStyle(document.querySelector(".ticket-card .subtext")).color, background: getComputedStyle(document.querySelector(".ticket-card")).backgroundColor },
       { label: "Dark calendar", foreground: getComputedStyle(document.querySelector(".calendar-btn")).color, background: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor },
     ];
   });
-  for (const pair of darkContrasts) { pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
+  for (const pair of darkContrasts) { grainContrastBound(pair, actual.grain[0].opacity, "dark"); pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
   await page.screenshot({ path: path.join(evidence, "desktop-dark-event.png"), fullPage: true });
   checks.push("Dark theme independently maintains at least 4.5:1 body, description, availability and calendar contrast");
   await page.getByRole("button", { name: "Switch to light theme", exact: true }).click();
@@ -406,14 +421,14 @@ try {
     const site = document.querySelector(".public-site");
     const background = getComputedStyle(site).backgroundColor;
     return [
-      { label: "Light body", foreground: getComputedStyle(site).color, background },
-      ...[".event-description", ".event-title", ".tickets-title"].map(selector => ({ label: selector, foreground: getComputedStyle(document.querySelector(selector)).color, background })),
+      { label: "Light body", foreground: getComputedStyle(site).color, background, grain: true },
+      ...[".event-description", ".event-title", ".tickets-title"].map(selector => ({ label: selector, foreground: getComputedStyle(document.querySelector(selector)).color, background, grain: true })),
       { label: "Light ticket availability", foreground: getComputedStyle(document.querySelector(".ticket-card .subtext")).color, background: getComputedStyle(document.querySelector(".ticket-card")).backgroundColor },
       { label: "Purple calendar", foreground: getComputedStyle(document.querySelector(".calendar-btn")).color, background: getComputedStyle(document.querySelector(".calendar-btn")).backgroundColor },
       { label: "Light preview label", foreground: getComputedStyle(document.querySelector(".preview-banner strong")).color, background: getComputedStyle(document.querySelector(".preview-banner")).backgroundColor },
     ];
   });
-  for (const pair of themeContrasts) { pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
+  for (const pair of themeContrasts) { grainContrastBound(pair, actual.grain[0].opacity, "light"); pair.ratio = contrast(pair.foreground, pair.background); assert(pair.ratio >= 4.5, `${pair.label} needs 4.5:1 contrast`); }
   await page.screenshot({ path: path.join(evidence, "desktop-light-home.png"), fullPage: true });
   await page.screenshot({ path: path.join(evidence, "desktop-light-home-viewport.png") });
   checks.push("Light theme keeps reference colors with at least 4.5:1 body, muted, ticket and calendar contrast");

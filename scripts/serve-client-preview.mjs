@@ -4,8 +4,8 @@ import path from "node:path";
 
 const root = path.resolve("out/client-preview");
 const manifest = JSON.parse(await readFile("reports/client-preview-build.json", "utf8"));
-const allowed = new Set(["assets/preview.js", "assets/preview.css", "assets/poster.jpeg", "404.html", "robots.txt", ...manifest.fonts.map(font => `fonts/${font}`), ...manifest.routes.map(route => route ? `${route}/index.html` : "index.html")]);
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".jpeg": "image/jpeg", ".ttf": "font/ttf", ".txt": "text/plain; charset=utf-8" };
+const allowed = new Set(["assets/preview.js", "assets/preview.css", "assets/poster.jpeg", "404.html", "robots.txt", ...manifest.designAssets, ...manifest.fonts.map(font => `fonts/${font}`), ...manifest.routes.map(route => route ? `${route}/index.html` : "index.html")]);
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".ttf": "font/ttf", ".txt": "text/plain; charset=utf-8" };
 const server = createServer(async (req, res) => {
   if (!["GET", "HEAD"].includes(req.method)) { res.writeHead(405); res.end(); return; }
   try {

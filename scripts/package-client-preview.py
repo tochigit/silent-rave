@@ -10,6 +10,7 @@ output = (root / 'out' / 'client-preview').resolve()
 assert output == root / 'out' / 'client-preview'
 manifest = json.loads((root / 'reports' / 'client-preview-build.json').read_text(encoding='utf-8'))
 files = ['assets/preview.js', 'assets/preview.css', 'assets/poster.jpeg', '404.html', '_headers', 'robots.txt']
+files += manifest['designAssets']
 files += [f'fonts/{font}' for font in manifest['fonts']]
 files += [f'{route}/index.html' if route else 'index.html' for route in manifest['routes']]
 actual = sorted(p.relative_to(output).as_posix() for p in output.rglob('*') if p.is_file())

@@ -8,9 +8,23 @@
   --sr-purple: #c699fb; --sr-lilac: #c699fb; --sr-border: #dcdde2;
   --sr-error: #a52234; --sr-ink: #11131a; --sr-accent-text: #7140a7;
   --sr-lilac-text: #7140a7; --sr-map-bg: #eeeaf4; --sr-dialog-bg: #fff; --sr-color-scheme: light;
-  min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom);
+  min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); position: relative; isolation: isolate;
   background: var(--sr-bg); color: var(--sr-text); color-scheme: var(--sr-color-scheme);
   font-family: "SR Sans", Arial, sans-serif; font-size: 16px; line-height: 1.65;
+}
+/* An original, small noise tile covers the full canvas, including long pages.
+   Keep it behind content; the sparse steps move the texture without page shifts. */
+.public-site::before, .public-site .header-band::before {
+  content: ""; pointer-events: none; z-index: -1; background: url("/grain.svg") repeat;
+  opacity: .1; animation: rave-grain 8s steps(8, end) infinite;
+}
+.public-site::before { position: absolute; inset: 0; }
+.public-site .header-band::before { position: absolute; inset: 0; opacity: .13; }
+@keyframes rave-grain {
+  0%, 100% { background-position: 0 0; }
+  25% { background-position: -8px 6px; }
+  50% { background-position: 6px -8px; }
+  75% { background-position: -4px -6px; }
 }
 .public-site[data-theme="dark"] {
   --sr-bg: #11131a; --sr-card: #191c24; --sr-card-raised: #222630;
@@ -54,7 +68,7 @@
 .public-site .ticker-item { flex: none; padding-right: 32px; font-family: "SR Display",Arial,sans-serif; font-size: clamp(13px,1.55vw,20px); line-height: 1.5; }
 .public-site .ticker-wrapper:hover .ticker-content { animation-play-state: paused; }
 @keyframes rave-marquee { to { transform: translateX(-50%); } }
-.public-site .header-band { background: #11131a; color: #fff; }
+.public-site .header-band { background: #11131a; color: #fff; position: relative; isolation: isolate; overflow: clip; }
 .public-site .site-header, .public-site .site-main, .public-site .site-footer { width: 100%; max-width: 1320px; margin-inline: auto; }
 .public-site .site-header { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 8px; padding: 18px 20px; }
 .public-site .brand { display: inline-flex; align-items: center; gap: 3px; min-height: 44px; font-family: "SR Display",Arial,sans-serif; font-size: 15px; letter-spacing: -.06em; line-height: 1; white-space: nowrap; text-decoration: none; }
@@ -234,7 +248,7 @@
 .public-site :is(button,.button,.calendar-btn):active:not(:disabled) { background: #a46be0; color: var(--sr-ink); box-shadow: inset 0 2px 0 #0002; }
 .public-site .site-header .menu-toggle:active { background: #2b2e38; color: var(--sr-mint); }
 @media (prefers-reduced-motion: reduce) {
-  .public-site *, .public-site *::before, .public-site *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .public-site::before, .public-site *, .public-site *::before, .public-site *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .public-site .ticker-item + .ticker-item { display: none; }
   .public-site .ticker-wrapper { white-space: normal; padding-inline: 12px; text-align: center; }
   .public-site .ticker-content { width: auto; justify-content: center; }

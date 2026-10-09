@@ -76,6 +76,12 @@ sourceHashes["src/app/reference-rave.css"] = hash(referenceStyles);
 for (const file of ["references/Rave.html", "references/Rave.css"]) sourceHashes[file] = hash(await readFile(path.join(root, file)));
 await writeFile(path.join(output, "assets", "preview.css"), css);
 await copyFile(path.join(root, "public", "fixture-poster.jpeg"), path.join(output, "assets", "poster.jpeg"));
+const designAssets = ["grain.svg"];
+for (const asset of designAssets) {
+  const relative = `public/${asset}`;
+  sourceHashes[relative] = hash(await readFile(path.join(root, relative)));
+  await copyFile(path.join(root, relative), path.join(output, asset));
+}
 const fonts = ["krona-one.ttf", "kumbh-sans-regular.ttf", "kumbh-sans-bold.ttf", "OFL-Krona-One.txt", "OFL-Kumbh-Sans.txt"];
 await mkdir(path.join(output, "fonts"), { recursive: true });
 for (const font of fonts) {
@@ -101,7 +107,7 @@ for (const forbidden of ["/api/checkout/initialize", "/api/contact", "/api/order
 }
 await mkdir(path.join(root, "reports"), { recursive: true });
 await writeFile(path.join(root, "reports", "client-preview-build.json"), JSON.stringify({
-  output: "out/client-preview", routes, fonts, sourceHashes, bundleBytes: Buffer.byteLength(bundle),
+  output: "out/client-preview", routes, fonts, designAssets, sourceHashes, bundleBytes: Buffer.byteLength(bundle),
   bundleSha256: hash(bundle), cssSha256: hash(css), backend: "none", submissions: "removed", networkConnections: "blocked",
 }, null, 2) + "\n");
 console.log(`Built static client preview: ${routes.length} pages, ${Buffer.byteLength(bundle)} JS bytes. No backend or submission endpoints.`);
