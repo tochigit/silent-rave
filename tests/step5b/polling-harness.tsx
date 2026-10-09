@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { usePoll } from "../../src/components/customer/use-poll";
+import { LogoutButton } from "../../src/components/auth/logout-button";
 type Value = { status: string };
 const nativeTimeout = window.setTimeout.bind(window);
 const timers = new Map<
@@ -16,6 +17,8 @@ const fixture = {
   hidden: false,
   fail: false,
   hold: false,
+  logoutMode: "server-error" as "server-error" | "network-error" | "success",
+  logoutAttempts: 0,
   setEnabled: (_value: boolean) => {},
   timers: () => [...timers.values()].map((t) => t.delay),
   async advance(ms: number) {
@@ -51,6 +54,11 @@ window.clearTimeout = ((id?: number) => {
   clear(id);
 }) as typeof window.clearTimeout;
 window.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+  if (_input === "/api/auth/logout") {
+    fixture.logoutAttempts++;
+    if (fixture.logoutMode === "network-error") throw new TypeError("Synthetic network failure");
+    return Response.json({ ok: fixture.logoutMode === "success" }, { status: fixture.logoutMode === "success" ? 200 : 503 });
+  }
   fixture.requests++;
   if (fixture.hold)
     return new Promise<Response>((_resolve, reject) =>
@@ -88,6 +96,7 @@ function Harness() {
       <span>{render}</span>
       <button onClick={poll.refresh}>Refresh</button>
       <button onClick={() => setRender((n) => n + 1)}>Rerender</button>
+      <LogoutButton loginPath="/admin/login" />
     </main>
   );
 }

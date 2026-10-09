@@ -1,2 +1,0 @@
-Exit code: 0
-Command: bun --no-env-file node_modules/eslint/bin/eslint.js scripts/readiness.ts scripts/preflight-db.ts tests/step5/readiness.test.ts (repository ESLint config/rules; no diagnostics)

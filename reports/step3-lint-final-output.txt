@@ -1,3 +1,0 @@
-Command: bun --no-env-file node_modules/eslint/bin/eslint.js .
-
-Exit code: 0

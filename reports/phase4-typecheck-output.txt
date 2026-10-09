@@ -1,4 +1,0 @@
-bun --no-env-file run typecheck
-$ tsc --noEmit && tsc --noEmit -p tsconfig.tooling.json
-
-Exit code: 0

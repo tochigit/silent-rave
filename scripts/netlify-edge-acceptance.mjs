@@ -62,7 +62,7 @@ for (const path of ["/admin/future.feature", "/%61dmin/future", "/admin/future?_
   check(response.status === 307 && destination.origin === "https://admin.silent-rave.example.test" &&
     destination.pathname === decodeURIComponent(path.split("?")[0]), "root operations canonical destination");
   const protectedPage = await execute(destination.href);
-  check(protectedPage.status === 307 && new URL(protectedPage.headers.get("location")).pathname === "/login", "protected future path");
+  check(protectedPage.status === 307 && new URL(protectedPage.headers.get("location"), destination).pathname === "/login", "protected future path");
 }
 check((await execute(root + "/api/admin/future.feature")).status === 401, "protected future API");
 check(brokerCalls === 0, "empty sessions reject without a remote broker request");

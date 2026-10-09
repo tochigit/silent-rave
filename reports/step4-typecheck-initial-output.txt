@@ -1,1 +1,0 @@
-src/components/operations/owner.tsx(19,921): error TS1005: '}' expected.

@@ -1,6 +1,0 @@
-{
-  "result": "FAIL",
-  "step": "home and keyboard",
-  "message": "AssertionError [ERR_ASSERTION]: Keep the reference's vertical event section order",
-  "errors": []
-}

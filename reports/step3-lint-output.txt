@@ -1,4 +1,0 @@
-Command: bun --no-env-file run lint
-$ eslint .
-
-Exit code: 0

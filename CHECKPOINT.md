@@ -12,7 +12,11 @@ handoff for the new fix branch, exact-head checks and deployment status.
 
 Branch `fix/hosted-scanner-owner-routing` fixes exact scanner shell paths,
 canonical admin/staff page navigation and auth redirects, and unnecessary
-cookie-free broker requests. Bank origin checks and independent authorization
+cookie-free broker requests. Further requested review fixes false logout success
+on HTTP/network failure and ignores generated reports without deleting local
+files. Netlify's badge requires its provider setting; exact instructions have
+been supplied because connected tools do not expose it and UI control is
+unavailable. Bank origin checks and independent authorization
 remain enforced. The published site still contains the original bugs until the
 new reviewed PR is explicitly approved, merged and deployed.
 
@@ -20,7 +24,10 @@ Focused policy/configuration tests, scanner generation, lint and both type check
 pass. Owned Chrome static-shell acceptance passed 16 checks. Local HTTP tests
 passed 6 cases, including the scanner regression; an existing session-renewal
 case timed out and that suite is recorded as failed. Exact-head CI and PR
-publication status are recorded in the Desktop handoff. No hosted bank write,
+publication status are recorded in the Desktop handoff. PR #13 targets main:
+https://github.com/tochigit/silent-rave/pull/13. Initial CI 37984023878 failed a
+new Edge-test relative-URL parsing assumption; the harness is corrected and
+the updated head requires its own complete checks. No hosted bank write,
 password reset, email delivery, scheduler or new deployment was performed.
 Preserve all branches, PR #11 and the older preview. Backblaze is deferred;
 `readyForLaunch=false`. Prior merge approval applies only to already-merged PR #12.

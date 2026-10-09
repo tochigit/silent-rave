@@ -39,6 +39,29 @@ performance guarantee or a measurement of the new code.
 - The scanner sign-in link uses `/login` on its staff host. Its shell change
   updates the generated service-worker cache revision. Pending scans in
   IndexedDB are preserved. Public pages already have a loading screen.
+- The owner logout control waits for confirmed server revocation before leaving
+  the page. A failed HTTP response, timeout or lost connection shows an error
+  and allows retry, instead of misleadingly returning to login with a potentially
+  active session. Rendered acceptance covers HTTP/network failure and success.
+
+## Generated files and provider badge
+
+The user also requested repository cleanup and removal of Netlify's badge.
+Generated `reports/` outputs are ignored and removed from the Git index; every
+local report remains on disk and historical commits retain the earlier evidence.
+Verification scripts create their output directories and CI continues uploading
+fresh reports as artifacts. Source, scripts, migrations, specifications, lockfiles
+and required tracked client references remain. The user's reference-ignore rule
+is preserved; tracked reference files still belong to the repository and CI.
+
+The badge is injected by Netlify, not this application. The supported project
+switch is Project configuration > General > Powered by Netlify badge > Off >
+Save. It does not require a deploy. Connected MCP does not expose this setting;
+both Browser and Windows Computer Use are unavailable, so the user was given
+the exact setting once. The user confirmed saving it off. A subsequent native
+HTTPS readback failed its TLS handshake; that attempt proves no page state.
+Current successful readback, if any, is recorded in the Desktop handoff.
+Reference: https://docs.netlify.com/manage/projects/powered-by-netlify-badge/.
 
 ## Verification
 
@@ -59,10 +82,17 @@ unauthenticated requests. This is not hosted authentication, camera or ticket
 admission evidence. The first browser attempt expected the wrong error wording;
 the harness was corrected to assert the actual authentication response.
 See `reports/scanner-routing/style-acceptance.json` and its mobile image.
+These generated outputs are local evidence, not tracked source files.
 
 Lint passed. Exact-head Windows/Linux CI results are recorded in the current
 Desktop hosted routing fixes handoff. Do not interpret pending or failed runs as
 passes.
+
+Initial CI `37984023878` failed on both systems in the new generated-Edge harness:
+it parsed the valid same-origin relative `/login` header without a URL base.
+The harness now resolves that header against the canonical target. Application
+redirect behavior was valid; assertions are retained. The changed head must pass
+the complete checks independently.
 
 Generated-runtime acceptance covers the exact scanner transfer paths and
 canonical redirects, cookie-free rejection without a broker request, real

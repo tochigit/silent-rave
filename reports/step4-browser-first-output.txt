@@ -1,4 +1,0 @@
-PASS: fixture owner login
-FAILED: locator.selectOption: Timeout 30000ms exceeded.
-Call log:
-[2m  - waiting for getByLabel('Event', { exact: true }).last()[22m
