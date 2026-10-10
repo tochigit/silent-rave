@@ -20,7 +20,8 @@ export async function runScheduled(
       const response = await request(target, {
         method: "POST",
         headers: { "x-cron-secret": env.CRON_SECRET },
-        redirect: "error",
+        // Workers supports manual; reject the returned 3xx without following it.
+        redirect: "manual",
         credentials: "omit",
         cache: "no-store",
         signal: AbortSignal.timeout(70000),
