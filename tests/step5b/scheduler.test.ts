@@ -24,7 +24,7 @@ test("scheduler posts exactly two fixed authenticated targets with independent b
   expect(deadlines).toEqual([70000, 70000]);
   for (const { init } of calls) {
     expect(init?.method).toBe("POST");
-    expect(init?.redirect).toBe("error");
+    expect(init?.redirect).toBe("manual");
     expect(init?.credentials).toBe("omit");
     expect(init?.cache).toBe("no-store");
     expect(new Headers(init?.headers).get("x-cron-secret")).toBe(
@@ -33,6 +33,28 @@ test("scheduler posts exactly two fixed authenticated targets with independent b
     expect(init?.body).toBeUndefined();
   }
   expect(Object.keys(worker)).toEqual(["scheduled"]);
+});
+
+test("scheduler rejects redirect responses without sending its secret to their destination", async () => {
+  for (const status of [301, 302, 303, 307, 308]) {
+    const urls: string[] = [];
+    await expect(
+      runScheduled({ CRON_SECRET: "s".repeat(32) }, async (url, init) => {
+        expect(init?.redirect).toBe("manual");
+        urls.push(String(url));
+        return urls.length === 1
+          ? new Response("Redirect", {
+              status,
+              headers: { Location: "https://example.invalid/receive-secret" },
+            })
+          : new Response(null);
+      }),
+    ).rejects.toThrow("SCHEDULED_TARGET_FAILED");
+    expect(urls).toEqual([
+      "https://silentrave.space/api/internal/expire-holds",
+      "https://silentrave.space/api/internal/process-email-jobs",
+    ]);
+  }
 });
 test("one failed scheduler target never prevents calling the other and errors stay fixed", async () => {
   let count = 0;
