@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { directionsUrl } from "@/lib/venues/directions";
+import { venueMapEmbedUrl } from "@/lib/venues/map";
 import { lagosDay } from "@/lib/customer/format";
 import type {
   CatalogEvent,
@@ -219,12 +220,6 @@ export async function publicEvent(
     select,
   });
   if (!row) return null;
-  const key = process.env.GOOGLE_MAPS_EMBED_API_KEY?.trim();
-  const query = row.venue.googlePlaceId
-    ? `place_id:${row.venue.googlePlaceId}`
-    : row.venue.latitude != null && row.venue.longitude != null
-      ? `${row.venue.latitude},${row.venue.longitude}`
-      : row.venue.address;
   return {
     ...summary(row),
     description: row.description,
@@ -237,10 +232,7 @@ export async function publicEvent(
       longitude:
         row.venue.longitude == null ? null : Number(row.venue.longitude),
       directions_url: directionsUrl(row.venue),
-      map_embed_url: key
-        ? "https://www.google.com/maps/embed/v1/place?" +
-          new URLSearchParams({ key, q: query })
-        : null,
+      map_embed_url: venueMapEmbedUrl(row.venue),
     },
     organizer: row.organizer,
     ticket_tiers: row.ticketTiers.map((t) => ({

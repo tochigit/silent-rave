@@ -109,6 +109,46 @@ jobs remain queued. Inspect FAILED jobs, and reconcile `DELIVERY_UNCERTAIN` with
 the provider before issuing a fresh resend. Supabase storage is still a stub;
 real delivery, scheduler, storage and deployment checks remain unverified.
 
+## Venue addresses and maps
+
+Owner address suggestions use the server-only `GEOAPIFY_API_KEY`. Geoapify Free
+requires no card and offers 3,000 credits/day for commercial use with attribution.
+Save the dedicated key in the existing Netlify site's environment settings;
+updated settings require a new deployment. Local fixtures leave this key blank
+and mock provider responses rather than spending real credits.
+
+One **Find address** click returns a Nigerian address and its coordinates in one
+request. Selection fills the venue form without another details request. Verify
+the result before saving; manual address/coordinate entry remains available.
+The lookup clears obsolete Google place/directions links when replacing an
+address. Existing catalog visibility, purchase and email behavior are unchanged.
+
+The authenticated proxy keeps the 60/minute owner limit and shares 2/second and
+1,000/24h fixed provider windows through distinct HMAC keys in the existing
+PostgreSQL `places` bucket. No migration is required. Even overlapping fixed
+windows stay below the 5/second and 3,000/day free allowances for this site's
+requests. Use a dedicated key/account for these lookups; other uses are not
+counted by the app. Exhausted quotas stop provider I/O and preserve manual entry.
+Provider URLs, keys and raw errors are never returned or logged. Public key
+aliases are rejected by readiness checks.
+
+An event with valid coordinates displays a lazy OpenStreetMap embed, with the
+required map/location-provider attribution. No Google billing or map key is
+used. Missing coordinates retain the location placeholder and directions link.
+Public map services have usage/availability limits; the app does not prefetch
+tiles or implement public Nominatim autocomplete.
+
+References: [Geoapify API](https://apidocs.geoapify.com/docs/geocoding/address-autocomplete/),
+[Free plan](https://www.geoapify.com/pricing/),
+[OSM export](https://wiki.openstreetmap.org/wiki/Export) and
+[OSM tile policy](https://operations.osmfoundation.org/policies/tiles/).
+
+`bun --no-env-file run test:step5b-controls` covers the provider and shared quota
+behavior in an owned database. `node scripts/browser-free-venues.mjs` checks
+the actual rendered form in an owned Chrome profile with a mocked local address
+endpoint and zero external requests. Live key validation and deployed owner/map
+acceptance must be recorded separately from those isolated tests.
+
 ## Specification and delivery
 
 `.docs/CHANGELOG.md` and `.docs` v2.1.2 are the active specification. Ignore

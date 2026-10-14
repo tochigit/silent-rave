@@ -1,107 +1,40 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { body, OperationError, reply } from "./http";
-import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-export async function placeOperation(
-  request: NextRequest,
-  parts: string[],
-  actorId: string,
-) {
-  if (
-    request.method !== "POST" ||
-    parts.length !== 2 ||
-    !["autocomplete", "details"].includes(parts[1])
-  )
+import { consumeAddressLookupBudget, consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { addressSuggestions } from "@/lib/venues/address-suggestions";
+
+export async function placeOperation(request: NextRequest, parts: string[], actorId: string) {
+  if (request.method !== "POST" || parts.length !== 2 || parts[1] !== "autocomplete")
     throw new OperationError(404, "Route not found.");
-  const rate = await consumeRateLimit("places", actorId, {
-    limit: 60,
-    windowMs: 60000,
-  });
-  if (rate.limited)
-    return rateLimitResponse(rate.retryAfterSec, "Too many address lookups.");
-  const input = await body(
-    request,
-    z
-      .object({
-        input: z.string().trim().min(3).max(200).optional(),
-        place_id: z
-          .string()
-          .regex(/^[\w-]{1,200}$/)
-          .optional(),
-        session_token: z.uuid(),
-      })
-      .strict(),
-  );
-  const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key)
-    throw new OperationError(
-      503,
-      "Address suggestions await Google Places configuration. You can save a verified address and coordinates meanwhile.",
-    );
+  const rate = await consumeRateLimit("places", actorId, { limit: 60, windowMs: 60000 });
+  if (rate.limited) return rateLimitResponse(rate.retryAfterSec, "Too many address lookups.");
+  const input = await body(request, z.object({
+    input: z.string().trim().min(3).max(200),
+    // Accept cached clients' old session field; Geoapify does not need it.
+    session_token: z.uuid().optional(),
+  }).strict());
+  const key = process.env.GEOAPIFY_API_KEY?.trim();
+  if (!key) throw new OperationError(503,
+    "Address suggestions are temporarily unavailable. You can enter a verified address and coordinates.");
+
+  // Shared across owners and server instances; one call with no automatic retry.
+  const budget = await consumeAddressLookupBudget();
+  if (budget.limited) return rateLimitResponse(budget.retryAfterSec,
+    "Address lookup limit reached. You can enter a verified address and coordinates.");
   try {
-    if (parts[1] === "autocomplete") {
-      if (!input.input) throw new OperationError(400, "Search text required.");
-      const r = await fetch(
-        "https://places.googleapis.com/v1/places:autocomplete",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": key,
-            "X-Goog-FieldMask":
-              "suggestions.placePrediction.placeId,suggestions.placePrediction.text.text",
-          },
-          body: JSON.stringify({
-            input: input.input,
-            sessionToken: input.session_token,
-            includedRegionCodes: ["ng"],
-          }),
-          signal: AbortSignal.timeout(5000),
-          redirect: "error",
-        },
-      );
-      if (!r.ok) throw new Error();
-      const data = await r.json();
-      return reply({
-        suggestions: (data.suggestions ?? [])
-          .filter((s: any) => s.placePrediction?.placeId)
-          .map((s: any) => ({
-            place_id: s.placePrediction.placeId,
-            label: s.placePrediction.text.text,
-          })),
-      });
-    }
-    if (!input.place_id) throw new OperationError(400, "Place ID required.");
-    const r = await fetch(
-      `https://places.googleapis.com/v1/places/${encodeURIComponent(input.place_id)}?sessionToken=${input.session_token}`,
-      {
-        headers: {
-          "X-Goog-Api-Key": key,
-          "X-Goog-FieldMask": "id,formattedAddress,location,addressComponents",
-        },
-        signal: AbortSignal.timeout(5000),
-        redirect: "error",
-      },
-    );
-    if (!r.ok) throw new Error();
-    const data = await r.json();
-    const part = (type: string) =>
-      data.addressComponents?.find((c: any) => c.types.includes(type))
-        ?.longText;
-    return reply({
-      google_place_id: data.id,
-      address: data.formattedAddress,
-      latitude: data.location?.latitude,
-      longitude: data.location?.longitude,
-      city: part("locality") ?? part("administrative_area_level_2") ?? "",
-      state: part("administrative_area_level_1") ?? "",
-      country: part("country") ?? "Nigeria",
+    const url = new URL("https://api.geoapify.com/v1/geocode/autocomplete");
+    url.search = new URLSearchParams({ text: input.input, filter: "countrycode:ng",
+      format: "json", limit: "5", lang: "en", apiKey: key }).toString();
+    const response = await fetch(url, {
+      method: "GET", headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(5000), redirect: "error", credentials: "omit", cache: "no-store",
     });
-  } catch (error) {
-    if (error instanceof OperationError) throw error;
-    throw new OperationError(
-      503,
-      "Address lookup unavailable. Check the address and coordinates before saving.",
-    );
+    if (!response.ok) throw new Error("ADDRESS_PROVIDER_UNAVAILABLE");
+    return reply({ suggestions: addressSuggestions(await response.json()) });
+  } catch {
+    // Provider bodies, URLs and errors can contain the key. Never log them.
+    throw new OperationError(503,
+      "Address lookup unavailable. Check the address and coordinates before saving.");
   }
 }

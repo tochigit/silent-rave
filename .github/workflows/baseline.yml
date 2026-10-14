@@ -75,12 +75,13 @@ jobs:
           export BROWSER_EXECUTABLE="$(command -v google-chrome)"
           test -n "$BROWSER_EXECUTABLE"
           node scripts/browser-client-preview.mjs
-      - name: Verify rendered polling behavior in owned Chrome
+      - name: Verify rendered polling and venue address behavior in owned Chrome
         if: matrix.platform == 'linux'
         run: |
           export BROWSER_EXECUTABLE="$(command -v google-chrome)"
           test -n "$BROWSER_EXECUTABLE"
           node scripts/browser-polling.mjs
+          node scripts/browser-free-venues.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -94,6 +95,7 @@ jobs:
             reports/step5b-*-test-output.txt
             reports/step5b-*-measurements.json
             reports/step5b-*-polling-browser.json
+            reports/free-venue-*
             reports/step5a-*-migration-backfill.txt
             reports/step5a-mobile-*.png
             reports/client-preview-build.json

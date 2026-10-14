@@ -158,6 +158,7 @@ test("malformed and public secrets cannot leak through diagnostics", () => {
   expect(JSON.stringify(result)).not.toContain(marker);
   expect(JSON.stringify(inspectLaunchConfig(candidate))).not.toContain(secret);
   blocked({ NEXT_PUBLIC_SERVICE_ROLE_KEY: marker }, "public-secret-exposure");
+    blocked({ NEXT_PUBLIC_GEOAPIFY_API_KEY: marker }, "public-secret-exposure");
   blocked({ TICKET_SIGNING_PRIVATE_KEY: secret + "=" }, "ticket-signing");
   blocked({ EMAIL_PAYLOAD_SECRET: "short" }, "email-config");
   blocked({ CRON_SECRET: "short" }, "CRON_SECRET");

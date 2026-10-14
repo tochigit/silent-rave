@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-14: free venue address lookup and maps
+
+Owner address lookup uses Geoapify Free through the authenticated server proxy,
+with shared provider quotas, one-request address/coordinate selection and manual
+fallback. Public venue maps use saved coordinates in an attributed OSM embed.
+No Google billing, schema migration or new browser dependency is required.
+See [the setup and limits](../README.md#venue-addresses-and-maps). Hosted activation remains
+pending the source deployment and actual owner/map checks.
+
 ## Batch B (shared controls and release preparation)
 
 Awaited PostgreSQL rate windows now persist HMAC identities across instances.
