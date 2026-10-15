@@ -13,7 +13,7 @@ import { readTrustedContextNode } from "../../src/lib/hosting/request-context-no
 import ingress from "../../netlify/ingress/request-context";
 import { sessionDecision } from "../../src/lib/auth/proxy-client";
 import { sanitizedBuildEnvironment } from "../../scripts/build-netlify-env";
-import { integrateIngress } from "../../netlify/plugins/ingress/integration.mjs";
+import { integrateIngress, assertBundledIngress, onPostBuild } from "../../netlify/plugins/ingress/integration.mjs";
 import { auditRoutePolicy } from "../../scripts/route-policy";
 const original = { ...process.env };
 beforeAll(() => Object.assign(process.env, { HOST_PLATFORM: "netlify", NODE_ENV: "production", ROOT_DOMAIN: "silentrave.space",
@@ -190,3 +190,54 @@ test("build integration is ordered, idempotent and rejects unknown adapter manif
   await writeFile(file, JSON.stringify({ version: 1, functions: [{ ...next, generator: "uninspected" }] }));
   await expect(integrateIngress(root)).rejects.toThrow();
 }, 30_000);
+
+function finalManifest(version = "16.1.3") {
+  return { bundler_version: version, bundles: [{ asset: "fixture.eszip", format: "eszip" }],
+    routes: [{ function: "silent-rave-request-context", pattern: "^/.*$" },
+      { function: "___netlify-edge-handler-node-middleware", pattern: "^/.*$" }] };
+}
+async function finalFixture(manifest: ReturnType<typeof finalManifest>) {
+  await mkdir(".test-runtime", { recursive: true });
+  const root = await mkdtemp(path.resolve(".test-runtime/final-ingress-test-"));
+  const output = path.join(root, ".netlify/edge-functions-dist");
+  await mkdir(output, { recursive: true });
+  await writeFile(path.join(output, "manifest.json"), JSON.stringify(manifest));
+  return { root, output };
+}
+test.each(["16.1.2", "16.1.3"])("inspected Edge bundler %s keeps the same ingress-first proof", async version => {
+  const { root, output } = await finalFixture(finalManifest(version));
+  expect(await assertBundledIngress(root)).toMatch(/^[a-f0-9]{64}$/);
+  expect(await assertBundledIngress(root, output)).toBe(await assertBundledIngress(root));
+});
+test.each(["16.1.4", "17.0.0", "not-a-version"])("uninspected Edge bundler %s still stops publication", async version => {
+  const { root } = await finalFixture(finalManifest(version));
+  await expect(assertBundledIngress(root)).rejects.toThrow("UNSUPPORTED_EDGE_BUNDLER_VERSION");
+});
+test.each(["reversed", "missing", "duplicate", "unmatched", "no-bundle"])("invalid final Edge manifest %s remains rejected", async problem => {
+  const manifest = finalManifest();
+  if (problem === "reversed") manifest.routes.reverse();
+  if (problem === "missing") manifest.routes.shift();
+  if (problem === "duplicate") manifest.routes.unshift(manifest.routes[0]);
+  if (problem === "unmatched") manifest.routes[0].pattern = "^/public$";
+  if (problem === "no-bundle") manifest.bundles = [];
+  const { root } = await finalFixture(manifest);
+  await expect(assertBundledIngress(root)).rejects.toThrow();
+});
+test("post-build records the actual inspected bundler and reports safe failure categories", async () => {
+  const { root, output } = await finalFixture(finalManifest());
+  const failures: string[] = [];
+  const options = { constants: { PACKAGE_PATH: root, EDGE_FUNCTIONS_DIST: output }, utils: { build: { failBuild: (reason: string) => failures.push(reason) } } };
+  await onPostBuild(options);
+  expect(failures).toEqual([]);
+  const report = JSON.parse(await readFile(path.join(root, `reports/step5c1-${process.platform}-ordering-acceptance.json`), "utf8"));
+  expect(report.bundler).toBe("16.1.3");
+  expect(report.ingressFirst).toBe(true);
+  expect(report.fingerprint).toBe(await assertBundledIngress(root));
+  await writeFile(path.join(output, "manifest.json"), JSON.stringify(finalManifest("17.0.0")));
+  await onPostBuild(options);
+  expect(failures).toEqual(["Cannot prove trusted ingress order in the final Edge bundle: UNSUPPORTED_EDGE_BUNDLER_VERSION (17.0.0)."]);
+  await writeFile(path.join(output, "manifest.json"), "invalid-fixture-json");
+  await onPostBuild(options);
+  expect(failures.at(-1)).toBe("Cannot prove trusted ingress order in the final Edge bundle: EDGE_MANIFEST_UNREADABLE.");
+  expect(failures.join(" ")).not.toContain("invalid-fixture-json");
+});
