@@ -100,6 +100,7 @@ try {
   assert.equal(await page.getByRole("link", { name: "Data attribution", exact: true }).count(), 1);
   checks.push("Provider and data-source attribution remains after selection");
   await page.getByRole("button", { name: "Save venue", exact: true }).click();
+  await page.locator("#saved-values").filter({ hasText: suggestion.address }).waitFor();
   const saved = JSON.parse(await page.locator("#saved-values").textContent());
   assert.equal(saved.address, suggestion.address); assert.equal(saved.latitude, "6.43");
   checks.push("The parent form submits the selected address and coordinates");
