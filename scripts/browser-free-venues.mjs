@@ -99,8 +99,22 @@ try {
   assert.equal(await page.getByRole("link", { name: "Geoapify", exact: true }).count(), 1);
   assert.equal(await page.getByRole("link", { name: "Data attribution", exact: true }).count(), 1);
   checks.push("Provider and data-source attribution remains after selection");
+  await page.evaluate(() => {
+    const form = document.querySelector("form");
+    form.addEventListener("submit", () => { window.venueFixtureSubmitted = true; }, { once: true, capture: true });
+    form.querySelector('button[type="submit"]').addEventListener("click", () => { window.venueFixtureClicked = true; }, { once: true, capture: true });
+  });
   await page.getByRole("button", { name: "Save venue", exact: true }).click();
-  await page.locator("#saved-values").filter({ hasText: suggestion.address }).waitFor();
+  try {
+    await page.locator("#saved-values").filter({ hasText: suggestion.address }).waitFor();
+  } catch (error) {
+    const state = await page.evaluate(() => ({ clicked: !!window.venueFixtureClicked,
+      submitted: !!window.venueFixtureSubmitted, saved: document.querySelector("#saved-values")?.textContent,
+      fields: [...document.querySelectorAll("form input, form select")].map((field) => ({ name: field.name,
+        type: field.type, value: field.value, valid: field.validity.valid, message: field.validationMessage })) }));
+    console.error("VENUE_SUBMIT_DIAGNOSTIC", JSON.stringify({ state, errors, url: page.url() }));
+    throw error;
+  }
   const saved = JSON.parse(await page.locator("#saved-values").textContent());
   assert.equal(saved.address, suggestion.address); assert.equal(saved.latitude, "6.43");
   checks.push("The parent form submits the selected address and coordinates");
