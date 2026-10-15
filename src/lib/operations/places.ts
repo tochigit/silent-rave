@@ -11,6 +11,7 @@ export async function placeOperation(request: NextRequest, parts: string[], acto
   if (rate.limited) return rateLimitResponse(rate.retryAfterSec, "Too many address lookups.");
   const input = await body(request, z.object({
     input: z.string().trim().min(3).max(200),
+    mode: z.enum(["address", "venue", "full"]).default("address"),
     // Accept cached clients' old session field; Geoapify does not need it.
     session_token: z.uuid().optional(),
   }).strict());
@@ -23,9 +24,10 @@ export async function placeOperation(request: NextRequest, parts: string[], acto
   if (budget.limited) return rateLimitResponse(budget.retryAfterSec,
     "Address lookup limit reached. You can enter a verified address and coordinates.");
   try {
-    const url = new URL("https://api.geoapify.com/v1/geocode/autocomplete");
+    const url = new URL(`https://api.geoapify.com/v1/geocode/${input.mode === "full" ? "search" : "autocomplete"}`);
     url.search = new URLSearchParams({ text: input.input, filter: "countrycode:ng",
-      format: "json", limit: "5", lang: "en", apiKey: key }).toString();
+      format: "json", limit: "10", lang: "en", apiKey: key }).toString();
+    if (input.mode === "venue") url.searchParams.set("type", "amenity");
     const response = await fetch(url, {
       method: "GET", headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(5000), redirect: "error", credentials: "omit", cache: "no-store",

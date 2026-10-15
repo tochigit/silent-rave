@@ -8,6 +8,7 @@ import { placeOperation } from "@/lib/operations/places";
 import { OperationError } from "@/lib/operations/http";
 import { addressSuggestions } from "@/lib/venues/address-suggestions";
 import { venueMapEmbedUrl } from "@/lib/venues/map";
+import { coordinatesFromInput, mapsSearchUrl } from "@/lib/venues/coordinate-input";
 import { consumeAddressLookupBudget, consumeRateLimit, rateLimitIdentity, RateLimitUnavailableError } from "@/lib/rate-limit";
 import { publicEvent } from "@/lib/events/catalog";
 
@@ -53,10 +54,11 @@ test("suggestions reject bad coordinates and foreign countries, cap results, and
     { ...row, formatted: "x".repeat(201) }, { ...row, lat: null },
   ] });
   expect(result).toEqual([{ label: row.formatted, address: row.formatted, latitude: 6.43,
-    longitude: 3.42, city: "Lagos", state: "Lagos", country: "Nigeria" }]);
+    longitude: 3.42, city: "Lagos", state: "Lagos", country: "Nigeria", kind: "Address or place" }]);
   expect(JSON.stringify(result)).not.toContain(providerKey);
   expect(JSON.stringify(result)).not.toContain("place_id");
-  expect(addressSuggestions({ results: Array.from({ length: 8 }, () => row) })).toHaveLength(5);
+  expect(addressSuggestions({ results: Array.from({ length: 12 }, (_, i) => ({ ...row, lat: 6 + i / 100 })) })).toHaveLength(10);
+  expect(addressSuggestions({ results: [row, row] })).toHaveLength(1);
   expect(addressSuggestions({ results: [{ ...row, country_code: "NG", city: undefined, town: "Fixture Town" }] })[0].city).toBe("Fixture Town");
   expect(() => addressSuggestions({ private: providerKey })).toThrow();
 });
@@ -75,12 +77,61 @@ test("one bounded Nigeria-filtered provider request supplies all fields without 
   const url = new URL(String(input));
   expect(url.origin + url.pathname).toBe("https://api.geoapify.com/v1/geocode/autocomplete");
   expect(url.searchParams.get("filter")).toBe("countrycode:ng");
-  expect(url.searchParams.get("limit")).toBe("5");
+  expect(url.searchParams.get("limit")).toBe("10");
   expect(url.searchParams.get("apiKey")).toBe(providerKey);
   expect(init?.redirect).toBe("error");
   expect(init?.cache).toBe("no-store");
   expect(init?.credentials).toBe("omit");
   expect(init?.signal).toBeInstanceOf(AbortSignal);
+});
+
+test("venue and full-address modes make one budgeted request to the correct search endpoint", async () => {
+  for (const mode of ["venue", "full"] as const) {
+    await db.rateLimitWindow.deleteMany({ where: { bucketName: "places", keyHmac: { in: hashes } } });
+    fetchMock = spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ results: [
+      { ...row, name: "Fixture Hall", result_type: "amenity" },
+    ] }));
+    const response = await placeOperation(request({ input: "Fixture Hall Lagos", mode }), ["places", "autocomplete"], actorId());
+    const data = await response.json();
+    expect(data.suggestions[0].label).toBe(`Fixture Hall — ${row.formatted}`);
+    expect(data.suggestions[0].kind).toBe("Venue or landmark");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const url = new URL(String(fetchMock.mock.calls[0][0]));
+    expect(url.pathname).toBe(`/v1/geocode/${mode === "full" ? "search" : "autocomplete"}`);
+    expect(url.searchParams.get("type")).toBe(mode === "venue" ? "amenity" : null);
+    expect(url.searchParams.get("filter")).toBe("countrycode:ng");
+    expect((await db.rateLimitWindow.findUniqueOrThrow({ where: { bucketName_keyHmac: {
+      bucketName: "places", keyHmac: hashes[1],
+    } } })).count).toBe(1n);
+    fetchMock.mockRestore(); fetchMock = undefined;
+  }
+});
+
+test("city and state candidates are distinct, clearly labelled results rather than unnamed duplicates", () => {
+  const results = addressSuggestions({ results: [
+    { ...row, name: "Lagos", formatted: "Lagos, LA, Nigeria", result_type: "city" },
+    { ...row, name: "Lagos State", formatted: "Lagos State, Nigeria", result_type: "state" },
+  ] });
+  expect(results.map((r) => r.kind)).toEqual(["City or town", "State"]);
+  expect(results[0].label).toBe("Lagos, LA, Nigeria");
+});
+
+test("manual pins accept precise coordinates and pinned links, never guess from short codes or camera centres", () => {
+  for (const input of [" 6.43, 3.42 ", "https://www.google.com/maps/search/?api=1&query=6.43%2C3.42",
+    "https://maps.google.com/?q=6.43,3.42", "https://www.google.com/maps/place/Fixture/@7,8,10z/data=!3d6.43!4d3.42"])
+    expect(coordinatesFromInput(input)).toEqual({ latitude: 6.43, longitude: 3.42 });
+  expect(coordinatesFromInput("-12.5, -77.1")).toEqual({ latitude: -12.5, longitude: -77.1 });
+  expect(coordinatesFromInput("0,0")).toEqual({ latitude: 0, longitude: 0 });
+  for (const input of ["CV67+5VV Evangel university Akaeze, Akaeze 481116, Ebonyi", "Lagos", "91,3", "6,181",
+    "6,3,4", "NaN,3", "6e2,3", "https://maps.app.goo.gl/fixture", "https://www.google.com/maps/@6.43,3.42,17z",
+    "https://www.google.com/maps/dir/data=!3d6.43!4d3.42", "https://www.google.com/maps/place/x/!3d6!4d3!3d7!4d4",
+    "https://www.google.com.attacker.invalid/maps/?q=6,3", "https://www.google.com@evil.invalid/maps/?q=6,3",
+    "https://www.google.com:8443/maps/?q=6,3", "http://www.google.com/maps/?q=6,3", "x".repeat(4097)])
+    expect(coordinatesFromInput(input)).toBeNull();
+  const url = new URL(mapsSearchUrl("CV67+5VV Evangel University Akaeze & Ebonyi"));
+  expect(url.origin + url.pathname).toBe("https://www.google.com/maps/search/");
+  expect(url.searchParams.get("query")).toBe("CV67+5VV Evangel University Akaeze & Ebonyi");
+  expect([...url.searchParams.keys()]).toEqual(["api", "query"]);
 });
 
 test("missing free-provider key never falls back to Google or makes an outbound request", async () => {
@@ -94,7 +145,7 @@ test("missing free-provider key never falls back to Google or makes an outbound 
 
 test("invalid search and retired details endpoint do not spend provider credits", async () => {
   fetchMock = spyOn(globalThis, "fetch");
-  for (const [input, path, status] of [[{ input: "a" }, "autocomplete", 400], [{ input: "Lagos", unexpected: "value" }, "autocomplete", 400], [{ place_id: "old" }, "details", 404]] as const) {
+  for (const [input, path, status] of [[{ input: "a" }, "autocomplete", 400], [{ input: "Lagos", unexpected: "value" }, "autocomplete", 400], [{ input: "Lagos", mode: "all-places" }, "autocomplete", 400], [{ place_id: "old" }, "details", 404]] as const) {
     try { await placeOperation(request(input), ["places", path], actorId()); throw new Error("Expected invalid request"); }
     catch (error) { expect(error).toBeInstanceOf(OperationError); expect((error as OperationError).status).toBe(status); }
   }

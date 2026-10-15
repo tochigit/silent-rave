@@ -84,9 +84,11 @@ function Editor({
           }
         }}
       >
-        {fields.some((f) => f.key === "google_place_id") && <PlaceInput />}
+        {fields.some((f) => f.key === "latitude") && fields.some((f) => f.key === "address") && <PlaceInput />}
         <div className="op-form-grid">
-          {fields.map((f) => (
+          {fields.map((f) => f.type === "hidden" ? (
+            <input key={f.key} type="hidden" name={f.key} defaultValue={initial[f.key] ?? ""} />
+          ) : (
             <label key={f.key}>
               {f.label}
               {f.type === "textarea" ? (
@@ -259,10 +261,10 @@ export function OwnerPanel({ section = ["payments"] }: { section?: string[] }) {
       required("city", "City"),
       { key: "state", label: "State" },
       required("country", "Country"),
-      { key: "google_place_id", label: "Google Place ID" },
+      { key: "google_place_id", label: "", type: "hidden" },
       { key: "latitude", label: "Latitude", type: "number" },
       { key: "longitude", label: "Longitude", type: "number" },
-      { key: "google_maps_url", label: "Directions fallback URL", type: "url" },
+      { key: "google_maps_url", label: "Directions link (optional)", type: "url" },
     ];
     rows = poll.data?.venues ?? [];
   }
