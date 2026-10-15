@@ -8,8 +8,9 @@ export function coordinatesFromInput(input: string): Coordinates | null {
   if (/^https:\/\//i.test(text)) {
     let url: URL;
     try { url = new URL(text); } catch { return null; }
-    if (url.protocol !== "https:" || url.username || url.password || url.port ||
+    if (url.protocol !== "https:" || url.port ||
       !["google.com", "www.google.com", "maps.google.com"].includes(url.hostname)) return null;
+    if (url.username.length > 0 || url.password.length > 0) return null;
     if (url.hostname !== "maps.google.com" && !/^\/maps(?:\/|$)/.test(url.pathname)) return null;
     const pins = [...url.pathname.matchAll(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/g)];
     if (pins.length > 1) return null;

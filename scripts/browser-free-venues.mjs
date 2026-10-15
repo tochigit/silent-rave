@@ -162,6 +162,7 @@ try {
   await page.setViewportSize({ width: 360, height: 800 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   checks.push("The isolated address form fits a 360px viewport");
+  await mkdir("reports", { recursive: true });
   await page.screenshot({ path: `reports/free-venue-${process.platform}-form.png`, fullPage: true });
   await page.goto(`${base}/owner`);
   await page.getByRole("button", { name: "Edit", exact: true }).click();
