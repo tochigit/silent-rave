@@ -70,22 +70,36 @@ export async function onBuild({ constants, utils }) {
     utils.build.failBuild("Cannot prove trusted ingress precedes the Next proxy.");
   }
 }
-export async function assertBundledIngress(base, outputDirectory = resolve(base, ".netlify/edge-functions-dist")) {
+// Both published patches have identical manifest generation and validation code.
+// Keep this explicit: a future bundler still requires inspection and acceptance.
+const inspectedBundlers = new Set(["16.1.2", "16.1.3"]);
+class IngressBundleError extends Error {}
+async function inspectBundledIngress(base, outputDirectory = resolve(base, ".netlify/edge-functions-dist")) {
   const manifest = JSON.parse(await readFile(join(outputDirectory, "manifest.json"), "utf8"));
-  if (manifest.bundler_version !== "16.1.2" || !Array.isArray(manifest.routes) || !manifest.bundles?.length ||
-    manifest.routes.filter(route => route.function === INGRESS).length !== 1) throw new Error("Unknown final Edge bundle");
+  if (!inspectedBundlers.has(manifest?.bundler_version)) {
+    const version = /^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(manifest?.bundler_version) ? manifest.bundler_version : "invalid";
+    throw new IngressBundleError(`UNSUPPORTED_EDGE_BUNDLER_VERSION (${version})`);
+  }
+  if (!Array.isArray(manifest.routes) || !manifest.bundles?.length ||
+    manifest.routes.filter(route => route.function === INGRESS).length !== 1) throw new IngressBundleError("INVALID_EDGE_MANIFEST");
   for (const path of ["/", "/admin", "/staff", "/api/admin/future.feature", "/api/staff/future.feature", "/%61dmin/future", "/api/internal/session-decision", "/.netlify/functions/handler"]) {
     const match = manifest.routes.filter(route => new RegExp(route.pattern).test(path)).map(route => route.function);
-    if (match[0] !== INGRESS || match[1] !== "___netlify-edge-handler-node-middleware") throw new Error("Unknown final Edge ordering");
+    if (match[0] !== INGRESS || match[1] !== "___netlify-edge-handler-node-middleware") throw new IngressBundleError("INVALID_EDGE_ORDER");
   }
-  return createHash("sha256").update(JSON.stringify(manifest)).digest("hex");
+  return { fingerprint: createHash("sha256").update(JSON.stringify(manifest)).digest("hex"), bundler: manifest.bundler_version };
+}
+export async function assertBundledIngress(base, outputDirectory) {
+  return (await inspectBundledIngress(base, outputDirectory)).fingerprint;
 }
 export async function onPostBuild({ constants, utils }) {
   try {
     const base = constants.PACKAGE_PATH || process.cwd();
-    const fingerprint = await assertBundledIngress(base, resolve(base, constants.EDGE_FUNCTIONS_DIST));
+    const { fingerprint, bundler } = await inspectBundledIngress(base, resolve(base, constants.EDGE_FUNCTIONS_DIST));
     await mkdir(join(base, "reports"), { recursive: true });
-    await writeFile(join(base, `reports/step5c1-${process.platform}-ordering-acceptance.json`), JSON.stringify({ adapter: "5.16.2", bundler: "16.1.2", fingerprint, ingressFirst: true }, null, 2) + "\n");
+    await writeFile(join(base, `reports/step5c1-${process.platform}-ordering-acceptance.json`), JSON.stringify({ adapter: "5.16.2", bundler, fingerprint, ingressFirst: true }, null, 2) + "\n");
     console.log(`[ingress] final-bundle=${fingerprint}`);
-  } catch { utils.build.failBuild("Cannot prove trusted ingress order in the final Edge bundle."); }
+  } catch (error) {
+    const reason = error instanceof IngressBundleError ? error.message : "EDGE_MANIFEST_UNREADABLE";
+    utils.build.failBuild(`Cannot prove trusted ingress order in the final Edge bundle: ${reason}.`);
+  }
 }

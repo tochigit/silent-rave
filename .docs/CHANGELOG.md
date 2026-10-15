@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-15: Netlify Edge bundler patch compatibility
+
+The final ingress check accepts inspected Edge bundler 16.1.3 alongside 16.1.2.
+Manifest generation and validation are unchanged between those published patches;
+the old exact-version check rejected a correctly ordered 16.1.3 bundle. Ingress
+ordering, presence and bundle checks remain mandatory, and uninspected versions
+still fail. Acceptance reports record the actual version and failures expose a
+safe diagnostic category. Hosted retry and acceptance remain separate checks.
+
 ## 2026-10-14: free venue address lookup and maps
 
 Owner address lookup uses Geoapify Free through the authenticated server proxy,
