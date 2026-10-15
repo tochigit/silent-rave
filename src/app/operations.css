@@ -157,6 +157,42 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
+.operations-site input[type="hidden"] {
+  display: none;
+}
+.venue-lookup {
+  margin-bottom: 24px;
+}
+.venue-lookup > button {
+  margin-top: 12px;
+}
+.venue-lookup [aria-label="Address suggestions"] {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.venue-lookup [aria-label="Address suggestions"] button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.venue-lookup details {
+  border: 1px solid #545b6b;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+}
+.venue-lookup summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: list-item;
+}
+.venue-lookup :focus-visible {
+  outline: 2px solid #91e7d3;
+  outline-offset: 3px;
+}
 .op-notice {
   padding: 16px;
   border: 1px solid #ffd38a;
