@@ -200,6 +200,7 @@ export async function startFixture(
     VAPID_PRIVATE_KEY: "",
     VAPID_SUBJECT: "",
     GOOGLE_PLACES_API_KEY: "",
+    GEOAPIFY_API_KEY: "",
     OWNER_EMAIL: "owner@silentrave.ng",
     OWNER_PASSWORD: "silentrave-dev-owner",
     OWNER_NAME: "Fixture Owner",

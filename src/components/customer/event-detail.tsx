@@ -174,6 +174,7 @@ export function EventDetailPage({ slug, featured = false }: { slug: string; feat
           {event.venue.directions_url && <a className="secondary" href={event.venue.directions_url} target="_blank" rel="noreferrer">Get directions</a>}
           {event.venue.map_embed_url ? <div className="map-box"><iframe src={event.venue.map_embed_url} title={`Map of ${event.venue.name}`} loading="lazy" referrerPolicy="no-referrer" /></div>
             : <div className="map-box map-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><strong>{event.venue.name}</strong><span>Venue location · Map unavailable</span></div>}
+          {event.venue.map_embed_url && <p><a href="https://www.geoapify.com/">Geoapify</a> · <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a></p>}
         </div>
       </div>
       <dialog ref={dialog} className="ticket-modal" aria-labelledby="ticket-dialog-title" onCancel={() => setSelectedTier(null)} onClick={(click) => { if (click.target === click.currentTarget) setSelectedTier(null); }}>

@@ -68,7 +68,11 @@ public/scanner-icon-512.png
 # Generated verification output; preserve local files and publish CI artifacts.
 /reports/
 
-
-
-#reference
+# reference
 references
+
+# docs
+.docs
+
+# preview
+preview/

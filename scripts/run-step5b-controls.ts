@@ -17,6 +17,7 @@ try {
       "tests/step5b/mail-quota.test.ts",
       "tests/step5b/scheduler.test.ts",
       "tests/step5b/measurements.test.ts",
+      "tests/step5b/places.test.ts",
     ],
     {
       ...fixture.env,

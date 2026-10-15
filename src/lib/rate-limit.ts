@@ -16,6 +16,16 @@ const policy = {
   scanner: [300, 60000],
   places: [60, 60000],
 } as const;
+// Distinct HMAC identities reuse the existing places bucket; no schema change.
+const sharedPlacesPolicy = {
+  "geoapify-shared-second-v1": [2, 1000],
+  "geoapify-shared-day-v1": [1000, 86400000],
+} as const;
+export async function consumeAddressLookupBudget(client: PrismaClient = db): Promise<RateLimitResult> {
+  const burst = await consumeRateLimit("places", "geoapify-shared-second-v1", { limit: 2, windowMs: 1000 }, client);
+  if (burst.limited) return burst;
+  return consumeRateLimit("places", "geoapify-shared-day-v1", { limit: 1000, windowMs: 86400000 }, client);
+}
 export type RateLimitOptions = { limit: number; windowMs: number };
 export type RateLimitResult = { limited: boolean; retryAfterSec: number };
 export class RateLimitUnavailableError extends Error {
@@ -84,7 +94,9 @@ export async function consumeRateLimit(
   client: PrismaClient = db,
 ): Promise<RateLimitResult> {
   try {
-    const expected = policy[bucket as keyof typeof policy];
+    const expected = bucket === "places" && Object.hasOwn(sharedPlacesPolicy, key)
+      ? sharedPlacesPolicy[key as keyof typeof sharedPlacesPolicy]
+      : policy[bucket as keyof typeof policy];
     if (
       !expected ||
       !Number.isSafeInteger(options.limit) ||

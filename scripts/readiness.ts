@@ -258,7 +258,7 @@ export function inspectLaunchConfig(env: Env) {
     !Object.entries(env).some(
       ([key, value]) =>
         !!value &&
-        /^NEXT_PUBLIC_.*(?:SECRET|PRIVATE|SERVICE_ROLE|STORAGE_SERVER_KEY|DATABASE_URL|DIRECT_URL|RESEND_API_KEY|GOOGLE_PLACES_API_KEY|OWNER_PASSWORD)/.test(
+        /^NEXT_PUBLIC_.*(?:SECRET|PRIVATE|SERVICE_ROLE|STORAGE_SERVER_KEY|DATABASE_URL|DIRECT_URL|RESEND_API_KEY|GOOGLE_PLACES_API_KEY|GEOAPIFY_API_KEY|OWNER_PASSWORD)/.test(
           key,
         ),
     ),
