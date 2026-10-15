@@ -426,6 +426,9 @@ test("acceptance waiting on a job row leaves reservation locks available to recl
       let blocked = false;
       const deadline = Date.now() + 3000;
       while (Date.now() < deadline) {
+        // Statistics can be cached until transaction end; observe the worker's
+        // current lock wait rather than reusing the first poll's snapshot.
+        await tx.$executeRaw`SELECT pg_stat_clear_snapshot()`;
         const [row] = await tx.$queryRaw<
           Array<{ blocked: boolean }>
         >`SELECT EXISTS(
