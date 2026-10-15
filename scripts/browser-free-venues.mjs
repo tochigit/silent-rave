@@ -104,7 +104,10 @@ try {
     form.addEventListener("submit", () => { window.venueFixtureSubmitted = true; }, { once: true, capture: true });
     form.querySelector('button[type="submit"]').addEventListener("click", () => { window.venueFixtureClicked = true; }, { once: true, capture: true });
   });
-  await page.getByRole("button", { name: "Save venue", exact: true }).click();
+  // Native keyboard activation remains stable while the lazy map frame loads;
+  // the form's real submit handler and browser validation still run.
+  await page.getByRole("button", { name: "Save venue", exact: true }).focus();
+  await page.keyboard.press("Enter");
   try {
     await page.locator("#saved-values").filter({ hasText: suggestion.address }).waitFor();
   } catch (error) {
@@ -184,7 +187,8 @@ try {
   assert.equal(await page.getByText("Google Place ID", { exact: true }).count(), 0);
   assert.equal(await page.locator('input[name="google_place_id"]').isVisible(), false);
   assert.equal(await page.locator('input[name="google_place_id"]').inputValue(), "ChIJprevious");
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).focus();
+  await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "Create venue", exact: true }).waitFor();
   assert.equal(savedOwner.google_place_id, "ChIJprevious");
   assert.equal(savedOwner.google_maps_url, venue.googleMapsUrl);
@@ -193,7 +197,8 @@ try {
   await page.locator("summary").click();
   await page.getByLabel("Exact coordinates or pinned Google Maps link").fill("https://www.google.com/maps/search/?api=1&query=6.500123%2C3.400456");
   await page.getByRole("button", { name: "Use these coordinates" }).click();
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).focus();
+  await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "Create venue", exact: true }).waitFor();
   assert.equal(savedOwner.latitude, 6.500123); assert.equal(savedOwner.longitude, 3.400456);
   assert.equal(savedOwner.google_place_id, null); assert.equal(savedOwner.google_maps_url, null);
